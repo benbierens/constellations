@@ -112,7 +112,7 @@
                 // We have a new game world!
                 var world = new ContentStar(new StarInfo(new StarId())
                 {
-                    Owners = [player1],
+                    Owners = [myGameDriverNodeId, player1],
                     Type = "content_userGen_world"
                 });
                 world.Properties.Controllers = [player2, player3];
@@ -131,7 +131,7 @@
                 var world = new ContentStar(worldInfo);
 
                 // During the game, the players modify the world state and are notified of changes.
-                // (They modify the state of their game world without bothering any other star in the constellation.)
+                // (They modify the state of their game world without bothering any other stars in the constellation.)
                 world.Put(new ContentStar.DataSpan(), AnyData);
                 world.SubscribeToContentChanges(new ContentStar.ContentChangeHandler());
                 // Warning: high-speed game data such as real-time player positions are handled out of bounds by common methods.
@@ -149,7 +149,8 @@
                 // todo stars: begin support / discontinue support
             }
 
-            // Our friend player1 is a little more tech-savvy. He wants to support only his saved game world:
+
+            // Our friend player1 is a little more tech-savvy. They wants to support only their own saved game world:
             {
                 // He wrote an app that does the following:
                 var worldInfo = constellation.Get("/game/users/player1ID/new_world_name")!;
@@ -157,6 +158,23 @@
 
                 // subscribe to changes. Make sure to fetch all the data.
                 world.SubscribeToContentChanges(new ContentStar.ContentChangeHandler());
+            }
+
+
+            // It turns out player1 had a different game world they created months ago and forgot about.
+            // People who are supporting the game constellation are storing this save game data for it, and that's a bit of a shame.
+            // the gameDriver app detects this and (maybe after checking with player1?) decides to delete the old data:
+            {
+                var oldWorldInfo = constellation.Get("/game/users/player1ID/old_world_name")!;
+                var oldWorld = new ContentStar(oldWorldInfo);
+                oldWorld.Properties.Status = StarStatus.Cold;
+                // Any constellation node monitoring this star will be notified of the changed property
+                // and will understand that it can safely discontinue supporting this star.
+
+                constellation.Remove("/game/users/player1ID/old_world_name");
+                // this is done with the gameDriver id, which is not authorized to modify the constellation at top level.
+                // but because of the metastar traversal, this modification actually only affects the metaStar 
+                // at "/game/users", for which the gameDriver is a controller!
             }
         }
     }

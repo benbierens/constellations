@@ -2,6 +2,12 @@
 
 namespace Prototyping
 {
+    // A constellation-node will expose an interface
+    // that other apps can use to interact with stars and constellations.
+    // Some apps will be reading/writing data, and following updates. (using)
+    // Other apps will be only follwing and caching updates. (supporting)
+    // The interface should cover all use cases.
+
     public class RequiredConfig
     {
         public string WakuConnectionInfo = string.Empty;
@@ -214,6 +220,11 @@ namespace Prototyping
         public void Put(string path, StarInfo star)
         {
             // Following the same logic, we put the star info into the correct metaStar
+        }
+
+        public void Remove(string path)
+        {
+            // Again, traverse the metaStars where needed.
         }
     }
 
