@@ -34,24 +34,23 @@ namespace Prototyping
                 var paths = constellation.List("/");
                 // I re-traverse the paths once every 24h? or maybe, whenever one of the metaStars raises a changed event.
 
-                // For every star, I look at the numbers:
+                var allStars = new Star[10];
+                foreach (var star in allStars) // For every star, I look at the numbers:
                 {
-                    var vehicleModelsStar = new Star(constellation.Get("/game/content/models/vehicles")!);
-
-                    var dataSize = vehicleModelsStar.Statistics.Size;
+                    var dataSize = star.Statistics.Size;
                     // Need to know this later.
 
-                    var dataCount = vehicleModelsStar.Statistics.Health.DataCount;
+                    var dataCount = star.Statistics.Health.DataCount;
                     // Number of nodes who claim to have stored the latest snapshot.
-                    var topicCount = vehicleModelsStar.Statistics.Health.TopicCount;
+                    var topicCount = star.Statistics.Health.TopicCount;
                     // Number of nodes who claim to be listening/supporting the content topic channel.
                     // Distrust both of these numbers. Assume 1/3 is unreliable, so multiply by 2/3 and proceed from there.
                 }
 
                 // I select a few stars based on:
-                // - How large is their data VS how much capacity to I have to give.
+                // - How large is their data VS how much capacity do I have to give.
                 // - How healthy are they. I will try and support the least healthy ones.
-                var selectedStars = new Star[3];
+                var selectedStars = allStars.OrderBy(SomeFitnessFunction).Take(3).ToArray();
 
                 // For each of these, I will monitor the channels and fetch the snapshots.
                 // The other channels, I exit.
@@ -89,6 +88,12 @@ namespace Prototyping
                 world.SubscribeToContentChanges(new ContentStar.ContentChangeHandler());
                 // Monitor the channel and fetch the snapshots.
             }
+        }
+
+        private object SomeFitnessFunction(Star star)
+        {
+            // Placeholder for weighting method.
+            throw new NotImplementedException();
         }
     }
 }

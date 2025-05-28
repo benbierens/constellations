@@ -58,15 +58,13 @@ namespace Prototyping
             {
                 var friendStarInfo = StarInfo.FetchUsingId(id);
                 var friendStar = new ContentStar(friendStarInfo);
-                var propertiesChangedHandler = new Star.PropertiesChangeHandler();
-                var contentChangedHandler = new ContentStar.ContentChangeHandler();
 
                 // Can view the photos
                 var bytes = friendStar.Get(new ContentStar.DataSpan());
 
                 // Can stay up-to-date
-                friendStar.SubscribeToPropertiesChanges(propertiesChangedHandler);
-                friendStar.SubscribeToContentChanges(contentChangedHandler);
+                friendStar.SubscribeToPropertiesChanges(new Star.PropertiesChangeHandler());
+                friendStar.SubscribeToContentChanges(new ContentStar.ContentChangeHandler());
             }
 
 
@@ -89,7 +87,7 @@ namespace Prototyping
             // So they can add some photos of their own.
             // On my constellation node:
             {
-                // If I want my friend to have the ability to modify the data AND add and remove other participants, I make them an admin:
+                // If I want my friend to have the ability to modify the data AND add/remove other participants, I make them an admin:
                 star.Properties.Admins = [friendNodeId];
 
                 // If I want my friend to have the ability to modify the data ONLY, I make them a mod:

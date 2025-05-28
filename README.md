@@ -8,7 +8,7 @@ It's a kind of decentralized filesystem. It makes it easy for users/apps to read
 We're using Codex and Waku.
 
 ## Interface prototype
-A constellation-node will expose an interface that other apps can use to interact with stars and constellations. Some apps will be reading/writing data, and following updates. Other apps will be only follwing and caching updates. The interface covers all use cases. In general, the Constellation type will be the entry-point for most interactions.
+A constellation-node will expose an interface that other apps can use to interact with stars and constellations. Some apps will be reading/writing data, and following updates. Other apps will be only following and caching updates. The interface covers all use cases. In general, the Constellation type will be the entry-point for most interactions.
 
 ## How to read?!
 - Read the example files from top to bottom. They tell a little story.

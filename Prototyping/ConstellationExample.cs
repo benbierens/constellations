@@ -11,7 +11,7 @@ namespace Prototyping
         private readonly byte[] AnyData = new byte[1];
 
         /// <summary>
-        /// This is to demonstrate the versatility of constellations.
+        /// This is to demonstrate constellations.
         /// </summary>
         public void Example()
         {
@@ -46,55 +46,60 @@ namespace Prototyping
             // This is the ID I will be sharing with everyone who wishes to support the game by
             // by hosting and syncing data for it!
 
-            var constellationInfo = StarInfo.CreateNew(constellationId);
-            constellationInfo.Owners = [myRootNodeId];
-            constellationInfo.Type = "metaStar"; // Protocol defined
-
-            var constellation = Constellation.CreateNew(constellationInfo);
-            constellation.Properties.Status = StarStatus.Bright;
-            constellation.Properties.Admins = [];
-            constellation.Properties.Mods = [];
-
-
-            // Let's split the game content and the user-generated content at this level.
-            // Content metaStar:
-            var gameContentMetaStarId = new StarId();
-            var gameContentMetaStarInfo = StarInfo.CreateNew(gameContentMetaStarId);
-            gameContentMetaStarInfo.Owners = [myRootNodeId]; // my root ID can modify this and cannot be removed.
-            gameContentMetaStarInfo.Type = "metaStar"; // Protocol defined
-
-            var gameContentMetaStar = new MetaStar(gameContentMetaStarInfo);
-            gameContentMetaStar.Properties.Admins = [gameDesignTeamNodeId];
-            gameContentMetaStar.Properties.Mods =[gameDesignTeamInternsNodeId];
-            // This allows the design team and their interns to update their work at any time.
-            // The design team can add/remove additional nodeIds in the admins array AND mods array, when team members join or leave.
-            // If they mess up and delete themselves entirely (they're not very technical), I can use my rootNodeId to fix it.
-
-            // Let's put it in the constellation:
-            constellation.Put("/game/content", gameContentMetaStarInfo);
-
-
-            // UserGen metaStar:
-            var userGenMetaStarId = new StarId();
-            var userGenMetaStarInfo = StarInfo.CreateNew(userGenMetaStarId);
-            userGenMetaStarInfo.Owners = [myRootNodeId]; // if I really need to, I can always edit this.
-            userGenMetaStarInfo.Type = "metaStar"; // Protocol defined
-
-            var userGenMetaStar = new MetaStar(userGenMetaStarInfo);
-            userGenMetaStar.Properties.Admins = [];
-            userGenMetaStar.Properties.Mods = [myGameDriverNodeId];
-            // My gameDriver app is authorized to modify this data automatically.
-            // At some point, other people will be running the app too and I can enable them to modify user-generated content data
-            // by updating the Mods array.
-            // I do not set the Admins array, because I don't anticipate using my app to automatically give/revoke these permissions.
-
-            // Let's put it:
-            constellation.Put("/game/users", userGenMetaStarInfo);
-
-
-
-            // The design team delivers their game content
+            // The process of setting up the constellation:
             {
+                var constellationInfo = StarInfo.CreateNew(constellationId);
+                constellationInfo.Owners = [myRootNodeId];
+                constellationInfo.Type = "metaStar"; // Protocol defined
+
+                var constellation = Constellation.CreateNew(constellationInfo);
+                constellation.Properties.Status = StarStatus.Bright;
+                constellation.Properties.Admins = [];
+                constellation.Properties.Mods = [];
+
+
+                // Let's split the game content and the user-generated content at this level.
+                // Game content metaStar:
+                var gameContentMetaStarId = new StarId();
+                var gameContentMetaStarInfo = StarInfo.CreateNew(gameContentMetaStarId);
+                gameContentMetaStarInfo.Owners = [myRootNodeId]; // my root ID can modify this and cannot be removed.
+                gameContentMetaStarInfo.Type = "metaStar"; // Protocol defined
+
+                var gameContentMetaStar = new MetaStar(gameContentMetaStarInfo);
+                gameContentMetaStar.Properties.Admins = [gameDesignTeamNodeId];
+                gameContentMetaStar.Properties.Mods = [gameDesignTeamInternsNodeId];
+                // This allows the design team and their interns to update their work at any time.
+                // The design team can add/remove additional nodeIds in the admins array AND mods array, when team members join or leave.
+                // If they mess up and delete themselves entirely (they're not very technical), I can use my rootNodeId to fix it.
+
+                // Let's put it in the constellation:
+                constellation.Put("/game/content", gameContentMetaStarInfo);
+
+
+                // UserGen metaStar:
+                var userGenMetaStarId = new StarId();
+                var userGenMetaStarInfo = StarInfo.CreateNew(userGenMetaStarId);
+                userGenMetaStarInfo.Owners = [myRootNodeId]; // if I really need to, I can always edit this.
+                userGenMetaStarInfo.Type = "metaStar"; // Protocol defined
+
+                var userGenMetaStar = new MetaStar(userGenMetaStarInfo);
+                userGenMetaStar.Properties.Admins = [];
+                userGenMetaStar.Properties.Mods = [myGameDriverNodeId];
+                // My gameDriver app is authorized to modify this data automatically.
+                // At some point, other people will be running the app too and I can enable them to modify user-generated content data
+                // by updating the Mods array.
+                // I do not set the Admins array, because I don't anticipate using my app to automatically give/revoke these permissions.
+
+                // Let's put it:
+                constellation.Put("/game/users", userGenMetaStarInfo);
+            }
+
+
+            // The design team delivers their game content.
+            // They use an app that contains a constellation node to push the data.
+            {
+                var designTeamNode = Constellation.CreateToSupport(constellationId);
+
                 // Repeat the code below for blocks, playerModels, enemyModels, vehicles, etc:
                 var blocksInfo = StarInfo.CreateNew(new StarId());
                 blocksInfo.Owners = [gameDesignTeamNodeId];
@@ -104,14 +109,16 @@ namespace Prototyping
                 blocks.Put(new ContentStar.DataSpan(), AnyData); // pushing the 3D models!
 
                 // Putting this content in the constellation:
-                constellation.Put("/game/content/models/blocks", blocks.Info);
+                designTeamNode.Put("/game/content/models/blocks", blocks.Info);
             }
 
 
 
             // A player wants to create a new p2p-minecraft world to play with their friends.
-            // they interact with the gameDriver app to accomplish this.
-            // They run the game app. It contains a light-weight constellation node. These are their IDs:
+            // They interact with the gameDriver app to accomplish this.
+            // The gameDriver uses a constellation node to make the required changes.
+            // But also the game client apps contain a light-weight constellation node.
+            // Therefore the players have their own Ids:
             var player1 = new ConstellationNodeId(); // Wants to create a new game world
             // Their friends:
             var player2 = new ConstellationNodeId();
@@ -119,6 +126,8 @@ namespace Prototyping
 
             // The gameDriver app(s) modify the user-generated content in this manner:
             {
+                var gameDriverNode = Constellation.CreateToSupport(constellationId);
+
                 // We have a new game world!
                 var worldInfo = StarInfo.CreateNew(new StarId());
                 worldInfo.Owners = [myGameDriverNodeId];
@@ -136,15 +145,17 @@ namespace Prototyping
                 // that represents "their part" of the total world: a region in which they alone are allowed to modify stuff
                 // either way: application-level concern.
 
-                constellation.Put("/game/users/player1ID/new_world_name", world.Info);
+                gameDriverNode.Put("/game/users/player1ID/new_world_name", world.Info);
             }
 
 
-            // The friends are playing the game
+            // The friends are playing the game.
+            // The game contains a light-weight constellation node to interface with the world data.
             {
-                // The game contains a light-weight constellation node to interface with the world data.
-                // It communicates player1's ID and world name out of bounds.
-                var worldInfo = constellation.Get("/game/users/player1ID/new_world_name")!;
+                var inGameNode = Constellation.CreateToSupport(constellationId);
+
+                // The game communicates player1's ID and world name out of bounds.
+                var worldInfo = inGameNode.Get("/game/users/player1ID/new_world_name")!;
                 var world = new ContentStar(worldInfo);
 
                 // During the game, the players modify the world state and are notified of changes.
@@ -159,7 +170,9 @@ namespace Prototyping
             // People who are supporting the game constellation are storing this save game data for it, and that's a bit of a waste.
             // the gameDriver app detects this and (maybe after checking with player1?) decides to delete the old data:
             {
-                var oldWorldInfo = constellation.Get("/game/users/player1ID/old_world_name")!;
+                var gameDriverNode = Constellation.CreateToSupport(constellationId);
+
+                var oldWorldInfo = gameDriverNode.Get("/game/users/player1ID/old_world_name")!;
                 var oldWorld = new ContentStar(oldWorldInfo);
                 oldWorld.Properties.Status = StarStatus.Cold;
                 // Any constellation node monitoring this star will be notified of the changed property
@@ -167,7 +180,7 @@ namespace Prototyping
                 // There is no way to force a node to delete the data. Maybe they'll want to preserve it regardless,
                 // but they have been notified that as far as the constellation is concerned, this one can be discarded.
 
-                constellation.Remove("/game/users/player1ID/old_world_name");
+                gameDriverNode.Remove("/game/users/player1ID/old_world_name");
                 // this is done with the gameDriver id, which is not authorized to modify the constellation at top level.
                 // but because of the metaStar traversal, this modification actually only affects the metaStar 
                 // at "/game/users", for which the gameDriver is a mod!
