@@ -40,11 +40,10 @@
             // This is the ID I will be sharing with everyone who wishes to support the game by
             // by hosting and syncing data for it!
 
-            var constellationInfo = new StarInfo(constellationId)
-            {
-                Owners = [myRootNodeId],
-                Type = "metaStar" // Protocol defined
-            };
+            var constellationInfo = StarInfo.CreateNew(constellationId);
+            constellationInfo.Owners = [myRootNodeId];
+            constellationInfo.Type = "metaStar"; // Protocol defined
+
             var constellation = Constellation.CreateNew(constellationInfo);
             constellation.Properties.Status = StarStatus.Bright;
             constellation.Properties.Admins = [];
@@ -54,11 +53,10 @@
             // Let's split the game content and the user-generated content at this level.
             // Content metaStar:
             var gameContentMetaStarId = new StarId();
-            var gameContentMetaStarInfo = new StarInfo(gameContentMetaStarId)
-            {
-                Owners = [myRootNodeId], // my root ID can modify this and cannot be removed.
-                Type = "metaStar"
-            };
+            var gameContentMetaStarInfo = StarInfo.CreateNew(gameContentMetaStarId);
+            gameContentMetaStarInfo.Owners = [myRootNodeId]; // my root ID can modify this and cannot be removed.
+            gameContentMetaStarInfo.Type = "metaStar"; // Protocol defined
+
             var gameContentMetaStar = new MetaStar(gameContentMetaStarInfo);
             gameContentMetaStar.Properties.Admins = [gameDesignTeamNodeId];
             gameContentMetaStar.Properties.Mods =[gameDesignTeamInternsNodeId];
@@ -72,11 +70,10 @@
 
             // UserGen metaStar:
             var userGenMetaStarId = new StarId();
-            var userGenMetaStarInfo = new StarInfo(userGenMetaStarId)
-            {
-                Owners = [myRootNodeId], // if I really need to, I can always edit this.
-                Type = "metaStar"
-            };
+            var userGenMetaStarInfo = StarInfo.CreateNew(userGenMetaStarId);
+            userGenMetaStarInfo.Owners = [myRootNodeId]; // if I really need to, I can always edit this.
+            userGenMetaStarInfo.Type = "metaStar"; // Protocol defined
+
             var userGenMetaStar = new MetaStar(userGenMetaStarInfo);
             userGenMetaStar.Properties.Admins = [];
             userGenMetaStar.Properties.Mods = [myGameDriverNodeId];
@@ -93,11 +90,11 @@
             // The design team delivers their game content
             {
                 // Repeat the code below for blocks, playerModels, enemyModels, vehicles, etc:
-                var blocks = new ContentStar(new StarInfo(new StarId())
-                {
-                    Owners = [gameDesignTeamNodeId],
-                    Type = "content_3dmodels_blocks" // This is recognized by the game app so it knows how to handle the data.
-                });
+                var blocksInfo = StarInfo.CreateNew(new StarId());
+                blocksInfo.Owners = [gameDesignTeamNodeId];
+                blocksInfo.Type = "content_3dmodels_blocks"; // This is recognized by the game app so it knows how to handle the data.
+                
+                var blocks = new ContentStar(blocksInfo);
                 blocks.Put(new ContentStar.DataSpan(), AnyData); // pushing the 3D models!
 
                 // Putting this content in the constellation:
@@ -117,11 +114,11 @@
             // The gameDriver app(s) modify the user-generated content in this manner:
             {
                 // We have a new game world!
-                var world = new ContentStar(new StarInfo(new StarId())
-                {
-                    Owners = [myGameDriverNodeId],
-                    Type = "content_userGen_world" // Recognized by the game app so it can interpret the world data.
-                });
+                var worldInfo = StarInfo.CreateNew(new StarId());
+                worldInfo.Owners = [myGameDriverNodeId];
+                worldInfo.Type = "content_userGen_world"; // Recognized by the game app so it can interpret the world data.
+
+                var world = new ContentStar(worldInfo);
                 world.Properties.Admins = [player1];
                 world.Properties.Mods = [player2, player3];
                 // This allows the friends to make changes to the world state,
@@ -149,29 +146,6 @@
                 world.Put(new ContentStar.DataSpan(), AnyData);
                 world.SubscribeToContentChanges(new ContentStar.ContentChangeHandler());
                 // Warning: high-speed game data such as real-time player positions are handled out of bounds by common methods.
-            }
-
-
-            // Turns out player2 really enjoys the game and wants to support it in a general sense.
-            // They have an old computer they can set up as a server, so they configure it to support
-            // the game's constellation:
-            {
-                // They run a generic constellation-supporter app and provide it the id of the game.
-                // Inside that app:
-                var supporter = Constellation.CreateToSupport(constellationId);
-                // todo quality measures!
-                // todo stars: begin support / discontinue support
-            }
-
-
-            // Our friend player1 is a little more tech-savvy. They wants to support only their own saved game world:
-            {
-                // He wrote an app that does the following:
-                var worldInfo = constellation.Get("/game/users/player1ID/new_world_name")!;
-                var world = new ContentStar(worldInfo);
-
-                // subscribe to changes. Make sure to fetch all the data.
-                world.SubscribeToContentChanges(new ContentStar.ContentChangeHandler());
             }
 
 

@@ -35,7 +35,20 @@ namespace Prototyping
 
     public class StarInfo
     {
-        public StarInfo(StarId id)
+        public static StarInfo CreateNew(StarId id)
+        {
+            return new StarInfo(id);
+        }
+
+        public static StarInfo FetchUsingId(StarId id)
+        {
+            // Convert id to content topic
+            // find in message history or ask for starInfo data.
+            // verify it against the id hash.
+            return new StarInfo(id);
+        }
+
+        private StarInfo(StarId id)
         {
             Id = id;
         }
@@ -114,7 +127,7 @@ namespace Prototyping
         Cold        // Star is gone. (sub)content is no longer relevant. Support may be discontinued.
     }
 
-    public abstract class Star
+    public class Star
     {
         public Star(StarInfo info)
         {
@@ -194,7 +207,6 @@ namespace Prototyping
         #region Changes
 
         public SubscriptionHandle SubscribeToContentChanges(ContentChangeHandler handler) { return new(); }
-        public void Unsubscribe(SubscriptionHandle handle) { }
 
         public class ContentChangeHandler
         {
@@ -216,7 +228,7 @@ namespace Prototyping
         public StarInfo? Get(string path)
         {
             path = "/example/path/to/content/star";
-            return null; // return star information
+            return null; // return star information if entry exists.
         }
 
         public void Put(string path, StarInfo starInfo)
@@ -234,10 +246,9 @@ namespace Prototyping
 
         #region Changes
 
-        public SubscriptionHandle SubscribeToMetastarChanges(MetaChangeHandler handler) { return new(); }
-        public void Unsubscribe(SubscriptionHandle handle) { }
+        public SubscriptionHandle SubscribeToMetastarChanges(MetaStarChangeHandler handler) { return new(); }
 
-        public class MetaChangeHandler
+        public class MetaStarChangeHandler
         {
             public void OnMetastarChanged(string pathOfChange, StarInfo? updatedInfo) { }
         }
@@ -273,7 +284,7 @@ namespace Prototyping
 
         private Constellation(ConstellationId id)
         {
-            var fetchedStarInfo = new StarInfo(id); // fetched using ID.
+            var fetchedStarInfo = StarInfo.FetchUsingId(id);
             topLevelMetaStar = new MetaStar(fetchedStarInfo);
         }
 

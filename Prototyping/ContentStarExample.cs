@@ -25,12 +25,12 @@ namespace Prototyping
 
             // Setting up the star:
             var id = new StarId();
-            var info = new StarInfo(id)
-            {
-                Owners = [myNodeId], // I'm the owner. I can appoint/revoke Admins and Mods. But Owners cannot be edited after creation.
-                Type = "content_tarred_photos" // Something the app built on top of Constellations will understand.
-            };
+            var info = StarInfo.CreateNew(id);
+            info.Owners = [myNodeId]; // I'm the owner. I can appoint/revoke Admins and Mods. But Owners cannot be edited after creation.
+            info.Type = "content_tarred_photos"; // Something the app built on top of Constellations will understand.
+            
             var star = new ContentStar(info);
+
             // star.Properties can be edited later.
             star.Properties.Status = StarStatus.Bright; // This means the content is relevant and support for this star is wanted.
             star.Properties.Admins = []; // Admins can modify the data AND the properties.
@@ -51,7 +51,8 @@ namespace Prototyping
             // I give the starId to my friend.
             // On their constellation node:
             {
-                var friendStar = new ContentStar(new StarInfo(id));
+                var friendStarInfo = StarInfo.FetchUsingId(id);
+                var friendStar = new ContentStar(friendStarInfo);
                 var propertiesChangedHandler = new Star.PropertiesChangeHandler();
                 var contentChangedHandler = new ContentStar.ContentChangeHandler();
 
