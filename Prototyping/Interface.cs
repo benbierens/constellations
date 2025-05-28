@@ -7,6 +7,7 @@ namespace Prototyping
     // Some apps will be reading/writing data, and following updates. (using)
     // Other apps will be only follwing and caching updates. (supporting)
     // The interface should cover all use cases.
+    // In general, the Constellation type will be the entry-point for most interactions.
 
     public class RequiredConfig
     {
@@ -22,7 +23,7 @@ namespace Prototyping
 
     public class StarId
     {
-        public string Id = "UniqueIdentifier + hash of starInfo.type + owners?";
+        public string Id = "Hash of starInfo";
         public string WakuContentTopic => IdAsContentTopic();
 
         private string IdAsContentTopic()
@@ -40,9 +41,11 @@ namespace Prototyping
         }
 
         // Cannot change after creation:
-        public StarId Id { get; }
+        public StarId Id { get; } // Not included in its own hashing, of course.
         public string Type { get; set; } = string.Empty; // Inmutable application-specific metadata. Max sized.
-        public ConstellationNodeId[] Owners { get; set; } = new ConstellationNodeId[0];
+        public ConstellationNodeId[] Owners { get; set; } = [];
+        public DateTime CreationUtc { get; set; }
+        public StarConfiguration Configuration { get; set; } = new();
     }
 
     public class StarProperties
@@ -52,6 +55,56 @@ namespace Prototyping
         public ConstellationNodeId[] Admins { get; set; } = [];
         public ConstellationNodeId[] Mods{ get; set; } = [];
         public string Annotations { get; set; } = string.Empty; // Mutable application-specific metadata. Max sized.
+    }
+
+    public class StarStatistics
+    {
+        // Inferred, not editable:
+        public DateTime LastChangedUtc { get; set; }
+        public int Size { get;set; } // last CID size + changes resulting from diffs
+        public StarHealth Health { get; set; } = new();
+    }
+
+    public class StarHealth
+    {
+        // Deliberately separated.
+        // This is likely to change frequently and for reasons isolated to the topic of measuring star health.
+
+        public int DataCount { get; set; }
+        // Whenever a new snapshot is broadcast, nodes respond with a message to incidate when they have successfully
+        // fetched the new dataset using their codex node. This counter shows how many nodes sent such a message
+        // for the most recent snapshot.
+
+        public int TopicCount { get; set; }
+        // Periodically (StarConfig.TopicMonitoringMessagePeriod)
+        // nodes send a message to indicate that they are monitoring this star's content topic. This indicates that
+        // they are using their waku node to cache and relay messages for this topic. This counter shows how
+        // many nodes sent such a message in the past (StarConfig.TopicMonitoringMessageDuration)
+    }
+
+    public class StarConfiguration
+    {
+        // Diffs and snapshots
+        public int MaxDiffSize { get; set; }
+        // Size in bytes for how large a single diff can be. (determined by waku message size?)
+
+        public TimeSpan SoftMinSnapshotDuration { get; set; }
+        // After a snapshot was made and published, diffs cannot cause a new snapshot
+        // to be created for at least this length of time. A user action that modified a segment of data too large to be captured in a diff
+        // can disregard this restriction.
+
+        public TimeSpan SoftMaxDiffDuration { get; set; }
+        // If we have a diff older than this, snapshot if allowed by MinSnapshotDuration.
+
+        public int SoftMaxNumDiffs { get; set; }
+        // If we have more than this many diffs, snapshot if allowed by MinSnapshotDuration.
+        
+        // Health
+        public TimeSpan TopicMonitoringMessagePeriod { get; set; }
+        // Every this, send a message to let others know you're monitoring this topic.
+
+        public TimeSpan TopicMonitoringMessageDuration { get; set; }
+        // How long such messages are valid.
     }
 
     public enum StarStatus
@@ -70,6 +123,7 @@ namespace Prototyping
 
         public StarInfo Info { get; }
         public StarProperties Properties { get; } = new();
+        public StarStatistics Statistics { get; } = new();
 
         #region Changes
 
