@@ -41,16 +41,17 @@ namespace Prototyping
 
         // Cannot change after creation:
         public StarId Id { get; }
-        public string Type { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty; // Inmutable application-specific metadata. Max sized.
         public ConstellationNodeId[] Owners { get; set; } = new ConstellationNodeId[0];
     }
 
     public class StarProperties
     {
-        // Can be changed by owners and controllers:
+        // Can be changed by owners and admins:
         public StarStatus Status { get; set; }
-        public ConstellationNodeId[] Controllers { get; set; } = new ConstellationNodeId[0];
-        public string Annotations { get; set; } = string.Empty; // Application-specific metadata for this star.
+        public ConstellationNodeId[] Admins { get; set; } = [];
+        public ConstellationNodeId[] Mods{ get; set; } = [];
+        public string Annotations { get; set; } = string.Empty; // Mutable application-specific metadata. Max sized.
     }
 
     public enum StarStatus
@@ -74,7 +75,21 @@ namespace Prototyping
 
         public void UpdateStarProperties(StarProperties properties)
         {
-            // Owners and Controllers are able to edit properties
+            // Owners and Admins are able to edit properties.
+
+            // If no owners or admins are specified, then the admins and mods arrays must always be empty and cannot be changed:
+            // AKA: one cannot assign control over an un-owned star.
+
+            // If no owners or admins are specified, then status cannot be set to anything other than Bright:
+            // AKA: one cannot show up and mark an un-owned star for deletion.
+            
+            // Interesting scenario:
+            // - I create a star with no owners, but 1 admin which is me.
+            // - Only I can update the data and properties.
+            // - Some time later, I update the properties and remove myself from the admin list.
+            // - The star now has no owner, no admins, therefore the mods list must be empty.
+            // - The star can now be modified by anyone. I "gave it" to everyone.
+            // - This can't be undone.
         }
 
         public SubscriptionHandle SubscribeToPropertiesChanges(PropertiesChangeHandler handler) { return new(); }
@@ -100,6 +115,8 @@ namespace Prototyping
         // Place data. Could be overwriting existing data.
         // byte[] data has a known length. We could be replacing a segment of data
         // of size span.Length with a larger or smaller segment of data.
+        // Only owners, admins, or mods can modify the data.
+        // If there are none, anyone can modify the data.
         public void Put(DataSpan span, byte[] data) { }
 
         // Access data, either blocking or streaming.
@@ -151,6 +168,8 @@ namespace Prototyping
         public void Put(string path, StarInfo starInfo)
         {
             // puts an update in the datastructure to publish the information of the new star
+            // Only owners, admins, or mods can modify the entries.
+            // If there are none, anyone can modify the entries.
         }
 
         public void Remove(string path)

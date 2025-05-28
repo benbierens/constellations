@@ -27,13 +27,14 @@ namespace Prototyping
             var id = new StarId();
             var info = new StarInfo(id)
             {
-                Owners = [myNodeId], // I'm the owner. I can appoint/revoke Controllers. But Owners cannot be edited after creation.
+                Owners = [myNodeId], // I'm the owner. I can appoint/revoke Admins and Mods. But Owners cannot be edited after creation.
                 Type = "content_tarred_photos" // Something the app built on top of Constellations will understand.
             };
             var star = new ContentStar(info);
             // star.Properties can be edited later.
             star.Properties.Status = StarStatus.Bright; // This means the content is relevant and support for this star is wanted.
-            star.Properties.Controllers = []; // I don't assign anyone else the ability to edit this data.
+            star.Properties.Admins = []; // Admins can modify the data AND the properties.
+            star.Properties.Mods = []; // Mods can only modify the data, NOT the properties.
 
             // Push my data.
             star.Put(new ContentStar.DataSpan
@@ -82,13 +83,17 @@ namespace Prototyping
             // So they can add some photos of their own.
             // On my constellation node:
             {
-                star.Properties.Controllers = [friendNodeId];
+                // If I want my friend to have the ability to modify the data AND add and remove other participants, I make them an admin:
+                star.Properties.Admins = [friendNodeId];
+
+                // If I want my friend to have the ability to modify the data ONLY, I make them a mod:
+                star.Properties.Mods = [friendNodeId];
             }
 
             // This causes, on friend's node:
             {
                 // property-changed-handler is fired.
-                // Because they are now in the controllers list, changes signed by their key will be accepted by other nodes.
+                // Because they are now in the admins or mods list, changes signed by their key will be accepted by other nodes.
             }
         }
     }
