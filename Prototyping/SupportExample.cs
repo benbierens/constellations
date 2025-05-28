@@ -1,7 +1,13 @@
-﻿namespace Prototyping
+﻿using Prototyping.Interface;
+
+namespace Prototyping
 {
     public class SupportExample
     {
+        private readonly RequiredConfig config = new RequiredConfig();
+        // This defines how to connect to waku and codex. It's always required.
+        // Assume it's passed to the constellation code.
+
         /// <summary>
         /// This is to demonstrate how a person can contribute to maintaining a constellation.
         /// </summary>

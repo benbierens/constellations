@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Prototyping.Interface;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,10 @@ namespace Prototyping
 {
     public class ContentStarExample
     {
+        private readonly RequiredConfig config = new RequiredConfig();
+        // This defines how to connect to waku and codex. It's always required.
+        // Assume it's passed to the constellation code.
+
         private readonly byte[] TarOfSeveralPhotos = new byte[1];
         private readonly byte[] TarOfEvenMorePhotos = new byte[1];
 

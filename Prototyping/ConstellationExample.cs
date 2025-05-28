@@ -1,7 +1,13 @@
-﻿namespace Prototyping
+﻿using Prototyping.Interface;
+
+namespace Prototyping
 {
     public class ConstellationExample
     {
+        private readonly RequiredConfig config = new RequiredConfig();
+        // This defines how to connect to waku and codex. It's always required.
+        // Assume it's passed to the constellation code.
+
         private readonly byte[] AnyData = new byte[1];
 
         /// <summary>
