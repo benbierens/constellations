@@ -20,12 +20,14 @@ namespace Prototyping
             // I'm running a constellation node.
             // I'm setting up a single star to share a tarred folder of photos with a friend.
 
-            // Setting up:
-            var myId = new NodeId();
+            // My constellation node comes with an id:
+            var myNodeId = new ConstellationNodeId();
+
+            // Setting up the star:
             var id = new StarId();
             var info = new StarInfo(id)
             {
-                Owners = [myId], // I'm the owner. I can appoint/revoke Controllers. But Owners cannot be edited after creation.
+                Owners = [myNodeId], // I'm the owner. I can appoint/revoke Controllers. But Owners cannot be edited after creation.
                 Type = "content_tarred_photos" // Something the app built on top of Constellations will understand.
             };
             var star = new ContentStar(info);
@@ -42,17 +44,22 @@ namespace Prototyping
             }, TarOfSeveralPhotos);
 
 
-            // Give starId to friend.
+            // My friend also has a constellation node:
+            var friendNodeId = new ConstellationNodeId();
+
+            // I give the starId to my friend.
             // On their constellation node:
             {
-                var friendStar = new ContentStar(id);
-                var handler = new ContentStar.ContentChangeHandler();
+                var friendStar = new ContentStar(new StarInfo(id));
+                var propertiesChangedHandler = new Star.PropertiesChangeHandler();
+                var contentChangedHandler = new ContentStar.ContentChangeHandler();
 
                 // Can view the photos
-                friendStar.Get(new ContentStar.DataSpan());
+                var bytes = friendStar.Get(new ContentStar.DataSpan());
 
-                // Can stay up-todate
-                friendStar.SubscribeToContentChanges(handler);
+                // Can stay up-to-date
+                friendStar.SubscribeToPropertiesChanges(propertiesChangedHandler);
+                friendStar.SubscribeToContentChanges(contentChangedHandler);
             }
 
 
@@ -67,7 +74,21 @@ namespace Prototyping
 
             // On my friend's node:
             {
-                // change-handler is fired.
+                // content-changed-handler is fired.
+            }
+
+
+            // Some time later, I want to give my friend the ability to modify the tar
+            // So they can add some photos of their own.
+            // On my constellation node:
+            {
+                star.Properties.Controllers = [friendNodeId];
+            }
+
+            // This causes, on friend's node:
+            {
+                // property-changed-handler is fired.
+                // Because they are now in the controllers list, changes signed by their key will be accepted by other nodes.
             }
         }
     }

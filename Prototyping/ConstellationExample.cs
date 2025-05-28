@@ -15,7 +15,7 @@
             // It's got user-generated content: save-game worlds, and a scoreboard.
 
             // I have a root-level identity that I will protect with my life:
-            var myRootNodeId = new NodeId();
+            var myRootNodeId = new ConstellationNodeId();
 
 
             // I'm writing a game-driver application that (in a decentralized way)
@@ -23,14 +23,14 @@
             // I'm running one myself, for now. Others can also run one. They'll reach consensus and modify
             // the user-generated content accordingly.
             // This is the nodeId of my game-driver instance:
-            var myGameDriverNodeId = new NodeId();
+            var myGameDriverNodeId = new ConstellationNodeId();
 
 
             // Turns out building a game is a lot of work
             // I needed a design team to build the 3D models, textures, and audio files.
             // We're a decentralized org and they can update the content of the game
             // without my involvement. They use this ID for this purpose:
-            var gameDesignTeamNodeId = new NodeId();
+            var gameDesignTeamNodeId = new ConstellationNodeId();
 
 
             // Setting up the constellation:
@@ -50,20 +50,20 @@
 
             // Let's split the game content and the user-generated content at this level.
             // Content metaStar:
-            var contentMetaStarId = new StarId();
-            var contentMetaStarInfo = new StarInfo(contentMetaStarId)
+            var gameContentMetaStarId = new StarId();
+            var gameContentMetaStarInfo = new StarInfo(gameContentMetaStarId)
             {
                 Owners = [myRootNodeId], // my root ID can modify this and cannot be removed.
                 Type = "metaStar"
             };
-            var contentMetaStar = new MetaStar(contentMetaStarInfo);
-            contentMetaStar.Properties.Controllers = [gameDesignTeamNodeId];
+            var gameContentMetaStar = new MetaStar(gameContentMetaStarInfo);
+            gameContentMetaStar.Properties.Controllers = [gameDesignTeamNodeId];
             // This allows the design team to update their work at any time.
             // They can even add/remove additional nodeIds in the controllers array, when team members join or leave.
             // If they mess up and delete themselves entirely (they're not very technical), I can use my rootNodeId to fix it.
 
             // Let's put it in the constellation:
-            constellation.Put("/game/content", contentMetaStarInfo);
+            constellation.Put("/game/content", gameContentMetaStarInfo);
 
 
             // UserGen metaStar:
@@ -90,7 +90,7 @@
                 var blocks = new ContentStar(new StarInfo(new StarId())
                 {
                     Owners = [gameDesignTeamNodeId],
-                    Type = "content_3dmodels_blocks"
+                    Type = "content_3dmodels_blocks" // This is recognized by the game app so it knows how to handle the data.
                 });
                 blocks.Put(new ContentStar.DataSpan(), AnyData); // pushing the 3D models!
 
@@ -101,11 +101,12 @@
 
 
             // A player wants to create a new p2p-minecraft world to play with their friends.
-            // they interact with the gameDriver app to accomplish this. These are their IDs:
-            var player1 = new NodeId(); // Created the new game world
+            // they interact with the gameDriver app to accomplish this.
+            // They run the game app. It contains a light-weight constellation node. These are their IDs:
+            var player1 = new ConstellationNodeId(); // Wants to create a new game world
             // Their friends:
-            var player2 = new NodeId();
-            var player3 = new NodeId();
+            var player2 = new ConstellationNodeId();
+            var player3 = new ConstellationNodeId();
 
             // The gameDriver app(s) modify the user-generated content in this manner:
             {
@@ -113,11 +114,16 @@
                 var world = new ContentStar(new StarInfo(new StarId())
                 {
                     Owners = [myGameDriverNodeId, player1],
-                    Type = "content_userGen_world"
+                    Type = "content_userGen_world" // Recognized by the game app so it can interpret the world data.
                 });
                 world.Properties.Controllers = [player2, player3];
                 // This allows the friends to make changes to the world state,
                 // like when they mine blocks and then place them elsewhere.
+                // How exactly they determine which player is allowed to make which changes to the world state is
+                // something for the game to handle. It sounds like some consensus might be necessary.
+                // Alternatively, the world-star could be meta as well, and each player has their own nested content-star
+                // that represents "their part" of the total world: a region in which they alone are allowed to modify stuff
+                // either way: application-level concern.
 
                 constellation.Put("/game/users/player1ID/new_world_name", world.Info);
             }
@@ -170,6 +176,8 @@
                 oldWorld.Properties.Status = StarStatus.Cold;
                 // Any constellation node monitoring this star will be notified of the changed property
                 // and will understand that it can safely discontinue supporting this star.
+                // There is no way to force a node to delete the data. Maybe they'll want to preserve it regardless.
+                // but they have been notified that as far as the constellation is concerned, this one can be discarded.
 
                 constellation.Remove("/game/users/player1ID/old_world_name");
                 // this is done with the gameDriver id, which is not authorized to modify the constellation at top level.

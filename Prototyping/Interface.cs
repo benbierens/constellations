@@ -14,7 +14,7 @@ namespace Prototyping
         public string CodexConnectionInfo = string.Empty;
     }
 
-    public class NodeId
+    public class ConstellationNodeId
     {
         public string PublicKey = "public-key";
         private string PrivateKey = "I can use this to sign messages";
@@ -22,7 +22,7 @@ namespace Prototyping
 
     public class StarId
     {
-        public string Id = "UniqueIdentifier";
+        public string Id = "UniqueIdentifier + hash of starInfo.type + owners?";
         public string WakuContentTopic => IdAsContentTopic();
 
         private string IdAsContentTopic()
@@ -42,14 +42,14 @@ namespace Prototyping
         // Cannot change after creation:
         public StarId Id { get; }
         public string Type { get; set; } = string.Empty;
-        public NodeId[] Owners { get; set; } = new NodeId[0];
+        public ConstellationNodeId[] Owners { get; set; } = new ConstellationNodeId[0];
     }
 
     public class StarProperties
     {
         // Can be changed by owners and controllers:
         public StarStatus Status { get; set; }
-        public NodeId[] Controllers { get; set; } = new NodeId[0];
+        public ConstellationNodeId[] Controllers { get; set; } = new ConstellationNodeId[0];
         public string Annotations { get; set; } = string.Empty; // Application-specific metadata for this star.
     }
 
@@ -215,6 +215,17 @@ namespace Prototyping
             // we fetch it, it's another metaStar.
             // we ask it for "/models/vehicles" and it returns a contentStar info.
             return null;
+        }
+
+        public string[] List(string path)
+        {
+            // Lists all paths immediately under the given path.
+            // example:
+            // path = "/game/content"
+            // result = ["/game/content/models", "/game/content/audio", "game/content/scripts"]
+            // any of these paths may contain any number of multiple sub-paths. Those are not returned.
+
+            return [];
         }
 
         public void Put(string path, StarInfo star)
