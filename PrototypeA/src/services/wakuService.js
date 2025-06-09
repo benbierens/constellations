@@ -1,9 +1,8 @@
 import "fake-indexeddb/auto";
 import { Protocols, createLightNode, waitForRemotePeer } from "@waku/sdk";
-import { DispatchMetadata, Dispatcher, Signer } from "waku-dispatcher/dist";
-import { LightNode } from "@waku/interfaces";
-import { Dispatcher } from "./dispatcher.js";
-import { Store } from "./storage/store.js";
+// import { DispatchMetadata, Dispatcher, Signer } from "waku-dispatcher/dist";
+// import { LightNode } from "@waku/interfaces";
+import { Dispatcher, Store } from "waku-dispatcher";
 
 const messageType = "???";
 
