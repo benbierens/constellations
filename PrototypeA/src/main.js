@@ -67,11 +67,14 @@ export async function main() {
   const channel = await wakuService.openChannel(contentTopic, handler);
   log("Channel open");
 
-  await channel.send("Let there be MSG!");
+  await channel.send(`Let there be MSG! (${new Date().toUTCString()})`);
   log("Message sent");
 
   await channel.close();
   log("Channel closed");
+
+  await wakuService.stop();
+  log("Stopped");
 
   log("All done! \\o/");
 }

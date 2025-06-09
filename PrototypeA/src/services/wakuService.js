@@ -24,16 +24,15 @@ export class WakuChannel {
       messageType,
       onMessage,
       true, // verify sender
-      true, // accept only encrypted
+      false, // accept only encrypted
       this.contentTopic,
       true, // store locally
     );
-    this.dispatcher.dispatchLocalQuery();
     this.log("Channel is open.");
   }
 
   send = async (msg) => {
-    const res = await this.dispatcher.emit(messageType, msg, this.wallet);
+    const res = await this.dispatcher.emitTo(this.dispatcher.encoder, messageType, msg, this.wallet);
     this.log(`Send message. (${res})`);
   };
 
@@ -62,12 +61,16 @@ export class WakuService {
       bootstrapPeers: this.bootstrapNodes,
       numPeersToUse: 3,
     });
-    this.node.start();
+    await this.node.start();
     await this.node.waitForPeers([
       Protocols.Store,
       Protocols.Filter,
       Protocols.LightPush,
     ]);
+  };
+
+  stop = async () => {
+    await this.node.stop();
   };
 
   openChannel = async (contentTopic, handler, ephemeral = true) => {
@@ -80,15 +83,24 @@ export class WakuService {
       ephemeral,
       store,
     );
-    await dispatcher.start();
-    this.logger.trace("Dispatcher started");
 
-    return new WakuChannel(
+    // todo:
+    // dispatcher.registerKey(key: Uint8Array, type: KeyType = KeyType.Asymetric, autoEncrypt: boolean = false)
+    // and turn on "accept only encrypted"
+    
+    const channel = new WakuChannel(
       this.logger,
       handler,
       this.wallet,
       dispatcher,
       contentTopic,
     );
+
+    await dispatcher.start();
+    await dispatcher.dispatchLocalQuery();
+
+    this.logger.trace("Dispatcher started");
+
+    return channel;
   };
 }
