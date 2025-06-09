@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { Codex } from "@codex-storage/sdk-js";
+import { NodeUploadStategy } from "@codex-storage/sdk-js/node";
 import getDispatcher from "waku-dispatcher";
 // import { DispatchMetadata, Dispatcher, Signer } from "waku-dispatcher";
 
@@ -14,11 +15,41 @@ async function codexExample() {
   try {
     const codex = new Codex(codexAddress);
     const debug = codex.debug;
+
+    // is alive?
     const info = await debug.info();
     if (info == undefined) throw new Error("Not connected");
+
+    // upload
+    const data = codex.data;
+    var fileData = new Uint8Array(100);
+    fileData[0]=11;
+    fileData[11]=22;
+    fileData[22]=55;
+    const metadata = { filename: "example", mimetype: "application/octet-stream" };
+    const strategy = new NodeUploadStategy(fileData, metadata);
+    // const strategy = new BrowserUploadStrategy(file, onProgress, metadata);
+    log("uploading..");
+    const uploadResponse = data.upload(strategy);
+    const res = await uploadResponse.result;
+    if (res.error) {
+      throw new Error(res.data);
+    }
+    log("uploaded: " + res.data);
+    const cid = res.data;
+    
+    // download manifest only
+    const manifest = await data.fetchManifest(cid);
+    log("manifest, size: " + JSON.stringify(manifest.data.manifest.datasetSize));
+
+    // download data
+    const response = await data.networkDownloadStream(cid);
+    const downloaded = await response.data.text();
+    log("downloaded: " + JSON.stringify(downloaded));
+
     log("Codex connected");
-  } catch {
-    log("Codex not connected");
+  } catch (error) {
+    log("Codex not connected: " + error);
   }
 }
 
@@ -39,8 +70,8 @@ async function wakuExample() {
     if (d === null) log("didn't get dispatcher");
 
     log("Dispatched ready");
-  } catch {
-    log("Waku not connected");
+  } catch (error) {
+    log("Waku not connected: " + error);
   }
 }
 
@@ -49,5 +80,5 @@ export async function main() {
 
   await codexExample();
 
-  await wakuExample();
+  // await wakuExample();
 }
