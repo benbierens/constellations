@@ -54,8 +54,8 @@ async function wakuExample(wakuService) {
   log("Started.");
 
   const handler = {
-    onMessage: async (signer, msg) => {
-      log(`Received. Signer: '${signer}' Msg: '${msg}'`);
+    onMessage: async (signer, timestamp, msg) => {
+      log(`Received. Signer: '${signer}' Timestamp: '${timestamp.toISOString()}' Msg: '${msg}'`);
     },
   };
 
@@ -63,7 +63,7 @@ async function wakuExample(wakuService) {
   const channel = await wakuService.openChannel(contentTopic, handler);
   log("Channel open");
 
-  await channel.send(`Let there be MSG! (${new Date().toUTCString()})`);
+  await channel.send(`Let there be MSG! (${new Date().toISOString()})`);
   log("Message sent");
 
   await channel.close();
@@ -81,7 +81,7 @@ export async function main() {
   const wakuService = new WakuService(logger, wallet, wakuBootstrapNodes);
  
   // await codexExample(codexService);
-  // await wakuExample(wakuService);
+  await wakuExample(wakuService);
 
-  
+
 }

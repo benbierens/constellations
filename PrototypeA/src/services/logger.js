@@ -1,6 +1,6 @@
 export class Logger {
   trace = (msg) => {
-    console.log(`[${new Date().toUTCString()}] ${msg}`);
+    console.log(`[${new Date().toISOString()}] ${msg}`);
   };
 
   error = (msg) => {
