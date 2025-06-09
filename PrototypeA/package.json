@@ -28,6 +28,7 @@
     "waku-dispatcher": "^0.0.24"
   },
   "devDependencies": {
+    "fake-indexeddb": "^6.0.1",
     "prettier": "^3.4.2",
     "vitest": "^3.0.5"
   }

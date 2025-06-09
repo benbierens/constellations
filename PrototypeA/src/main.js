@@ -2,6 +2,8 @@
 
 import { Codex } from "@codex-storage/sdk-js";
 import { NodeUploadStategy } from "@codex-storage/sdk-js/node";
+
+import "fake-indexeddb/auto";
 import getDispatcher from "waku-dispatcher";
 // import { DispatchMetadata, Dispatcher, Signer } from "waku-dispatcher";
 
@@ -23,10 +25,13 @@ async function codexExample() {
     // upload
     const data = codex.data;
     var fileData = new Uint8Array(100);
-    fileData[0]=11;
-    fileData[11]=22;
-    fileData[22]=55;
-    const metadata = { filename: "example", mimetype: "application/octet-stream" };
+    fileData[0] = 11;
+    fileData[11] = 22;
+    fileData[22] = 55;
+    const metadata = {
+      filename: "example",
+      mimetype: "application/octet-stream",
+    };
     const strategy = new NodeUploadStategy(fileData, metadata);
     // const strategy = new BrowserUploadStrategy(file, onProgress, metadata);
     log("uploading..");
@@ -37,10 +42,12 @@ async function codexExample() {
     }
     log("uploaded: " + res.data);
     const cid = res.data;
-    
+
     // download manifest only
     const manifest = await data.fetchManifest(cid);
-    log("manifest, size: " + JSON.stringify(manifest.data.manifest.datasetSize));
+    log(
+      "manifest, size: " + JSON.stringify(manifest.data.manifest.datasetSize),
+    );
 
     // download data
     const response = await data.networkDownloadStream(cid);
@@ -78,7 +85,7 @@ async function wakuExample() {
 export async function main() {
   log("a");
 
-  await codexExample();
+  //await codexExample();
 
-  // await wakuExample();
+  await wakuExample();
 }
