@@ -35,21 +35,21 @@ export async function main() {
   const wakuService = new WakuService(logger, wallet, wakuBootstrapNodes);
 
   log("");
-  log("Trying Codex...");
+  // log("Trying Codex...");
 
-  log("Is online?: " + (await codexService.isOnline()));
+  // log("Is online?: " + (await codexService.isOnline()));
 
-  const cid = await codexService.upload(fileData);
-  log("Uploaded to: " + cid);
+  // const cid = await codexService.upload(fileData);
+  // log("Uploaded to: " + cid);
 
-  const manifest = await codexService.getManifest(cid);
-  log("Manifest. Size: " + manifest.datasetSize);
+  // const manifest = await codexService.getManifest(cid);
+  // log("Manifest. Size: " + manifest.datasetSize);
 
-  await codexService.fetchData(cid);
-  log("Fetched data");
+  // await codexService.fetchData(cid);
+  // log("Fetched data");
 
-  const content = await codexService.downloadData(cid);
-  log("Download data: " + JSON.stringify(content));
+  // const content = await codexService.downloadData(cid);
+  // log("Download data: " + JSON.stringify(content));
 
   log("");
   log("Try Waku...");
@@ -63,7 +63,8 @@ export async function main() {
     },
   };
 
-  const channel = await wakuService.openChannel("Aww-yeah!", handler);
+  const contentTopic = "/constellations/1/testing/json";
+  const channel = await wakuService.openChannel(contentTopic, handler);
   log("Channel open");
 
   await channel.send("Let there be MSG!");

@@ -4,7 +4,8 @@ import { Protocols, createLightNode, waitForRemotePeer } from "@waku/sdk";
 // import { LightNode } from "@waku/interfaces";
 import { Dispatcher, Store } from "waku-dispatcher";
 
-const messageType = "???";
+const messageType = "yes";
+const networkConfig = { clusterId: 42, shards: [0] };
 
 export class WakuChannel {
   constructor(logger, handler, wallet, dispatcher, contentTopic) {
@@ -32,7 +33,7 @@ export class WakuChannel {
   }
 
   send = async (msg) => {
-    const res = await dispatcher.emit(messageType, msg, wallet);
+    const res = await this.dispatcher.emit(messageType, msg, this.wallet);
     this.log(`Send message. (${res})`);
   };
 
@@ -56,14 +57,16 @@ export class WakuService {
 
   start = async () => {
     this.node = await createLightNode({
-      defaultBootstrap: true,
+      networkConfig: networkConfig,
+      defaultBootstrap: false,
       bootstrapPeers: this.bootstrapNodes,
+      numPeersToUse: 3,
     });
     this.node.start();
-    await waitForRemotePeer(node, [
-      Protocols.LightPush,
-      Protocols.Filter,
+    await this.node.waitForPeers([
       Protocols.Store,
+      Protocols.Filter,
+      Protocols.LightPush,
     ]);
   };
 
@@ -80,6 +83,12 @@ export class WakuService {
     await dispatcher.start();
     this.logger.trace("Dispatcher started");
 
-    return new WakuChannel(this.logger, handler, this.wallet, dispatcher);
+    return new WakuChannel(
+      this.logger,
+      handler,
+      this.wallet,
+      dispatcher,
+      contentTopic,
+    );
   };
 }
