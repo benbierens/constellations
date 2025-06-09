@@ -78,13 +78,13 @@ export class CodexService {
   fetchData = async (cid) => {
     const response = await data.networkDownload(cid);
     const result = await response.data.text();
-    log("Fetching " + cid + " => " + result);
+    this.logger.trace("Fetching " + cid + " => " + result);
   };
 
   downloadData = async (cid) => {
     const response = await data.networkDownloadStream(cid);
     const result = await response.data.text();
-    log("Downloading " + cid);
+    this.logger.trace("Downloading " + cid);
     return result;
   };
 

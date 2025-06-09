@@ -5,13 +5,32 @@ import { NodeUploadStategy } from "@codex-storage/sdk-js/node";
 
 import "fake-indexeddb/auto";
 import getDispatcher from "waku-dispatcher";
+import { Logger } from "./services/logger";
+import { CodexService } from "./services/codexService";
+import { WakuService } from "./services/wakuService";
+import { Wallet } from "ethers"
 // import { DispatchMetadata, Dispatcher, Signer } from "waku-dispatcher";
 
+const privateKey = "0x821f73df2d38ac506e9735306766be701afcec7def45f7bfa184b6fd4e96185d";
+const address = "0xd2a1FE498fEA6d3f188C2e6208AA55D7e8eaBdc0";
+// mnemonic: legend culture forum control what render switch above impose surge grab edge
+
 const codexAddress = "http://192.168.178.26:8081";
+const wakuBootstrapNodes = 
+[
+  "/dns4/waku.bloxy.one/tcp/8000/wss/p2p/16Uiu2HAmMJy3oXGzRjt2iKmYoCnaEkj55rE55YperMpemtGs9Da2",
+  "/dns4/waku-test.bloxy.one/tcp/8095/wss/p2p/16Uiu2HAmSZbDB7CusdRhgkD81VssRjQV5ZH13FbzCGcdnbbh6VwZ",
+  "/dns4/node-01.do-ams3.waku.sandbox.status.im/tcp/8000/wss/p2p/16Uiu2HAmNaeL4p3WEYzC9mgXBmBWSgWjPHRvatZTXnp8Jgv3iKsb",
+];
 
 function log(msg) {
   console.log(msg);
 }
+
+var fileData = new Uint8Array(100);
+fileData[0] = 11;
+fileData[11] = 22;
+fileData[22] = 55;
 
 async function codexExample() {
   try {
@@ -24,10 +43,7 @@ async function codexExample() {
 
     // upload
     const data = codex.data;
-    var fileData = new Uint8Array(100);
-    fileData[0] = 11;
-    fileData[11] = 22;
-    fileData[22] = 55;
+   
     const metadata = {
       filename: "example",
       mimetype: "application/octet-stream",
@@ -70,9 +86,7 @@ async function wakuExample() {
       dbName,
       false,
       true,
-      [
-        "/dns4/waku.bloxy.one/tcp/8000/wss/p2p/16Uiu2HAmMJy3oXGzRjt2iKmYoCnaEkj55rE55YperMpemtGs9Da2",
-      ],
+      wakuBootstrapNodes,
     );
     if (d === null) log("didn't get dispatcher");
 
@@ -83,9 +97,52 @@ async function wakuExample() {
 }
 
 export async function main() {
-  log("a");
+  log("Initializing...");
 
-  //await codexExample();
+  // await codexExample();
+  // await wakuExample();
 
-  await wakuExample();
+  const logger = new Logger();
+  const wallet = new Wallet(privateKey);
+  const codexService = new CodexService(logger, codexAddress);
+  const wakuService = new WakuService(logger, wallet, wakuBootstrapNodes);
+
+  log("Trying Codex...");
+
+  log("Is online?: " + await codexService.isOnline());
+
+  const cid = await codexService.upload(fileData);
+  log("Uploaded to: " + cid);
+
+  const manifest = await codexService.getManifest(cid);
+  log("Manifest. Size: " + manifest.datasetSize);
+
+  const fetch = await codexService.fetchData(cid);
+  log("Fetch data: " + fetch);
+
+  const content = await codexService.downloadData(cid);
+  log("Download data: " + JSON.stringify(content));
+
+  
+  log("Try Waku...");
+  
+  await wakuService.start();
+  log("Started.");
+
+  const handler = {
+    onMessage: async (signer, msg) => {
+      log(`Received. Signer: '${signer}' Msg: '${msg}'`);
+    }
+  }
+
+  const channel = await wakuService.openChannel("Aww-yeah!", handler);
+  log("Channel open");
+
+  await channel.send("Let there be MSG!");
+  log("Message sent");
+
+  await channel.close();
+  log("Channel closed");
+
+  log("All done! \\o/");
 }
