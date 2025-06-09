@@ -1,15 +1,8 @@
 #!/usr/bin/env node
-
-import { Codex } from "@codex-storage/sdk-js";
-import { NodeUploadStategy } from "@codex-storage/sdk-js/node";
-
-import "fake-indexeddb/auto";
-import getDispatcher from "waku-dispatcher";
 import { Logger } from "./services/logger.js";
 import { CodexService } from "./services/codexService.js";
 import { WakuService } from "./services/wakuService.js";
 import { Wallet } from "ethers";
-// import { DispatchMetadata, Dispatcher, Signer } from "waku-dispatcher";
 
 const privateKey =
   "0x821f73df2d38ac506e9735306766be701afcec7def45f7bfa184b6fd4e96185d";
@@ -34,75 +27,8 @@ fileData[0] = 11;
 fileData[11] = 22;
 fileData[22] = 55;
 
-async function codexExample() {
-  try {
-    const codex = new Codex(codexAddress);
-    const debug = codex.debug;
-
-    // is alive?
-    const info = await debug.info();
-    if (info == undefined) throw new Error("Not connected");
-
-    // upload
-    const data = codex.data;
-
-    const metadata = {
-      filename: "example",
-      mimetype: "application/octet-stream",
-    };
-    const strategy = new NodeUploadStategy(fileData, metadata);
-    // const strategy = new BrowserUploadStrategy(file, onProgress, metadata);
-    log("uploading..");
-    const uploadResponse = data.upload(strategy);
-    const res = await uploadResponse.result;
-    if (res.error) {
-      throw new Error(res.data);
-    }
-    log("uploaded: " + res.data);
-    const cid = res.data;
-
-    // download manifest only
-    const manifest = await data.fetchManifest(cid);
-    log(
-      "manifest, size: " + JSON.stringify(manifest.data.manifest.datasetSize),
-    );
-
-    // download data
-    const response = await data.networkDownloadStream(cid);
-    const downloaded = await response.data.text();
-    log("downloaded: " + JSON.stringify(downloaded));
-
-    log("Codex connected");
-  } catch (error) {
-    log("Codex not connected: " + error);
-  }
-}
-
-async function wakuExample() {
-  try {
-    const contentTopic = "/dispatcher-demo/1/example/json";
-    const dbName = "temperature";
-    const d = await getDispatcher(
-      undefined,
-      contentTopic,
-      dbName,
-      false,
-      true,
-      wakuBootstrapNodes,
-    );
-    if (d === null) log("didn't get dispatcher");
-
-    log("Dispatched ready");
-  } catch (error) {
-    log("Waku not connected: " + error);
-  }
-}
-
 export async function main() {
   log("Initializing...");
-
-  // await codexExample();
-  // await wakuExample();
 
   const wallet = new Wallet(privateKey);
   const codexService = new CodexService(logger, codexAddress);
