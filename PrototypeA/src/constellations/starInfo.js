@@ -12,9 +12,9 @@ export class StarInfo {
     const prototype = {
       type: type,
       owners: owners,
-      creationUtc: creationUtc
+      creationUtc: creationUtc,
     };
-  
+
     this.starId = generateStarId(core, prototype);
   }
 }

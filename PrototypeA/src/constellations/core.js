@@ -1,7 +1,13 @@
-import { StarChannelManager } from "./starChannel";
+import { StarChannelManager } from "./starChannel.js";
 
 export class Core {
-  constructor(logger, constellationNode, wakuService, codexService, cryptoService) {
+  constructor(
+    logger,
+    constellationNode,
+    wakuService,
+    codexService,
+    cryptoService,
+  ) {
     this.logger = logger;
     this.constellationNode = constellationNode;
     this.wakuService = wakuService;
@@ -10,7 +16,7 @@ export class Core {
     this.starChannelManager = new StarChannelManager(this);
   }
 
-  sleep = async(ms) => {
-      return new Promise(resolve => setTimeout(resolve, ms));
+  sleep = async (ms) => {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   };
 }

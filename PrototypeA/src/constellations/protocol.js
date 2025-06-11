@@ -1,7 +1,6 @@
 export const packetHeaders = {
   requestStarInfo: "requestStarInfo",
-  starInfo: "starInfo"
-
+  starInfo: "starInfo",
 };
 
 export function starIdToContentTopic(starId) {
@@ -10,7 +9,7 @@ export function starIdToContentTopic(starId) {
 
 export function getRequestStarInfoMsg() {
   return JSON.stringify({
-    header: packetHeaders.requestStarInfo
+    header: packetHeaders.requestStarInfo,
   });
 }
 
@@ -20,7 +19,7 @@ export function getStarInfoMsg(starInfo) {
     starInfo: {
       type: starInfo.type,
       owners: starInfo.owners,
-      creationUtc: starInfo.creationUtc
-    }
+      creationUtc: starInfo.creationUtc,
+    },
   });
 }

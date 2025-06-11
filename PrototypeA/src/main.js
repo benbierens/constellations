@@ -56,12 +56,11 @@ async function wakuExample(wakuService) {
   log("");
   log("Try Waku...");
 
-  await wakuService.start();
-  log("Started.");
-
   const handler = {
     onMessage: async (signer, timestamp, msg) => {
-      log(`Received. Signer: '${signer}' Timestamp: '${timestamp.toISOString()}' Msg: '${msg}'`);
+      log(
+        `Received. Signer: '${signer}' Timestamp: '${timestamp.toISOString()}' Msg: '${msg}'`,
+      );
     },
   };
 
@@ -74,9 +73,6 @@ async function wakuExample(wakuService) {
 
   await channel.close();
   log("Channel closed");
-
-  await wakuService.stop();
-  log("Stopped");
 }
 
 export async function main() {
@@ -84,14 +80,29 @@ export async function main() {
 
   const constellationNode = new ConstellationNode(privateKey);
   const codexService = new CodexService(logger, codexAddress);
-  const wakuService = new WakuService(logger, constellationNode.wallet, wakuBootstrapNodes);
- 
-  await codexExample(codexService);
-  await wakuExample(wakuService);
+  const wakuService = new WakuService(
+    logger,
+    constellationNode.wallet,
+    wakuBootstrapNodes,
+  );
+
+  await wakuService.start();
+  log("Started Waku service.");
+
+  // await codexExample(codexService);
+  // await wakuExample(wakuService);
 
   const cryptoService = new CryptoService();
-  const core = new Core(logger, constellationNode, wakuService, codexService, cryptoService);
+  const core = new Core(
+    logger,
+    constellationNode,
+    wakuService,
+    codexService,
+    cryptoService,
+  );
 
   await createNewStarExample(core);
 
+  await wakuService.stop();
+  log("Stopped Waku service");
 }

@@ -16,7 +16,7 @@ export class WakuChannel {
     this.contentTopic = contentTopic;
 
     const onMessage = async (msg, signer, meta) => {
-      this.log("Received message");
+      this.log("Received message.");
       const timestamp = new Date(meta.timestamp);
       await handler.onMessage(signer, timestamp, msg);
     };
@@ -33,7 +33,12 @@ export class WakuChannel {
   }
 
   send = async (msg) => {
-    const res = await this.dispatcher.emitTo(this.dispatcher.encoder, messageType, msg, this.wallet);
+    const res = await this.dispatcher.emitTo(
+      this.dispatcher.encoder,
+      messageType,
+      msg,
+      this.wallet,
+    );
     this.log(`Send message. (${res})`);
   };
 
@@ -88,7 +93,7 @@ export class WakuService {
     // todo:
     // dispatcher.registerKey(key: Uint8Array, type: KeyType = KeyType.Asymetric, autoEncrypt: boolean = false)
     // and turn on "accept only encrypted"
-    
+
     const channel = new WakuChannel(
       this.logger,
       handler,
