@@ -30,7 +30,7 @@ export class StarFactory {
     const star = new Star(this.core, null, handler);
     star.autoFetch = autoFetch;
     star.channel = await this.core.starChannelFactory.openById(starId, star);
-    star.starInfo = await channel.getStarInfo();
+    star.starInfo = await star.channel.getStarInfo();
     return star;
   };
 }

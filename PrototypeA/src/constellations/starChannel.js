@@ -4,6 +4,7 @@ import {
   packetHeaders,
   getNewCodexCidMsg,
 } from "./protocol.js";
+import { StarInfo } from "./starInfo.js";
 
 export class StarChannel {
   constructor(core, starId, handler) {
@@ -118,9 +119,9 @@ export class StarChannel {
 
     const candidateStarInfo = new StarInfo(
       this.core,
-      (type = packet.starInfo.type),
-      (owners = packet.starInfo.owners),
-      (creationUtc = packet.starInfo.creationUtc),
+      packet.starInfo.type,
+      packet.starInfo.owners,
+      packet.starInfo.creationUtc,
     );
 
     // star info id must match id that was used to open the channel.

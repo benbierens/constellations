@@ -1,5 +1,5 @@
 export async function createNewStarExample(core) {
-  core.logger.trace("Creating star. Then sending 5 changes!");
+  core.logger.trace("Creating star. Then sending 5000 changes!");
 
   const owners = [core.constellationNode.address];
   const type = "starType-example";
@@ -20,8 +20,12 @@ export async function createNewStarExample(core) {
   );
 
   core.logger.trace(`Star is created. starId: '${star.starInfo.starId}'`);
+  await core.sleep(10000);
 
-  for (var i = 0; i < 5; i++) {
+  core.logger.trace(`Starting in 10 seconds.`);
+  await core.sleep(10000);
+
+  for (var i = 0; i < 5000; i++) {
     await core.sleep(3000);
 
     const theData = `ThisIsTheData: ${i}`;
