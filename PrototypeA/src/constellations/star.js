@@ -10,6 +10,18 @@ export class Star {
     this._cid = null;
   }
 
+  disconnect = async () => {
+    this.logger.trace("disconnect: Disconnecting...");
+    await this.channel.close();
+
+    // Clean up everything, prevent accidental use.
+    this.core = null;
+    this.logger = null;
+    this.starInfo = null;
+    this.handler = null;
+    this._cid = null;
+  };
+
   setData = async (data) => {
     if (!this._canModify()) {
       this.logger.trace("setData: cannot modify this star.");

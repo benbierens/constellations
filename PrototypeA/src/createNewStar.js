@@ -1,4 +1,6 @@
 export async function createNewStarExample(core) {
+  core.logger.trace("Creating star. Then sending 5 changes!");
+
   const owners = [core.constellationNode.address];
   const type = "starType-example";
   const handler = {
@@ -17,9 +19,21 @@ export async function createNewStarExample(core) {
     autoFetch,
   );
 
-  const theData = "ThisIsTheData!";
-  await star.setData(theData);
+  core.logger.trace(`Star is created. starId: '${star.starInfo.starId}'`);
 
-  const received = await star.getData();
-  console.log("Getting the data: " + received);
+  for (var i = 0; i < 5; i++) {
+    await core.sleep(3000);
+
+    const theData = `ThisIsTheData: ${i}`;
+    await star.setData(theData);
+
+    await core.sleep(1000);
+
+    const received = await star.getData();
+    console.log("Getting the data: " + received);
+  }
+
+  await core.sleep(3000);
+  await star.disconnect();
+  core.logger.trace("Finished sending data to star!");
 }

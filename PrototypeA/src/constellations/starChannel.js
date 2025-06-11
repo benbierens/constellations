@@ -15,6 +15,17 @@ export class StarChannel {
     this._starInfo = null;
   }
 
+  close = async () => {
+    this.logger.trace("close: Closing...");
+    await this.channel.close();
+
+    this.core = null;
+    this.starId = null;
+    this.logger = null;
+    this.handler = null;
+    this._starInfo = null;
+  };
+
   getStarInfo = async () => {
     // did we already receive it?
     if (this._starInfo) return this._starInfo;
