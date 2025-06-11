@@ -4,7 +4,7 @@ import { BrowserUploadStategy } from "@codex-storage/sdk-js/browser";
 
 export class CodexService {
   constructor(logger, codexAddress) {
-    this.logger = logger;
+    this.logger = logger.prefix("Codex");
     this.codexAddress = codexAddress;
   }
 

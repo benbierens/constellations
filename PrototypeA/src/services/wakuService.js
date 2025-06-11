@@ -50,7 +50,7 @@ export class WakuChannel {
 
 export class WakuService {
   constructor(logger, wallet, bootstrapNodes) {
-    this.logger = logger;
+    this.logger = logger.prefix("Waku");
     this.wallet = wallet;
     this.bootstrapNodes = bootstrapNodes;
   }
