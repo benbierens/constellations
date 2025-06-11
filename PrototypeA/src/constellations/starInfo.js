@@ -17,4 +17,9 @@ export class StarInfo {
 
     this.starId = generateStarId(core, prototype);
   }
+
+  canModify = (address) => {
+    if (this.owners.length < 1) return true;
+    return this.owners.includes(address);
+  };
 }

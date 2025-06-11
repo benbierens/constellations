@@ -1,3 +1,5 @@
+export const constellationsProtocolVersion = 1;
+
 export const packetHeaders = {
   requestStarInfo: "requestStarInfo",
   starInfo: "starInfo",
@@ -5,7 +7,7 @@ export const packetHeaders = {
 };
 
 export function starIdToContentTopic(starId) {
-  return `/constellations/1/${starId}/json`;
+  return `/constellations/${constellationsProtocolVersion}/${starId}/json`;
 }
 
 export function getRequestStarInfoMsg() {

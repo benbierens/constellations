@@ -1,4 +1,5 @@
-import { StarChannelManager } from "./starChannel.js";
+import { StarChannelFactory } from "./starChannelFactory.js";
+import { StarFactory } from "./starFactory.js";
 
 export class Core {
   constructor(
@@ -13,7 +14,8 @@ export class Core {
     this.wakuService = wakuService;
     this.codexService = codexService;
     this.cryptoService = cryptoService;
-    this.starChannelManager = new StarChannelManager(this);
+    this.starChannelFactory = new StarChannelFactory(this);
+    this.starFactory = new StarFactory(this);
   }
 
   sleep = async (ms) => {

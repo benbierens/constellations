@@ -6,7 +6,6 @@ import { createNewStarExample } from "./createNewStar.js";
 import { Core } from "./constellations/core.js";
 import { CryptoService } from "./services/cryptoService.js";
 import { ConstellationNode } from "./constellations/constellationNode.js";
-import { StarChannelManager } from "./constellations/starChannel.js";
 
 const privateKey =
   "0x821f73df2d38ac506e9735306766be701afcec7def45f7bfa184b6fd4e96185d";

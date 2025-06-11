@@ -1,19 +1,16 @@
-import { Star } from "./constellations/star.js";
-import { StarInfo } from "./constellations/starInfo.js";
-
 export async function createNewStarExample(core) {
-  const nodeId = core.constellationNode.address;
-  const owners = [nodeId];
-  const starInfo = new StarInfo(core, "starType-example", owners, new Date());
-
+  const owners = [core.constellationNode.address];
+  const type = "starType-example";
   const handler = {
-    onNewCid: async (cid) => {
-      core.logger.trace("(APPLICATION) received new CID");
+    onDataChanged: async () => {
+      core.logger.trace(
+        "(APPLICATION) data changed! todo, params to show details",
+      );
     },
   };
+  const autoFetch = true; // Tells the star to automatically cache the data with its codex node.
 
-  const channel = await core.starChannelManager.openByInfo(starInfo, handler);
-  const star = new Star(core, starInfo, channel);
+  const star = await core.starFactory.createNewStar(type, owners, handler, autoFetch);
 
   const theData = "ThisIsTheData!";
   await star.setData(theData);

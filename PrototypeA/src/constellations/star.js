@@ -1,9 +1,11 @@
 export class Star {
-  constructor(core, starInfo, starChannel) {
+  constructor(core, starInfo, handler) {
     this.core = core;
     this.logger = core.logger.prefix("Star");
     this.starInfo = starInfo;
-    this.starChannel = starChannel;
+    this.handler = handler;
+
+    this.autoFetch = false;
   }
 
   setData = async (data) => {
@@ -13,11 +15,20 @@ export class Star {
     }
 
     const cid = await this.core.codexService.upload(data);
-    await this.starChannel.setNewCid(cid);
+    await this.channel.setNewCid(cid);
+  };
+
+  onNewCid = async (cid) => {
+    this.logger.trace("onNewCid");
+
+    if (this.autoFetch) {
+      await this.core.codexService.fetchData(cid);
+    }
+    await this.handler.onDataChanged(); // todo, this needs some really good args.
   };
 
   _canModify = () => {
-    if (this.starInfo.owners.length < 1) return true;
-    return this.starInfo.owners.includes(this.core.constellationNode.address);
+    const nodeId = this.core.constellationNode.address;
+    return this.starInfo.canModify(nodeId); // TODO: consider star property admins/mods.
   };
 }
