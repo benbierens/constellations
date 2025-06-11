@@ -44,7 +44,7 @@ export class Star {
     if (this.autoFetch) {
       await this.core.codexService.fetchData(cid);
     }
-    await this.handler.onDataChanged(); // todo, this needs some really good args.
+    await this.handler.onDataChanged(this); // todo, this needs some really good args.
   };
 
   _canModify = () => {

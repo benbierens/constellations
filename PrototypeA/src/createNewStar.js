@@ -4,7 +4,7 @@ export async function createNewStarExample(core) {
   const owners = [core.constellationNode.address];
   const type = "starType-example";
   const handler = {
-    onDataChanged: async () => {
+    onDataChanged: async (star) => {
       core.logger.trace(
         "(APPLICATION) data changed! todo, params to show details",
       );
