@@ -6,6 +6,8 @@ export class Star {
     this.handler = handler;
 
     this.autoFetch = false;
+
+    this._cid = null;
   }
 
   setData = async (data) => {
@@ -18,8 +20,14 @@ export class Star {
     await this.channel.setNewCid(cid);
   };
 
+  getData = async () => {
+    if (!this._cid) this.logger.errorAndThrow("getData: No CID known for star");
+    return await this.core.codexService.downloadData(this._cid);
+  };
+
   onNewCid = async (cid) => {
-    this.logger.trace("onNewCid");
+    this.logger.trace(`onNewCid: Received '${cid}'`);
+    this._cid = cid;
 
     if (this.autoFetch) {
       await this.core.codexService.fetchData(cid);

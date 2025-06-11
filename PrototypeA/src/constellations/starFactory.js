@@ -7,12 +7,21 @@ export class StarFactory {
     this.logger = core.logger.prefix("StarFactory");
   }
 
-  createNewStar = async (type, owners, handler, autoFetch = false, creationUtc = new Date()) => {
+  createNewStar = async (
+    type,
+    owners,
+    handler,
+    autoFetch = false,
+    creationUtc = new Date(),
+  ) => {
     this.logger.trace(`createNewStar: type: '${type}'`);
     const starInfo = new StarInfo(this.core, type, owners, creationUtc);
     const star = new Star(this.core, starInfo, handler);
     star.autoFetch = autoFetch;
-    star.channel = await this.core.starChannelFactory.openByInfo(starInfo, star);
+    star.channel = await this.core.starChannelFactory.openByInfo(
+      starInfo,
+      star,
+    );
     return star;
   };
 

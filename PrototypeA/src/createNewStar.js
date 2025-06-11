@@ -10,8 +10,16 @@ export async function createNewStarExample(core) {
   };
   const autoFetch = true; // Tells the star to automatically cache the data with its codex node.
 
-  const star = await core.starFactory.createNewStar(type, owners, handler, autoFetch);
+  const star = await core.starFactory.createNewStar(
+    type,
+    owners,
+    handler,
+    autoFetch,
+  );
 
   const theData = "ThisIsTheData!";
   await star.setData(theData);
+
+  const received = await star.getData();
+  console.log("Getting the data: " + received);
 }
