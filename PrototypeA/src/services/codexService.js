@@ -24,17 +24,18 @@ export class CodexService {
     return false;
   };
 
-  upload = async (data) => {
-    if (this.isBrowser()) return this.uploadBrowser(data);
-    if (this.isNode()) return this.uploadNode(data);
-    throw new Error("Unknown environment");
-  };
-
-  uploadNode = async (
+  upload = async (
     fileData,
     filename = "unknown",
     mimetype = "application/octet-stream",
   ) => {
+    if (this.isBrowser())
+      return this.uploadBrowser(fileData, filename, mimetype);
+    if (this.isNode()) return this.uploadNode(fileData, filename, mimetype);
+    throw new Error("Unknown environment");
+  };
+
+  uploadNode = async (fileData, filename, mimetype) => {
     const data = this.getData();
     const metadata = { filename: filename, mimetype: mimetype };
     const strategy = new NodeUploadStategy(fileData, metadata);
@@ -48,11 +49,7 @@ export class CodexService {
     return res.data;
   };
 
-  uploadBrowser = async (
-    fileData,
-    filename = "unknown",
-    mimetype = "application/octet-stream",
-  ) => {
+  uploadBrowser = async (fileData, filename, mimetype) => {
     const data = this.getData();
     const metadata = { filename: filename, mimetype: mimetype };
     const strategy = new BrowserUploadStategy(fileData, null, metadata);

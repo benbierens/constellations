@@ -1,6 +1,7 @@
 export const packetHeaders = {
   requestStarInfo: "requestStarInfo",
   starInfo: "starInfo",
+  newCodexCid: "cdxCid",
 };
 
 export function starIdToContentTopic(starId) {
@@ -21,5 +22,12 @@ export function getStarInfoMsg(starInfo) {
       owners: starInfo.owners,
       creationUtc: starInfo.creationUtc,
     },
+  });
+}
+
+export function getNewCodexCidMsg(cid) {
+  return JSON.stringify({
+    header: packetHeaders.newCodexCid,
+    cdxCid: cid,
   });
 }

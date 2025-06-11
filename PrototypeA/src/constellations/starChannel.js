@@ -3,6 +3,7 @@ import {
   starIdToContentTopic,
   getStarInfoMsg,
   packetHeaders,
+  getNewCodexCidMsg,
 } from "./protocol.js";
 
 export class StarChannel {
@@ -45,47 +46,63 @@ export class StarChannel {
       );
 
     this._starInfo = starInfo;
-    await this.sendStarInfo();
+    await this._sendStarInfo();
+  };
+
+  setNewCid = async (cid) => {
+    this.logger.trace(`setNewCid: '${cid}'`);
+    await this.channel.send(getNewCodexCidMsg(cid));
   };
 
   onMessage = async (signer, timestamp, msg) => {
-    const packet = this.parsePacket(msg);
+    const packet = this._parsePacket(msg);
     this.logger.trace("onMessage: Packet received: " + JSON.stringify(packet));
 
     if (packet.header == packetHeaders.requestStarInfo) {
-      await this.handleRequestStarInfo(timestamp);
+      await this._handleRequestStarInfo(timestamp);
     } else if (packet.header == packetHeaders.starInfo) {
-      this.handleStarInfo(signer, packet);
+      this._handleStarInfo(signer, packet);
+    } else if (packet.header == packetHeaders.newCodexCid) {
+      await this._handleNewCodexCid(signer, packet);
     }
   };
 
-  sendStarInfo = async () => {
+  _sendStarInfo = async () => {
     if (!this._starInfo)
-      this.logger.errorAndThrow("sendStarInfo: starInfo not set.");
+      this.logger.errorAndThrow("_sendStarInfo: starInfo not set.");
 
-    this.logger.trace("sendStarInfo: Sending StarInfo packet");
+    this.logger.trace("_sendStarInfo: Sending StarInfo packet");
     await this.channel.send(getStarInfoMsg(this._starInfo));
   };
 
-  handleRequestStarInfo = async (timestamp) => {
-    if (!this._starInfo) { 
-      this.logger.trace("handleRequestStarInfo: Received starInfo request but we don't have it.");
+  _handleRequestStarInfo = async (timestamp) => {
+    if (!this._starInfo) {
+      this.logger.trace(
+        "_handleRequestStarInfo: Received starInfo request but we don't have it.",
+      );
       return;
     }
 
     const diffTimeMs = Math.abs(new Date() - timestamp);
     if (diffTimeMs > 5000) {
-      this.logger.trace("handleRequestStarInfo: Received starInfo request but it's too old: " + diffTimeMs);
+      this.logger.trace(
+        "_handleRequestStarInfo: Received starInfo request but it's too old: " +
+          diffTimeMs,
+      );
       return;
     }
 
-    this.logger.trace("handleRequestStarInfo: Answering request for starInfo.");
-    await this.sendStarInfo();
+    this.logger.trace(
+      "_handleRequestStarInfo: Answering request for starInfo.",
+    );
+    await this._sendStarInfo();
   };
 
-  handleStarInfo = (signer, packet) => {
+  _handleStarInfo = (signer, packet) => {
     if (this._starInfo) {
-      this.logger.trace("handleStarInfo: Received starInfo but we already have it.");
+      this.logger.trace(
+        "_handleStarInfo: Received starInfo but we already have it.",
+      );
       return;
     }
 
@@ -98,23 +115,47 @@ export class StarChannel {
 
     // star info id must match id that was used to open the channel.
     if (this.starId != candidateStarInfo.starId) {
-      this.logger.trace("handleStarInfo: candidate rejected: starId did not match.");
+      this.logger.trace(
+        "_handleStarInfo: candidate rejected: starId did not match.",
+      );
       return;
     }
 
     // star info must be signed by owner if owners is not empty.
     if (candidateStarInfo.owners && candidateStarInfo.owners.length > 0) {
       if (!candidateStarInfo.owners.includes(signer)) {
-        this.logger.trace("handleStarInfo: candidate rejected: not signed by owner.");
+        this.logger.trace(
+          "_handleStarInfo: candidate rejected: not signed by owner.",
+        );
         return;
       }
     }
 
-    this.logger.trace("handleStarInfo: candidate accepted.");
+    this.logger.trace("_handleStarInfo: candidate accepted.");
     this._starInfo = candidateStarInfo;
   };
 
-  parsePacket = (msg) => {
+  _handleNewCodexCid = async (signer, packet) => {
+    if (!this._starInfo) {
+      this.logger.trace("_handleNewCodexCid: discarded, no starInfo.");
+      return;
+    }
+
+    if (
+      this._starInfo.owners.length > 0 &&
+      !this._starInfo.owners.includes(signer)
+    ) {
+      this.logger.trace(
+        "_handleNewCodexCid: discarded, not signed by owner. (todo consider admins/mods later!)",
+      );
+      return;
+    }
+
+    this.logger.trace("_handleNewCodexCid: received new CID.");
+    await this.handler.onNewCid(packet.cdxCid);
+  };
+
+  _parsePacket = (msg) => {
     try {
       const packet = JSON.parse(msg);
       if (packet) return packet;
