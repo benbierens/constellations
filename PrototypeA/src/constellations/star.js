@@ -1,5 +1,9 @@
-import { getAnnotationsUninitializedValue } from "./protocol";
-import { deserializeStarProperties, serializeStarProperties } from "./starProperties";
+import { getAnnotationsUninitializedValue } from "./protocol.js";
+import {
+  StarStatus,
+  deserializeStarProperties,
+  serializeStarProperties,
+} from "./starProperties.js";
 
 export class Star {
   constructor(core, handler, properties) {
@@ -21,9 +25,9 @@ export class Star {
     await this._channel.close();
 
     // Clean up everything, prevent accidental use.
-    this.onRequestStarInfo = async() => {};
-    this.onStarInfo = async(info) => {};
-    this.onStarProperties = async(props) => {};
+    this.onRequestStarInfo = async () => {};
+    this.onStarInfo = async (info) => {};
+    this.onStarProperties = async (props) => {};
     this.onNewCid = async (signer, cid) => {};
     this._core = null;
     this._logger = null;
@@ -49,28 +53,32 @@ export class Star {
     }
 
     const cid = await this._core.codexService.upload(data);
-    await this._channel.setNewCid(cid);
+    await this._channel.sendNewCid(cid);
   };
 
   getData = async () => {
-    if (!this._cid) this._logger.errorAndThrow("getData: No CID known for star.");
+    if (!this._cid)
+      this._logger.errorAndThrow("getData: No CID known for star.");
     return await this._core.codexService.downloadData(this._cid);
   };
 
   isInitialized = () => {
     return this.isStarInfoInitialized() && this.arePropertiesInitialized();
-  }
+  };
 
   isStarInfoInitialized = () => {
-    if(this.starInfo) return true;
+    if (this.starInfo) return true;
     return false;
-  }
+  };
 
   arePropertiesInitialized = () => {
-    return this.properties.status != StarStatus.Unknown && this.properties.annotations != getAnnotationsUninitializedValue();
-  }
+    return (
+      this.properties.status != StarStatus.Unknown &&
+      this.properties.annotations != getAnnotationsUninitializedValue()
+    );
+  };
 
-  onRequestStarInfo = async() => {
+  onRequestStarInfo = async () => {
     if (this.isStarInfoInitialized()) {
       this._logger.trace("onRequestStarInfo: Sending...");
       await this._channel.sendStarInfo(this.starInfo);
@@ -83,7 +91,7 @@ export class Star {
       const json = serializeStarProperties(this.properties);
       await this._channel.sendStarProperties(json);
     }
-  }
+  };
 
   onStarInfo = (candidateStarInfo) => {
     if (!this.isStarInfoInitialized()) {
@@ -97,13 +105,15 @@ export class Star {
       this._logger.trace("onStarProperties: Update accepted.");
       this._properties = deserializeStarProperties(this._core, json);
     } else {
-      this._logger.trace("onStarProperties: Update rejected. Signer not allowed.");
+      this._logger.trace(
+        "onStarProperties: Update rejected. Signer not allowed.",
+      );
     }
   };
 
   onNewCid = async (signer, cid) => {
     if (!this.isInitialized()) {
-      this._logger.tra("onNewCid: Ignored. Star not initialized.");
+      this._logger.trace("onNewCid: Ignored. Star not initialized.");
       return;
     }
 
@@ -127,9 +137,7 @@ export class Star {
     if (this.starInfo.isOwner(nodeId)) return true;
     if (this.properties.isAdmin(nodeId)) return true;
     return false;
-  }
-
-  _handleStarPropertiesChanged = async(json) => {
-
   };
+
+  _handleStarPropertiesChanged = async (json) => {};
 }

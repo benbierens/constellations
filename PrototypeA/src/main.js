@@ -102,7 +102,7 @@ export async function main() {
   );
 
   //await createNewStarExample(core);
-  await connectStarExample(core, "s9ed7d9c131490c128c0f39d53781e91e56a68714be8c4984cea02842ddc19c00");
+  await connectStarExample(core, "sa225543959b607272f2c6955bce11a485e227dff82aa912c30709178dba3db01");
 
   await wakuService.stop();
   log("Stopped Waku service");

@@ -6,10 +6,10 @@ export async function connectStarExample(core, starId) {
     onDataChanged: async (star) => {
       counter++;
       core.logger.trace("(APPLICATION) data changed! counter: " + counter);
-  
+
       const received = await star.getData();
       console.log("Got data: " + received);
-    }
+    },
   };
   const autoFetch = true; // Tells the star to automatically cache the data with its codex node.
 

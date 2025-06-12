@@ -16,8 +16,10 @@ export class StarChannel {
     this._handler = handler;
 
     this._handlerMap = {};
-    this._handlerMap[packetHeaders.requestStarInfo] = this._handleRequestStarInfo;
-    this._handlerMap[packetHeaders.requestStarProperties] = this._handleRequestStarProperties;
+    this._handlerMap[packetHeaders.requestStarInfo] =
+      this._handleRequestStarInfo;
+    this._handlerMap[packetHeaders.requestStarProperties] =
+      this._handleRequestStarProperties;
     this._handlerMap[packetHeaders.starInfo] = this._handleStarInfo;
     this._handlerMap[packetHeaders.starProperties] = this._handleStarProperties;
     this._handlerMap[packetHeaders.newCodexCid] = this._handleNewCodexCid;
@@ -40,9 +42,11 @@ export class StarChannel {
   };
 
   sendRequestStarProperties = async () => {
-    this._logger.trace("sendRequestStarProperties: Requesting StarProperties...");
+    this._logger.trace(
+      "sendRequestStarProperties: Requesting StarProperties...",
+    );
     await this._channel.send(getRequestStarPropertiesMsg());
-  }
+  };
 
   sendStarInfo = async (starInfo) => {
     this._logger.trace("sendStarInfo: Sending StarInfo...");
@@ -52,10 +56,10 @@ export class StarChannel {
   sendStarProperties = async (json) => {
     this._logger.trace("sendStarProperties: Sending StarProperties...");
     await this._channel.send(getStarPropertiesMsg(json));
-  }
+  };
 
-  sendSetNewCid = async (cid) => {
-    this._logger.trace(`sendSetNewCid: '${cid}'`);
+  sendNewCid = async (cid) => {
+    this._logger.trace(`sendNewCid: '${cid}'`);
     await this._channel.send(getNewCodexCidMsg(cid));
   };
 
@@ -129,7 +133,7 @@ export class StarChannel {
   _handleStarProperties = async (signer, timestamp, packet) => {
     const json = packet.starProperties;
     this._handler.onStarProperties(signer, json);
-  }
+  };
 
   _handleNewCodexCid = async (signer, timestamp, packet) => {
     await this._handler.onNewCid(signer, packet.cdxCid);

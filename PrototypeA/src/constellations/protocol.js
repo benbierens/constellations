@@ -39,7 +39,7 @@ export function getStarInfoMsg(starInfo) {
 export function getStarPropertiesMsg(json) {
   return JSON.stringify({
     header: packetHeaders.starProperties,
-    starProperties: json
+    starProperties: json,
   });
 }
 
@@ -53,7 +53,7 @@ export function getNewCodexCidMsg(cid) {
 export function isValidUserStringValue(value) {
   // Type and annotations are user-settable string values.
   // These constraints apply:
-  if (!(typeof value === 'string' || value instanceof String)) return false;
+  if (!(typeof value === "string" || value instanceof String)) return false;
   if (value.length < 1) return false;
   if (value.length > 256) return false;
   if (value.startsWith(systemValuePrefix)) return false;
