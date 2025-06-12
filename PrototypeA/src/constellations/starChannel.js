@@ -24,6 +24,7 @@ export class StarChannel {
     this.starId = null;
     this.logger = null;
     this.handler = null;
+    this.channel = null;
     this._starInfo = null;
   };
 

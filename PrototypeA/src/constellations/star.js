@@ -19,6 +19,7 @@ export class Star {
     this.logger = null;
     this.starInfo = null;
     this.handler = null;
+    this.channel = null;
     this._cid = null;
   };
 
