@@ -3,7 +3,9 @@ export const systemValuePrefix = "_";
 
 export const packetHeaders = {
   requestStarInfo: "requestStarInfo",
+  requestStarProperties: "requestStarProperties",
   starInfo: "starInfo",
+  starProperties: "starProperties",
   newCodexCid: "cdxCid",
 };
 
@@ -17,6 +19,12 @@ export function getRequestStarInfoMsg() {
   });
 }
 
+export function getRequestStarPropertiesMsg() {
+  return JSON.stringify({
+    header: packetHeaders.requestStarProperties,
+  });
+}
+
 export function getStarInfoMsg(starInfo) {
   return JSON.stringify({
     header: packetHeaders.starInfo,
@@ -25,6 +33,13 @@ export function getStarInfoMsg(starInfo) {
       owners: starInfo.owners,
       creationUtc: starInfo.creationUtc,
     },
+  });
+}
+
+export function getStarPropertiesMsg(json) {
+  return JSON.stringify({
+    header: packetHeaders.starProperties,
+    starProperties: json
   });
 }
 
@@ -47,4 +62,8 @@ export function isValidUserStringValue(value) {
 
 export function getUserStringValueConstraintDescription() {
   return `User values must satisfy these constraints: Must be string. Length must be > 0 and < 256. Must not start with systemValuePrefix '${systemValuePrefix}'.`;
+}
+
+export function getAnnotationsUninitializedValue() {
+  return `${systemValuePrefix}uninitialized`;
 }

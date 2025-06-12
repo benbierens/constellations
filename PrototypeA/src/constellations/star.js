@@ -1,8 +1,10 @@
+import { getAnnotationsUninitializedValue } from "./protocol";
+import { deserializeStarProperties, serializeStarProperties } from "./starProperties";
+
 export class Star {
-  constructor(core, starInfo, handler, properties) {
+  constructor(core, handler, properties) {
     this._core = core;
     this._logger = core.logger.prefix("Star");
-    this._starInfo = starInfo;
     this._handler = handler;
 
     this.autoFetch = false;
@@ -10,6 +12,7 @@ export class Star {
     this._properties = properties;
     this._properties._canModifyProperties = this._canModifyProperties;
     this._properties._changeHandler = this._handleStarPropertiesChanged;
+    this._starInfo = null;
     this._cid = null;
   }
 
@@ -18,7 +21,10 @@ export class Star {
     await this._channel.close();
 
     // Clean up everything, prevent accidental use.
-    this.onNewCid = async (cid) => {};
+    this.onRequestStarInfo = async() => {};
+    this.onStarInfo = async(info) => {};
+    this.onStarProperties = async(props) => {};
+    this.onNewCid = async (signer, cid) => {};
     this._core = null;
     this._logger = null;
     this._handler = null;
@@ -47,12 +53,61 @@ export class Star {
   };
 
   getData = async () => {
-    if (!this._cid) this._logger.errorAndThrow("getData: No CID known for star");
+    if (!this._cid) this._logger.errorAndThrow("getData: No CID known for star.");
     return await this._core.codexService.downloadData(this._cid);
   };
 
-  onNewCid = async (cid) => {
-    this._logger.trace(`onNewCid: Received '${cid}'`);
+  isInitialized = () => {
+    return this.isStarInfoInitialized() && this.arePropertiesInitialized();
+  }
+
+  isStarInfoInitialized = () => {
+    if(this.starInfo) return true;
+    return false;
+  }
+
+  arePropertiesInitialized = () => {
+    return this.properties.status != StarStatus.Unknown && this.properties.annotations != getAnnotationsUninitializedValue();
+  }
+
+  onRequestStarInfo = async() => {
+    if (this.isStarInfoInitialized()) {
+      this._logger.trace("onRequestStarInfo: Sending...");
+      await this._channel.sendStarInfo(this.starInfo);
+    }
+  };
+
+  onRequestStarProperties = async () => {
+    if (this.arePropertiesInitialized()) {
+      this._logger.trace("onRequestStarProperties: Sending...");
+      const json = serializeStarProperties(this.properties);
+      await this._channel.sendStarProperties(json);
+    }
+  }
+
+  onStarInfo = (candidateStarInfo) => {
+    if (!this.isStarInfoInitialized()) {
+      this._logger.trace("onStarInfo: Received starInfo.");
+      this._starInfo = candidateStarInfo;
+    }
+  };
+
+  onStarProperties = (signer, json) => {
+    if (this._canModifyProperties(signer)) {
+      this._logger.trace("onStarProperties: Update accepted.");
+      this._properties = deserializeStarProperties(this._core, json);
+    } else {
+      this._logger.trace("onStarProperties: Update rejected. Signer not allowed.");
+    }
+  };
+
+  onNewCid = async (signer, cid) => {
+    if (!this.isInitialized()) {
+      this._logger.tra("onNewCid: Ignored. Star not initialized.");
+      return;
+    }
+
+    this._logger.trace(`onNewCid: Received '${cid}'.`);
     this._cid = cid;
 
     if (this.autoFetch) {
@@ -61,16 +116,14 @@ export class Star {
     await this._handler.onDataChanged(this);
   };
 
-  _canModifyData = () => {
-    const nodeId = this._core.constellationNode.address;
+  _canModifyData = (nodeId = this._core.constellationNode.address) => {
     if (this.starInfo.isOwner(nodeId)) return true;
     if (this.properties.isAdmin(nodeId)) return true;
     if (this.properties.isMod(nodeId)) return true;
     return false;
   };
 
-  _canModifyProperties = () => {
-    const nodeId = this._core.constellationNode.address;
+  _canModifyProperties = (nodeId = this._core.constellationNode.address) => {
     if (this.starInfo.isOwner(nodeId)) return true;
     if (this.properties.isAdmin(nodeId)) return true;
     return false;

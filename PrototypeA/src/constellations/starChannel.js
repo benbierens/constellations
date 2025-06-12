@@ -3,168 +3,136 @@ import {
   getStarInfoMsg,
   packetHeaders,
   getNewCodexCidMsg,
+  getRequestStarPropertiesMsg,
+  getStarPropertiesMsg,
 } from "./protocol.js";
 import { StarInfo } from "./starInfo.js";
 
 export class StarChannel {
   constructor(core, starId, handler) {
-    this.core = core;
-    this.starId = starId;
-    this.logger = this.core.logger.prefix("StarChannel");
-    this.handler = handler;
+    this._core = core;
+    this._starId = starId;
+    this._logger = this._core.logger.prefix("StarChannel");
+    this._handler = handler;
 
-    this._starInfo = null;
+    this._handlerMap = {};
+    this._handlerMap[packetHeaders.requestStarInfo] = this._handleRequestStarInfo;
+    this._handlerMap[packetHeaders.requestStarProperties] = this._handleRequestStarProperties;
+    this._handlerMap[packetHeaders.starInfo] = this._handleStarInfo;
+    this._handlerMap[packetHeaders.starProperties] = this._handleStarProperties;
+    this._handlerMap[packetHeaders.newCodexCid] = this._handleNewCodexCid;
   }
 
   close = async () => {
-    this.logger.trace("close: Closing...");
-    await this.channel.close();
+    this._logger.trace("close: Closing...");
+    await this._channel.close();
 
-    this.core = null;
-    this.starId = null;
-    this.logger = null;
-    this.handler = null;
-    this.channel = null;
-    this._starInfo = null;
+    this._core = null;
+    this._starId = null;
+    this._logger = null;
+    this._handler = null;
+    this._channel = null;
   };
 
-  getStarInfo = async () => {
-    // did we already receive it?
-    if (this._starInfo) return this._starInfo;
-
-    // wait for it?
-    await this.core.sleep(1000);
-    if (this._starInfo) return this._starInfo;
-
-    // ask for it?
-    this.logger.trace("getStarInfo: Requesting StarInfo for channel...");
-    await this.channel.send(getRequestStarInfoMsg());
-    await this.core.sleep(1000);
-    if (this._starInfo) return this._starInfo;
-    await this.core.sleep(1000);
-    if (this._starInfo) return this._starInfo;
-
-    // Trace: this is part of the normal flow when setting up a new channel.
-    this.logger.trace(
-      "getStarInfo: Did not get starInfo from channel. Request was not answered.",
-    );
-    return null;
+  sendRequestStarInfo = async () => {
+    this._logger.trace("sendRequestStarInfo: Requesting StarInfo...");
+    await this._channel.send(getRequestStarInfoMsg());
   };
 
-  setStarInfo = async (starInfo) => {
-    if (this._starInfo)
-      this.logger.errorAndThrow(
-        "getStarInfo: StarInfo already known for this channel.",
-      );
+  sendRequestStarProperties = async () => {
+    this._logger.trace("sendRequestStarProperties: Requesting StarProperties...");
+    await this._channel.send(getRequestStarPropertiesMsg());
+  }
 
-    this._starInfo = starInfo;
-    await this._sendStarInfo();
+  sendStarInfo = async (starInfo) => {
+    this._logger.trace("sendStarInfo: Sending StarInfo...");
+    await this._channel.send(getStarInfoMsg(starInfo));
   };
 
-  setNewCid = async (cid) => {
-    this.logger.trace(`setNewCid: '${cid}'`);
-    await this.channel.send(getNewCodexCidMsg(cid));
+  sendStarProperties = async (json) => {
+    this._logger.trace("sendStarProperties: Sending StarProperties...");
+    await this._channel.send(getStarPropertiesMsg(json));
+  }
+
+  sendSetNewCid = async (cid) => {
+    this._logger.trace(`sendSetNewCid: '${cid}'`);
+    await this._channel.send(getNewCodexCidMsg(cid));
   };
 
   onMessage = async (signer, timestamp, msg) => {
     const packet = this._parsePacket(msg);
-    this.logger.trace("onMessage: Packet received: " + JSON.stringify(packet));
+    this._logger.trace("onMessage: Packet received: " + JSON.stringify(packet));
 
-    if (packet.header == packetHeaders.requestStarInfo) {
-      await this._handleRequestStarInfo(timestamp);
-    } else if (packet.header == packetHeaders.starInfo) {
-      this._handleStarInfo(signer, packet);
-    } else if (packet.header == packetHeaders.newCodexCid) {
-      await this._handleNewCodexCid(signer, packet);
-    }
+    const handler = this._handlerMap[packet.header];
+    await handler(signer, timestamp, packet);
   };
 
-  _sendStarInfo = async () => {
-    if (!this._starInfo)
-      this.logger.errorAndThrow("_sendStarInfo: starInfo not set.");
-
-    this.logger.trace("_sendStarInfo: Sending StarInfo packet");
-    await this.channel.send(getStarInfoMsg(this._starInfo));
-  };
-
-  _handleRequestStarInfo = async (timestamp) => {
-    if (!this._starInfo) {
-      this.logger.trace(
-        "_handleRequestStarInfo: Received starInfo request but we don't have it.",
-      );
-      return;
-    }
-
+  _handleRequestStarInfo = async (signer, timestamp, packet) => {
     const diffTimeMs = Math.abs(new Date() - timestamp);
     if (diffTimeMs > 5000) {
-      this.logger.trace(
+      this._logger.trace(
         "_handleRequestStarInfo: Received starInfo request but it's too old: " +
           diffTimeMs,
       );
       return;
     }
 
-    this.logger.trace(
-      "_handleRequestStarInfo: Answering request for starInfo.",
-    );
-    await this._sendStarInfo();
+    await this._handler.onRequestStarInfo();
   };
 
-  _handleStarInfo = (signer, packet) => {
-    if (this._starInfo) {
-      this.logger.trace(
-        "_handleStarInfo: Received starInfo but we already have it.",
+  _handleRequestStarProperties = async (signer, timestamp, packet) => {
+    const diffTimeMs = Math.abs(new Date() - timestamp);
+    if (diffTimeMs > 5000) {
+      this._logger.trace(
+        "_handleRequestStarProperties: Received starProperties request but it's too old: " +
+          diffTimeMs,
       );
       return;
     }
 
+    await this._handler.onRequestStarProperties();
+  };
+
+  _handleStarInfo = async (signer, timestamp, packet) => {
     const candidateStarInfo = new StarInfo(
-      this.core,
+      this._core,
       packet.starInfo.type,
       packet.starInfo.owners,
       packet.starInfo.creationUtc,
     );
 
     // star info id must match id that was used to open the channel.
-    if (this.starId != candidateStarInfo.starId) {
-      this.logger.trace(
+    if (this._starId != candidateStarInfo.starId) {
+      this._logger.trace(
         "_handleStarInfo: candidate rejected: starId did not match.",
       );
       return;
     }
 
     // star info must be signed by owner if owners is not empty.
+    // TODO! "signer" in this case is the sender of the message.
+    // This means only the owner can send the starInfo message, which we don't want.
+    // We want other nodes to be able to send the info message as long as it was originally
+    // signed by an owner.
     if (candidateStarInfo.owners && candidateStarInfo.owners.length > 0) {
       if (!candidateStarInfo.owners.includes(signer)) {
-        this.logger.trace(
+        this._logger.trace(
           "_handleStarInfo: candidate rejected: not signed by owner.",
         );
         return;
       }
     }
 
-    this.logger.trace("_handleStarInfo: candidate accepted.");
-    this._starInfo = candidateStarInfo;
+    this._handler.onStarInfo(candidateStarInfo);
   };
 
-  _handleNewCodexCid = async (signer, packet) => {
-    if (!this._starInfo) {
-      this.logger.trace("_handleNewCodexCid: discarded, no starInfo.");
-      return;
-    }
+  _handleStarProperties = async (signer, timestamp, packet) => {
+    const json = packet.starProperties;
+    this._handler.onStarProperties(signer, json);
+  }
 
-    if (
-      this._starInfo.owners.length > 0 &&
-      !this._starInfo.owners.includes(signer)
-    ) {
-      this.logger.trace(
-        "_handleNewCodexCid: discarded, not signed by owner. (todo consider admins/mods later!)",
-      );
-      return;
-    }
-
-    this.logger.trace("_handleNewCodexCid: received new CID.");
-    await this.handler.onNewCid(packet.cdxCid);
+  _handleNewCodexCid = async (signer, timestamp, packet) => {
+    await this._handler.onNewCid(signer, packet.cdxCid);
   };
 
   _parsePacket = (msg) => {
@@ -172,6 +140,6 @@ export class StarChannel {
       const packet = JSON.parse(msg);
       if (packet) return packet;
     } catch {}
-    this.logger.trace(`Unparsable packet received: '${msg}'`);
+    this._logger.trace(`Unparsable packet received: '${msg}'`);
   };
 }

@@ -1,4 +1,4 @@
-import { getUserStringValueConstraintDescription, isValidUserStringValue } from "./protocol";
+import { getAnnotationsUninitializedValue, getUserStringValueConstraintDescription, isValidUserStringValue } from "./protocol";
 import { StarConfiguration, deserializeStarConfiguration } from "./starConfiguration";
 
 export const StarStatus = {
@@ -15,7 +15,7 @@ export class StarProperties {
     this._configuration = new StarConfiguration(core);
     this._admins = [];
     this._mods = [];
-    this._annotations = "uninitialized";
+    this._annotations = getAnnotationsUninitializedValue();;
     this._utc = new Date();
 
     this._hasChanged = false;
@@ -115,7 +115,7 @@ export class StarProperties {
 
 // StarProperties includes logger, which it needs but we don't want to serialize.
 // so we have custom a serializer/deserializer here.
-function serializeStarProperties(properties) {
+export function serializeStarProperties(properties) {
   return JSON.stringify({
     status: properties.status,
     configuration: serializeStarConfiguration(properties.configuration),
@@ -126,14 +126,14 @@ function serializeStarProperties(properties) {
   });
 }
 
-function deserializeStarProperties(core, json) {
+export function deserializeStarProperties(core, json) {
   const obj = JSON.parse(json);
   var result = new StarProperties(core);
   result.status = obj.status;
   result.configuration = deserializeStarConfiguration(obj.configuration);
   result.admins = obj.admins;
   result.mods = obj.mods;
-  result.annotations = obj.annotations;
+  result._annotations = obj.annotations;
   result._utc = obj.utc;
   return result;
 }
