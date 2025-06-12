@@ -1,55 +1,82 @@
 export class Star {
-  constructor(core, starInfo, handler) {
-    this.core = core;
-    this.logger = core.logger.prefix("Star");
-    this.starInfo = starInfo;
-    this.handler = handler;
+  constructor(core, starInfo, handler, properties) {
+    this._core = core;
+    this._logger = core.logger.prefix("Star");
+    this._starInfo = starInfo;
+    this._handler = handler;
 
     this.autoFetch = false;
 
+    this._properties = properties;
+    this._properties._canModifyProperties = this._canModifyProperties;
+    this._properties._changeHandler = this._handleStarPropertiesChanged;
     this._cid = null;
   }
 
   disconnect = async () => {
-    this.logger.trace("disconnect: Disconnecting...");
-    await this.channel.close();
+    this._logger.trace("disconnect: Disconnecting...");
+    await this._channel.close();
 
     // Clean up everything, prevent accidental use.
-    this.core = null;
-    this.logger = null;
-    this.starInfo = null;
-    this.handler = null;
-    this.channel = null;
+    this.onNewCid = async (cid) => {};
+    this._core = null;
+    this._logger = null;
+    this._handler = null;
+    this._channel = null;
+    this._starInfo = null;
+    this._properties = null;
     this._cid = null;
   };
 
+  get starInfo() {
+    return this._starInfo;
+  }
+
+  get properties() {
+    return this._properties;
+  }
+
   setData = async (data) => {
-    if (!this._canModify()) {
-      this.logger.trace("setData: cannot modify this star.");
+    if (!this._canModifyData()) {
+      this._logger.trace("setData: cannot modify this star.");
       return;
     }
 
-    const cid = await this.core.codexService.upload(data);
-    await this.channel.setNewCid(cid);
+    const cid = await this._core.codexService.upload(data);
+    await this._channel.setNewCid(cid);
   };
 
   getData = async () => {
-    if (!this._cid) this.logger.errorAndThrow("getData: No CID known for star");
-    return await this.core.codexService.downloadData(this._cid);
+    if (!this._cid) this._logger.errorAndThrow("getData: No CID known for star");
+    return await this._core.codexService.downloadData(this._cid);
   };
 
   onNewCid = async (cid) => {
-    this.logger.trace(`onNewCid: Received '${cid}'`);
+    this._logger.trace(`onNewCid: Received '${cid}'`);
     this._cid = cid;
 
     if (this.autoFetch) {
-      await this.core.codexService.fetchData(cid);
+      await this._core.codexService.fetchData(cid);
     }
-    await this.handler.onDataChanged(this); // todo, this needs some really good args.
+    await this._handler.onDataChanged(this);
   };
 
-  _canModify = () => {
-    const nodeId = this.core.constellationNode.address;
-    return this.starInfo.canModify(nodeId); // TODO: consider star property admins/mods.
+  _canModifyData = () => {
+    const nodeId = this._core.constellationNode.address;
+    if (this.starInfo.isOwner(nodeId)) return true;
+    if (this.properties.isAdmin(nodeId)) return true;
+    if (this.properties.isMod(nodeId)) return true;
+    return false;
+  };
+
+  _canModifyProperties = () => {
+    const nodeId = this._core.constellationNode.address;
+    if (this.starInfo.isOwner(nodeId)) return true;
+    if (this.properties.isAdmin(nodeId)) return true;
+    return false;
+  }
+
+  _handleStarPropertiesChanged = async(json) => {
+
   };
 }

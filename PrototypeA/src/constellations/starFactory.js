@@ -1,5 +1,12 @@
 import { Star } from "./star.js";
 import { StarInfo } from "./starInfo.js";
+import { StarProperties, StarStatus } from "./starProperties.js";
+
+function createDefaultProperties(core) {
+  var result = new StarProperties(core);
+  result.status = StarStatus.Bright;
+  return result;
+}
 
 export class StarFactory {
   constructor(core) {
@@ -13,12 +20,13 @@ export class StarFactory {
     handler,
     autoFetch = false,
     creationUtc = new Date(),
+    properties = createDefaultProperties(this.core)
   ) => {
     this.logger.trace(`createNewStar: type: '${type}'`);
     const starInfo = new StarInfo(this.core, type, owners, creationUtc);
-    const star = new Star(this.core, starInfo, handler);
+    const star = new Star(this.core, starInfo, handler, properties);
     star.autoFetch = autoFetch;
-    star.channel = await this.core.starChannelFactory.openByInfo(
+    star._channel = await this.core.starChannelFactory.openByInfo(
       starInfo,
       star,
     );
@@ -27,10 +35,11 @@ export class StarFactory {
 
   connectToStar = async (starId, handler, autoFetch = false) => {
     this.logger.trace(`connectToStar: starId: '${starId}'`);
-    const star = new Star(this.core, null, handler);
+    const star = new Star(this.core, null, handler, null);
     star.autoFetch = autoFetch;
-    star.channel = await this.core.starChannelFactory.openById(starId, star);
-    star.starInfo = await star.channel.getStarInfo();
+    star._channel = await this.core.starChannelFactory.openById(starId, star);
+    star._starInfo = await star._channel.getStarInfo();
+    star._properties = await star._channel.getStarProperties();
     return star;
   };
 }

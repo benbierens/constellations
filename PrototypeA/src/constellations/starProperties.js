@@ -16,7 +16,11 @@ export class StarProperties {
     this._admins = [];
     this._mods = [];
     this._annotations = "uninitialized";
-    this._utc = new Date(0);
+    this._utc = new Date();
+
+    this._hasChanged = false;
+    this._canModifyProperties = () => { this.logger.errorAndThrow("_canModifyProperties: callback not initialized."); };
+    this._changeHandler = async (json) => { this.logger.errorAndThrow("_changeHandler: callback not initialized."); };
   }
 
   get status() {
@@ -24,8 +28,14 @@ export class StarProperties {
   } 
 
   set status(newValue) {
+    if (!this._canModifyProperties()) {
+      this.logger.trace("set status: Change not permitted.");
+      return;
+    }
     if (![StarStatus.Bright, StarStatus.Cold].includes(newValue)) this.logger.errorAndThrow(`set status: Attempt to set StarStatus to unknown value: '${newValue}'`);
-      this._status = newValue
+    if (this._status == newValue) return;
+    this._status = newValue
+    this._hasChanged = true;
   }
 
   get configuration() {
@@ -37,8 +47,14 @@ export class StarProperties {
   }
 
   set admins(newValue) {
+    if (!this._canModifyProperties()) {
+      this.logger.trace("set admins: Change not permitted.");
+      return;
+    }
     if (!Array.isArray(newValue)) this.logger.errorAndThrow("set admins: Attempt to set admins to non-array value");
+    if (this.core.arraysEqual(this._admins, newValue)) return;
     this._admins = newValue;
+    this._hasChanged = true;
   }
   
   get mods() {
@@ -46,8 +62,14 @@ export class StarProperties {
   }
 
   set mods(newValue) {
+    if (!this._canModifyProperties()) {
+      this.logger.trace("set mods: Change not permitted.");
+      return;
+    }
     if (!Array.isArray(newValue)) this.logger.errorAndThrow("set mods: Attempt to set mods to non-array value");
+    if (this.core.arraysEqual(this._mods, newValue)) return;
     this._mods = newValue;
+    this._hasChanged = true;
   }
   
   get annotations() {
@@ -55,27 +77,45 @@ export class StarProperties {
   }
 
   set annotations(newValue) {
+    if (!this._canModifyProperties()) {
+      this.logger.trace("set annotations: Change not permitted.");
+      return;
+    }
     if (!(typeof newValue === 'string' || newValue instanceof String)) this.logger.errorAndThrow("set annotations: Attempt to set annotations to non-string value");
     if (!isValidUserStringValue(newValue)) this.logger.errorAndThrow(`set annotations: provided value does not meet constraints: ${getUserStringValueConstraintDescription()}`);
+    if (this._annotations == newValue) return;
     this._annotations = newValue;
+    this._hasChanged = true;
   }
 
   get utc() {
     return this._utc;
   }
 
-  set utc(newValue) {
-    if (newValue > (new Date() - 3000)) { // We tolerate a 3-second difference in system times. Is this a good idea?
-      this.logger.error("set utc: Attempt to set utc to a moment in the future. Ignored.");
+  commitChanges = async () => {
+    if (!this._hasChanged) {
+      this.logger.trace("commitChanges: No changes.");
       return;
     }
-    this._utc = newValue;
+
+    this._utc = new Date();
+    this.logger.trace("commitChanges: Sending starProperties to change handler...");
+    await this._changeHandler(serializeStarProperties(this));
+    this._hasChanged = false;
+  }
+
+  isAdmin = (address) => {
+    return this.admins.includes(address);
+  }
+
+  isMod = (address) => {
+    return this.mods.includes(address);
   }
 }
 
 // StarProperties includes logger, which it needs but we don't want to serialize.
 // so we have custom a serializer/deserializer here.
-export function serializeStarProperties(properties) {
+function serializeStarProperties(properties) {
   return JSON.stringify({
     status: properties.status,
     configuration: serializeStarConfiguration(properties.configuration),
@@ -86,7 +126,7 @@ export function serializeStarProperties(properties) {
   });
 }
 
-export function deserializeStarProperties(core, json) {
+function deserializeStarProperties(core, json) {
   const obj = JSON.parse(json);
   var result = new StarProperties(core);
   result.status = obj.status;
@@ -94,6 +134,6 @@ export function deserializeStarProperties(core, json) {
   result.admins = obj.admins;
   result.mods = obj.mods;
   result.annotations = obj.annotations;
-  result.utc = obj.utc;
+  result._utc = obj.utc;
   return result;
 }
