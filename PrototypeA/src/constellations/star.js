@@ -15,7 +15,7 @@ export class Star {
 
     this._setProperties(properties);
     this._starInfo = null;
-    this._cid = null;
+    this._cidUtc = null;
   }
 
   disconnect = async () => {
@@ -33,7 +33,7 @@ export class Star {
     this._channel = null;
     this._starInfo = null;
     this._properties = null;
-    this._cid = null;
+    this._cidUtc = null;
   };
 
   get starInfo() {
@@ -55,9 +55,9 @@ export class Star {
   };
 
   getData = async () => {
-    if (!this._cid)
+    if (!this._cidUtc)
       this._logger.errorAndThrow("getData: No CID known for star.");
-    return await this._core.codexService.downloadData(this._cid);
+    return await this._core.codexService.downloadData(this._cidUtc.cid);
   };
 
   isInitialized = () => {
@@ -94,39 +94,79 @@ export class Star {
     }
   };
 
-  onStarInfo = (candidateStarInfo) => {
+  onStarInfo = async (candidateStarInfo) => {
     if (!this.isStarInfoInitialized()) {
       this._logger.trace("onStarInfo: Received starInfo.");
       this._starInfo = candidateStarInfo;
+
+      if (this.isInitialized()) {
+        this._logger.trace("onStarInfo: Star now initialized.");
+        await this._initializeCatchup();
+      }
     }
   };
 
-  onStarProperties = (signer, json) => {
+  onStarProperties = async (signer, json) => {
     if (!this._canModifyProperties(signer)) {
       this._logger.trace("onStarProperties: Update rejected. Signer not allowed.");
       return;
     }
+
     const newProps = deserializeStarProperties(this._core, json);
     if (!newProps || newProps.utc <= this.properties.utc) {
       this._logger.trace("onStarProperties: Update rejected. Not newer than current.");
       return;
     }
 
+    const wasInitialized = this.isInitialized();
     this._logger.trace("onStarProperties: Update accepted.");
     this._setProperties(newProps);
+
+    if (!wasInitialized && this.isInitialized()) {
+      this._logger.trace("onStarProperties: Star now initialized.");
+      await this._initializeCatchup();
+    }
   };
 
-  onNewCid = async (signer, cid) => {
-    if (!this.isInitialized()) {
-      this._logger.trace("onNewCid: Ignored. Star not initialized.");
+  onNewCid = async (signer, timestamp, cid) => {
+    if (!this._canModifyData(signer)) {
+      this._logger.trace("onNewCid: Update rejected. Signer not allowed.");
       return;
     }
 
-    this._logger.trace(`onNewCid: Received '${cid}'.`);
-    this._cid = cid;
+    if (this._cidUtc && timestamp <= this._cidUtc.utc) {
+      this._logger.trace("onNewCid: Update rejected. Not newer than current.");
+      return;
+    }
 
+    this._logger.trace(`onNewCid: Update accepted. CID: '${cid}'.`);
+    this._cidUtc = {
+      cid: cid,
+      utc: timestamp
+    };
+
+    if (!this.isInitialized()) {
+      this._logger.warn("onNewCid: Skipping autoFetch and event handler: Star not initialized yet.");
+      return;
+    }
+
+    await this._applyNewCid();
+  };
+
+  _initializeCatchup = async () => {
+    // It's possible that we received a CID before we were initialized.
+    // So we didn't process autofetch and event handler at that time.
+    // We're initialized now! So if we have a CID, we should catch up:
+
+    if (this._cidUtc) {
+      this._logger.trace("_initializeCatchup: Catching up autoFetch and event handler...");
+      await this._applyNewCid();
+    }
+  }
+
+  _applyNewCid = async () => {
     if (this.autoFetch) {
-      await this._core.codexService.fetchData(cid);
+      await this._core.codexService.fetchData(this._cidUtc.cid);
     }
     await this._handler.onDataChanged(this);
   };

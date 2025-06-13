@@ -6,7 +6,7 @@ export async function createNewStarExample(core) {
   const handler = {
     onDataChanged: async (star) => {
       core.logger.trace(
-        "(APPLICATION) data changed! todo, params to show details",
+        "(APPLICATION) data changed!",
       );
     },
   };
@@ -31,7 +31,7 @@ export async function createNewStarExample(core) {
     const theData = `ThisIsTheData: ${i}`;
     await star.setData(theData);
 
-    await core.sleep(1000);
+    await core.sleep(10000);
 
     const received = await star.getData();
     console.log("Getting the data: " + received);

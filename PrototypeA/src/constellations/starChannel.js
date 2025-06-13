@@ -67,8 +67,12 @@ export class StarChannel {
     const packet = this._parsePacket(msg);
     this._logger.trace("onMessage: Packet received: " + JSON.stringify(packet));
 
-    const handler = this._handlerMap[packet.header];
-    await handler(signer, timestamp, packet);
+    try {
+      const handler = this._handlerMap[packet.header];
+      await handler(signer, timestamp, packet);
+    } catch (error) {
+      this._logger.errorAndThrow("onMessage: Error when handling message: " + error);
+    }
   };
 
   _handleRequestStarInfo = async (signer, timestamp, packet) => {
@@ -127,12 +131,12 @@ export class StarChannel {
       }
     }
 
-    this._handler.onStarInfo(candidateStarInfo);
+    await this._handler.onStarInfo(candidateStarInfo);
   };
 
   _handleStarProperties = async (signer, timestamp, packet) => {
     const json = packet.starProperties;
-    this._handler.onStarProperties(signer, json);
+    await this._handler.onStarProperties(signer, json);
   };
 
   _handleNewCodexCid = async (signer, timestamp, packet) => {

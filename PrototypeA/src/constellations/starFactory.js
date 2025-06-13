@@ -44,7 +44,7 @@ export class StarFactory {
   connectToStar = async (starId, handler, autoFetch = false) => {
     this._logger.trace(`connectToStar: starId: '${starId}'`);
     const properties = new StarProperties(this._core);
-    const star = new Star(this._core, null, handler, properties);
+    const star = new Star(this._core, handler, properties);
     if (star.isInitialized()) this._logger.assert("connectToStar: Star should be uninitialized at this moment.");
     star.autoFetch = autoFetch;
     star._channel = await this._core.starChannelFactory.openById(starId, star);

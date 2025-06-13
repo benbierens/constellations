@@ -18,7 +18,12 @@ export class WakuChannel {
     const onMessage = async (msg, signer, meta) => {
       this.log("Received message.");
       const timestamp = new Date(meta.timestamp);
-      await handler.onMessage(signer, timestamp, msg);
+      try {
+        await handler.onMessage(signer, timestamp, msg);
+      }
+      catch (error) {
+        this.logger.errorAndThrow("onMessage: Error in handler: " + error);
+      }
     };
 
     this.dispatcher.on(
