@@ -83,6 +83,7 @@ export async function main() {
   log("Initializing...");
 
   const constellationNode = new ConstellationNode(privateKey);
+  const cryptoService = new CryptoService(constellationNode);
   const codexService = new CodexService(logger, codexAddress);
   const wakuService = new WakuService(
     logger,
@@ -96,7 +97,6 @@ export async function main() {
   // await codexExample(codexService);
   // await wakuExample(wakuService);
 
-  const cryptoService = new CryptoService();
   const core = new Core(
     logger,
     constellationNode,
