@@ -1,4 +1,5 @@
-import { getAnnotationsUninitializedValue } from "./protocol.js";
+import { Column } from "./column.js";
+import { getAnnotationsUninitializedValue, packetHeaders } from "./protocol.js";
 import {
   StarStatus,
   deserializeStarProperties,
@@ -14,8 +15,12 @@ export class Star {
     this.autoFetch = false;
 
     this._setProperties(properties);
-    this._starInfo = null;
+    this._starInfo = new Column(core, packetHeaders.starInfo, this._canSetStarInfo);
     this._cidUtc = null;
+  }
+
+  _canSetStarInfo = (address) => {
+    
   }
 
   disconnect = async () => {

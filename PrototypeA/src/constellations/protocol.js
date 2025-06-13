@@ -1,6 +1,59 @@
 export const constellationsProtocolVersion = 1;
 export const systemValuePrefix = "_";
 
+
+Rework: splitting the user-facing API types from the columns/factories/star types
+
+Redesign:
+
+[
+
+    {
+        "header": "starInfo",
+        "signature": "12345",
+        "signedData": {
+            "utc": "2025-06-123,4345",
+            "payload": {
+                "starInfo": {
+                    "type": "meta_star",
+                    "owners": [],
+                    "creationUtc": "2025-06-10203433"
+                }
+            }
+        }
+    },
+
+
+    {
+        "header": "starProperties",
+        "signature": "19840983",
+        "signedData": {
+            "utc": "2025-06-12345",
+            "payload": {
+                "starProperties": {
+                    "admins": [],
+                    "mods": [],
+                    "annotations": "",
+                    "status": "good"
+                }
+            }
+        }
+    },
+
+
+    {
+        "header": "requestStarInfo"
+    }
+
+
+
+
+]
+
+
+
+
+
 export const packetHeaders = {
   requestStarInfo: "requestStarInfo",
   requestStarProperties: "requestStarProperties",
