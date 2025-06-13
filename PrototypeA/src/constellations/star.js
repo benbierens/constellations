@@ -13,9 +13,7 @@ export class Star {
 
     this.autoFetch = false;
 
-    this._properties = properties;
-    this._properties._canModifyProperties = this._canModifyProperties;
-    this._properties._changeHandler = this._handleStarPropertiesChanged;
+    this._setProperties(properties);
     this._starInfo = null;
     this._cid = null;
   }
@@ -73,6 +71,9 @@ export class Star {
 
   arePropertiesInitialized = () => {
     return (
+      this.properties &&
+      this.properties.status &&
+      this.properties.annotations &&
       this.properties.status != StarStatus.Unknown &&
       this.properties.annotations != getAnnotationsUninitializedValue()
     );
@@ -101,14 +102,18 @@ export class Star {
   };
 
   onStarProperties = (signer, json) => {
-    if (this._canModifyProperties(signer)) {
-      this._logger.trace("onStarProperties: Update accepted.");
-      this._properties = deserializeStarProperties(this._core, json);
-    } else {
-      this._logger.trace(
-        "onStarProperties: Update rejected. Signer not allowed.",
-      );
+    if (!this._canModifyProperties(signer)) {
+      this._logger.trace("onStarProperties: Update rejected. Signer not allowed.");
+      return;
     }
+    const newProps = deserializeStarProperties(this._core, json);
+    if (!newProps || newProps.utc <= this.properties.utc) {
+      this._logger.trace("onStarProperties: Update rejected. Not newer than current.");
+      return;
+    }
+
+    this._logger.trace("onStarProperties: Update accepted.");
+    this._setProperties(newProps);
   };
 
   onNewCid = async (signer, cid) => {
@@ -138,6 +143,12 @@ export class Star {
     if (this.properties.isAdmin(nodeId)) return true;
     return false;
   };
+
+  _setProperties = (newProps) => {
+    this._properties = newProps;
+    this._properties._canModifyProperties = this._canModifyProperties;
+    this._properties._changeHandler = this._handleStarPropertiesChanged;
+  }
 
   _handleStarPropertiesChanged = async (json) => {};
 }

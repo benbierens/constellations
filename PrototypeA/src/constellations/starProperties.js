@@ -6,6 +6,7 @@ import {
 import {
   StarConfiguration,
   deserializeStarConfiguration,
+  serializeStarConfiguration,
 } from "./starConfiguration.js";
 
 export const StarStatus = {
@@ -23,16 +24,16 @@ export class StarProperties {
     this._admins = [];
     this._mods = [];
     this._annotations = getAnnotationsUninitializedValue();
-    this._utc = new Date();
+    this._utc = new Date(0);
 
     this._hasChanged = false;
     this._canModifyProperties = () => {
-      this.logger.errorAndThrow(
+      this.logger.assert(
         "_canModifyProperties: callback not initialized.",
       );
     };
     this._changeHandler = async (json) => {
-      this.logger.errorAndThrow("_changeHandler: callback not initialized.");
+      this.logger.assert("_changeHandler: callback not initialized.");
     };
   }
 
@@ -159,10 +160,10 @@ export function serializeStarProperties(properties) {
 export function deserializeStarProperties(core, json) {
   const obj = JSON.parse(json);
   var result = new StarProperties(core);
-  result.status = obj.status;
-  result.configuration = deserializeStarConfiguration(obj.configuration);
-  result.admins = obj.admins;
-  result.mods = obj.mods;
+  result._status = obj.status;
+  result._configuration = deserializeStarConfiguration(core, obj.configuration);
+  result._admins = obj.admins;
+  result._mods = obj.mods;
   result._annotations = obj.annotations;
   result._utc = obj.utc;
   return result;

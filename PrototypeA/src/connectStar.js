@@ -15,7 +15,8 @@ export async function connectStarExample(core, starId) {
 
   const star = await core.starFactory.connectToStar(starId, handler, autoFetch);
 
-  while (counter < 10) {
+  core.logger.trace("Watching star quietly...");
+  while (counter < 100) {
     await core.sleep(1000);
   }
 

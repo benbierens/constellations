@@ -6,6 +6,7 @@ function createDefaultNewStarProperties(core) {
   var result = new StarProperties(core);
   result._status = StarStatus.Bright;
   result._annotations = "new_star";
+  result._utc = new Date();
   return result;
 }
 
@@ -36,6 +37,7 @@ export class StarFactory {
       this._logger.assert(
         "createNewStar: New star did not initialize correctly.",
       );
+    this._logger.trace(`createNewStar: Success. starId: '${star.starInfo.starId}'`);
     return star;
   };
 
@@ -50,7 +52,10 @@ export class StarFactory {
     // Now that the channel is open, the star starts processing historic messages.
     // These are likely to contain both starInfo and properties.
     // So we wait a moment to receive and process those.
-    if (await this.waitForInitialized(star)) return star;
+    if (await this._waitForInitialized(star)) {
+      this._logger.trace(`connectToStar: Fast-Success. starId: '${star.starInfo.starId}'`);
+      return star;
+    }
 
     // If we didn't receive them, we ask for them.
     if (!star.isStarInfoInitialized()) {
@@ -61,16 +66,18 @@ export class StarFactory {
     }
 
     // If we didn't receive them still, we're unable to connect.
-    if (!(await this.waitForInitialized(star))) {
+    if (!(await this._waitForInitialized(star))) {
       await star._channel.close();
       this._logger.errorAndThrow(
         `connectToStar: Unable to connect. Failed to initialize star. Required data not received. starId: '${starId}'`,
       );
     }
+    
+    this._logger.trace(`connectToStar: Slow-Success. starId: '${star.starInfo.starId}'`);
     return star;
   };
 
-  waitForInitialized = async (star) => {
+  _waitForInitialized = async (star) => {
     var count = 0;
     while (!star.isInitialized()) {
       await this._core.sleep(100);

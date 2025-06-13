@@ -9,7 +9,7 @@ const networkConfig = { clusterId: 42, shards: [0] };
 
 export class WakuChannel {
   constructor(logger, handler, wallet, dispatcher, contentTopic) {
-    this.logger = logger;
+    this.logger = logger.prefix(contentTopic);
     this.handler = handler;
     this.wallet = wallet;
     this.dispatcher = dispatcher;
@@ -49,7 +49,7 @@ export class WakuChannel {
   };
 
   log = (msg) => {
-    this.logger.trace(`Channel [${this.contentTopic}] ${msg}`);
+    this.logger.trace(msg);
   };
 }
 

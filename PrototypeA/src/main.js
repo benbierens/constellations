@@ -22,7 +22,11 @@ const wakuBootstrapNodes = [
   "/dns4/node-01.do-ams3.waku.sandbox.status.im/tcp/8000/wss/p2p/16Uiu2HAmNaeL4p3WEYzC9mgXBmBWSgWjPHRvatZTXnp8Jgv3iKsb",
 ];
 
+const connectId = "";
+
 const logger = new Logger();
+if (connectId.length < 1) logger.filename = "server.log";
+else logger.filename = "client.log";
 
 function log(msg) {
   logger.trace(msg);
@@ -101,8 +105,8 @@ export async function main() {
     cryptoService,
   );
 
-  //await createNewStarExample(core);
-  await connectStarExample(core, "sa225543959b607272f2c6955bce11a485e227dff82aa912c30709178dba3db01");
+  if (connectId.length < 1) await createNewStarExample(core);
+  else await connectStarExample(core, connectId);
 
   await wakuService.stop();
   log("Stopped Waku service");
