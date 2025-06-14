@@ -4,9 +4,7 @@ import {
   isValidUserStringValue,
 } from "./protocol.js";
 import {
-  StarConfiguration,
-  deserializeStarConfiguration,
-  serializeStarConfiguration,
+  StarConfiguration
 } from "./starConfiguration.js";
 
 export const StarStatus = {
@@ -24,7 +22,6 @@ export class StarProperties {
     this._admins = [];
     this._mods = [];
     this._annotations = getAnnotationsUninitializedValue();
-    this._utc = new Date(0);
 
     this._hasChanged = false;
     this._canModifyProperties = () => {
@@ -32,7 +29,7 @@ export class StarProperties {
         "_canModifyProperties: callback not initialized.",
       );
     };
-    this._changeHandler = async (json) => {
+    this._changeHandler = async (props) => {
       this.logger.assert("_changeHandler: callback not initialized.");
     };
   }
@@ -131,7 +128,13 @@ export class StarProperties {
     this.logger.trace(
       "commitChanges: Sending starProperties to change handler...",
     );
-    await this._changeHandler(serializeStarProperties(this));
+    await this._changeHandler({
+      admins: this.admins,
+      mods: this.mods,
+      annotations: this.annotations,
+      status: this.status,
+      configuration: { } // todo
+    });
     this._hasChanged = false;
   };
 
@@ -142,29 +145,4 @@ export class StarProperties {
   isMod = (address) => {
     return this.mods.includes(address);
   };
-}
-
-// StarProperties includes logger, which it needs but we don't want to serialize.
-// so we have custom a serializer/deserializer here.
-export function serializeStarProperties(properties) {
-  return JSON.stringify({
-    status: properties.status,
-    configuration: serializeStarConfiguration(properties.configuration),
-    admins: properties.admins,
-    mods: properties.mods,
-    annotations: properties.annotations,
-    utc: properties.utc,
-  });
-}
-
-export function deserializeStarProperties(core, json) {
-  const obj = JSON.parse(json);
-  var result = new StarProperties(core);
-  result._status = obj.status;
-  result._configuration = deserializeStarConfiguration(core, obj.configuration);
-  result._admins = obj.admins;
-  result._mods = obj.mods;
-  result._annotations = obj.annotations;
-  result._utc = obj.utc;
-  return result;
 }

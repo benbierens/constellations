@@ -30,7 +30,22 @@ export class Column {
     }
 
     close = () => {
-        
+        this._logger.trace("Closing...");
+        this._core = null;
+        this._logger = null
+        this._channel = null;
+
+        this._requestHeader = null;
+        this._responseHeader = null;
+        this._handler = null;
+
+        this._isReady = false;
+        this._hash = null;
+        this._value = null;
+        this._utc = null;
+        this._signature = null;
+        this._signer = null;
+        this._delayedPacketAndHashAndSigner = null;
     }
 
     get isReady() {

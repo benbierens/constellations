@@ -33,6 +33,10 @@ export class StarInternal {
     });
   }
 
+  get starId() {
+    return this._starId;
+  }
+
   disconnect = async () => {
     this._logger.trace("disconnect: Disconnecting...");
     await this._channel.close();
@@ -150,7 +154,7 @@ export class StarInternal {
     await this._handler.onCdxCid(this._cdxCid.value);
   }
 
-  _getAllowedPropertyModifiers = () => {
+  getAllowedPropertyModifiers = () => {
     if (!this._starInfo.isReady()) this._logger.assert("_getAllowedPropertyModifiers: called before starInfo is ready.");
     if (this._starProperties.isReady()) {
       return this.starInfo.value.owners.concat(this._starProperties.value.admins);
@@ -158,7 +162,7 @@ export class StarInternal {
     return this.starInfo.value.owners; 
   }
 
-  _getAllowedDataModifiers = () => {
+  getAllowedDataModifiers = () => {
     if (!this._starInfo.isReady()) this._logger.assert("_getAllowedDataModifiers: called before starInfo is ready.");
     if (!this._starProperties.isReady()) this._logger.assert("_getAllowedDataModifiers: called before starProperties is ready.");
     return this.starInfo.value.owners.concat(this._starProperties.value.admins).concat(this._starProperties.value.mods);
