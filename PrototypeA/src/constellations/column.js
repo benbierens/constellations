@@ -18,12 +18,17 @@ export class Column {
         this._header = header;
         this._handler = handler;
 
+        this._isReady = false;
         this._hash = null;
         this._value = null;
         this._utc = null;
         this._signature = null;
         this._signer = null;
         this._delayedPacketAndHashAndSigner = null;
+    }
+
+    get isReady() {
+        return this._isReady;
     }
 
     get value() {
@@ -41,6 +46,10 @@ export class Column {
     processPacket = async(packet) => {
         if (!this._handler) this._logger.errorAndThrow("processPacket: handler not set.");
         if (packet.header != this._header) return false;
+
+        if (!packet.header) this._logger.errorAndThrow("processPacket: packet has no header.");
+        if (!packet.signedData) this._logger.errorAndThrow("processPacket: packet has no signedData.");
+        if (!packet.signature) this._logger.errorAndThrow("processPacket: packet has no signature.");
 
         const hash = this._core.cryptoService.sha256(
             JSON.stringify(packet.signedData)
@@ -91,7 +100,12 @@ export class Column {
             return;
         }
 
-        // even if signer/signature is unchanged, still check:
+        if (this._utc && packet.signedData.utc <= this._utc) {
+            this._logger.trace("_processPacket: Rejected, not newer than current.")
+            return;
+        }
+
+        // even if signer/signature is unchanged, still ask the handler to check:
         // permissions may have changed!
         const checkResponse = await this._handler.checkUpdate(signer, packet.signedData.payload);
         if (!checkResponse || checkResponse == ColumnUpdateCheckResponse.Unknown) {
@@ -107,11 +121,6 @@ export class Column {
             return;
         }
 
-        if (this._utc && packet.signedData.utc <= this._utc) {
-            this._logger.trace("_processPacket: Rejected, not newer than current.")
-            return;
-        }
-
         await this._applyUpdate(packet, hash, signer);
     }
 
@@ -122,6 +131,7 @@ export class Column {
         this._utc = packet.signedData.utc;
         this._signature = packet.signature;
         this._signer = signer;
+        this._isReady = true;
 
         await this._handler.onValueChanged();
     }
