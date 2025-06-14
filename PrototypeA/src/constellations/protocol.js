@@ -61,9 +61,10 @@ Redesign:
 export const packetHeaders = {
   requestStarInfo: "requestStarInfo",
   requestStarProperties: "requestStarProperties",
-  starInfo: "starInfo",
-  starProperties: "starProperties",
-  newCodexCid: "cdxCid",
+  requestCdxCid: "requestCdxCid",
+  responseStarInfo: "responseStarInfo",
+  responseStarProperties: "responseStarProperties",
+  responseCdxCid: "responseCdxCid",
 };
 
 export function starIdToContentTopic(starId) {

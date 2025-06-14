@@ -11,11 +11,13 @@ const exampleHandler = {
 };
 
 export class Column {
-    constructor(core, header, handler) {
+    constructor(core, channel, name, requestHeader, responseHeader, handler) {
         this._core = core;
-        this._logger = core.logger.prefix("Column:"+header);
+        this._logger = core.logger.prefix("Column:" + name);
+        this._channel = channel;
 
-        this._header = header;
+        this._requestHeader = requestHeader;
+        this._responseHeader = responseHeader;
         this._handler = handler;
 
         this._isReady = false;
@@ -25,6 +27,10 @@ export class Column {
         this._signature = null;
         this._signer = null;
         this._delayedPacketAndHashAndSigner = null;
+    }
+
+    close = () => {
+        
     }
 
     get isReady() {
@@ -45,11 +51,15 @@ export class Column {
 
     processPacket = async (packet) => {
         if (!this._handler) this._logger.errorAndThrow("processPacket: handler not set.");
-        if (packet.header != this._header) return false;
+        if (packet.header == this._requestHeader) {
+            await this._handleRequestPacket();
+            return true;
+        }
+        if (packet.header != this._responseHeader) return false;
 
         if (!packet.header) this._logger.errorAndThrow("processPacket: packet has no header.");
-        if (!packet.signedData) this._logger.errorAndThrow("processPacket: packet has no signedData.");
         if (!packet.signature) this._logger.errorAndThrow("processPacket: packet has no signature.");
+        if (!packet.signedData) this._logger.errorAndThrow("processPacket: packet has no signedData.");
 
         const hash = this._core.cryptoService.sha256(
             JSON.stringify(packet.signedData)
@@ -79,13 +89,13 @@ export class Column {
         this._delayedPacketAndHashAndSigner = null;
     }
 
-    getAsPacket = async () => {
-        if (!this._signature) this._logger.errorAndThrow("getAsPacket: signature not set.");
-        if (!this._utc) this._logger.errorAndThrow("getAsPacket: utc not set.");
-        if (!this._value) this._logger.errorAndThrow("getAsPacket: value not set.");
+    _getAsPacket = () => {
+        if (!this._signature) this._logger.assert("getAsPacket: signature not set.");
+        if (!this._utc) this._logger.assert("getAsPacket: utc not set.");
+        if (!this._value) this._logger.assert("getAsPacket: value not set.");
 
         return {
-            header: this._header,
+            responseHeader: this._responseHeader,
             signature: this._signature,
             signedData: {
                 utc: this._utc,
@@ -93,6 +103,15 @@ export class Column {
             }
         };
     }
+
+    _handleRequestPacket = async () => {
+        if (this.isReady) {
+            this._logger.trace("_handleRequestPacket: Sending response...");
+            await this._channel.sendPacket(this._getAsPacket());
+        } else {
+            this._logger.trace("_handleRequestPacket: Unable to send response: Data not available.");
+        }
+    };
 
     _processPacket = async (packet, hash, signer) => {
         if (this._hash && this._hash == hash) {

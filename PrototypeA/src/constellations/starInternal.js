@@ -19,15 +19,15 @@ export class StarInternal {
 
     if (!this._starId) this._logger.errorAndThrow("starId not set.");
 
-    this._starInfo = new Column(core, packetHeaders.starInfo, {
+    this._starInfo = new Column(core, channel, "starInfo", packetHeaders.requestStarInfo, packetHeaders.responseStarInfo, {
       checkUpdate: this._starInfo_checkUpdate,
       onValueChanged: this._starInfo_onValueChanged
     });
-    this._starProperties = new Column(core, packetHeaders.starProperties, {
+    this._starProperties = new Column(core, channel, "starProperties", packetHeaders.requestStarProperties, packetHeaders.responseStarProperties, {
       checkUpdate: this._starProperties_checkUpdate,
       onValueChanged: this._starProperties_onValueChanged
     });
-    this._cdxCid = new Column(core, packetHeaders.cdxCid, {
+    this._cdxCid = new Column(core, channel, "cdxCid", packetHeaders.requestCdxCid, packetHeaders.responseCdxCid, {
       checkUpdate: this._cdxCid_checkUpdate,
       onValueChanged: this._cdxCid_onValueChanged
     });
@@ -36,6 +36,9 @@ export class StarInternal {
   disconnect = async () => {
     this._logger.trace("disconnect: Disconnecting...");
     await this._channel.close();
+    this._starInfo.close();
+    this._starProperties.close();
+    this._cdxCid.close();
 
     // Clean up everything, prevent accidental use.
     this._core = null;
@@ -54,9 +57,7 @@ export class StarInternal {
     if (await this._starProperties.processPacket(packet)) return;
     if (await this._cdxCid.processPacket(packet)) return;
 
-    if (packet.header == packetHeaders.requestStarInfo) await this._process_requestStarInfo();
-    else if (packet.header == packetHeaders.requestStarProperties) await this._process_requestStarProperties();
-    else this._logger.assert(`Unknown packet: '${packet.header}'`);
+    this._logger.assert(`Unknown packet: '${packet.header}'`);
   }
 
   _starInfo_checkUpdate = async (signer, newValue) => {
@@ -163,5 +164,3 @@ export class StarInternal {
     return this.starInfo.value.owners.concat(this._starProperties.value.admins).concat(this._starProperties.value.mods);
   }
 }
-
-
