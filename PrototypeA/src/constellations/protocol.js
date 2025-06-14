@@ -9,6 +9,7 @@ Redesign:
 [
 
     {
+        "version": 1,
         "header": "starInfo",
         "signature": "12345",
         "signedData": {
@@ -34,7 +35,10 @@ Redesign:
                     "admins": [],
                     "mods": [],
                     "annotations": "",
-                    "status": "good"
+                    "status": "good",
+                    "configuration": {
+                      // todo
+                    }
                 }
             }
         }

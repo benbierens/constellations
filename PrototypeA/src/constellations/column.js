@@ -43,7 +43,7 @@ export class Column {
         return this._signer;
     }
 
-    processPacket = async(packet) => {
+    processPacket = async (packet) => {
         if (!this._handler) this._logger.errorAndThrow("processPacket: handler not set.");
         if (packet.header != this._header) return false;
 
@@ -119,6 +119,9 @@ export class Column {
             this._logger.trace("_processPacket: Delayed by columnHandler.");
             this._updateDelayedPacket(packet, hash, signer);
             return;
+        }
+        if (checkResponse != ColumnUpdateCheckResponse.Accept) {
+            this._logger.assert(`_processPacket: Unknown CheckResponse received from handler: '${checkResponse}'`);
         }
 
         await this._applyUpdate(packet, hash, signer);

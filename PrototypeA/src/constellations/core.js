@@ -32,4 +32,13 @@ export class Core {
     }
     return true;
   };
+
+  generateStarId = (starInfo) => {
+    if (!starInfo.type) this.logger.errorAndThrow("generateStarId: starInfo object is missing type.");
+    if (!starInfo.owners) this.logger.errorAndThrow("generateStarId: starInfo object is missing owners.");
+    if (!starInfo.creationUtc) this.logger.errorAndThrow("generateStarId: starInfo object is missing creationUtc.");
+
+    const json = JSON.stringify(starInfo);
+    return "s" + this.cryptoService.sha256(json);
+  }
 }

@@ -21,3 +21,7 @@ export function deserializeStarConfiguration(core, json) {
   // todo
   return result;
 }
+
+export function isDefaultConfiguration(config) {
+  return true;
+}
