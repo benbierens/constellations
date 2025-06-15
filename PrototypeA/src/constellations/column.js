@@ -91,7 +91,7 @@ export class Column {
 
     applyDelayedUpdate = async () => {
         if (!this._delayedPacketAndHashAndSigner) {
-            this.logger.trace("applyDelayedUpdate: No delayed packet was set.");
+            this._logger.trace("applyDelayedUpdate: No delayed packet was set.");
             return;
         }
 
@@ -102,6 +102,25 @@ export class Column {
         )
         
         this._delayedPacketAndHashAndSigner = null;
+    }
+
+    sendUpdate = async (newValue) => {
+        this._logger.trace("sendUpdate: Creating update packet...");
+        const signedData = {
+            utc: new Date(),
+            payload: newValue
+        }
+        const json = JSON.stringify(signedData);
+        const signature = await this._core.cryptoService.sign(json);
+
+        const updatePacket = {
+            responseHeader: this._responseHeader,
+            signature: signature,
+            signedData: signedData
+        };
+
+        this._logger.trace("sendUpdate: Sending update packet...");
+        await this._channel.sendPacket(updatePacket);
     }
 
     _getAsPacket = () => {

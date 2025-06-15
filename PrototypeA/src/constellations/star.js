@@ -8,12 +8,6 @@ const exampleHandler = {
     onDataChanged: async (star) => { }
 };
 
-const incomingHandler = {
-    onStarInfo: async (starInfo) => { },
-    onStarProperties: async (starProperties) => { },
-    onCdxCid: async (cdxCid) => { }
-};
-
 export class Star {
   constructor(core, starInternal, handler) {
     this._core = core;
@@ -60,7 +54,7 @@ export class Star {
 
     const cid = await this._core.codexService.upload(data);
     
-    // give it to internal, to give it to the column, to send the update.
+    await this._internal.sendCdxCid(cid);
   };
 
   getData = async () => {
@@ -107,6 +101,7 @@ export class Star {
 
   onCdxCid = async (cdxCid) => {
     this._cdxCid = cdxCid;
+    await this._handler.onDataChanged();
   }
 
   _canModifyProperties = (nodeId = this._core.constellationNode.address) => {
@@ -120,6 +115,6 @@ export class Star {
   };
 
   _handleStarPropertiesChanged = async (starProperties) => {
-    // give it to internal, to give it to the column, to send the update.
+    await this._internal.sendStarProperties(starProperties);
   };
 }

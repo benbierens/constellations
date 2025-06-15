@@ -56,6 +56,32 @@ export class StarInternal {
     this._cdxCid = null;
   };
 
+  sendStarInfo = async (starInfo) => {
+    if (this._starInfo.isReady()) this._logger.errorAndThrow("sendStarInfo: Already set.");
+    if (!starInfo.type) this._logger.errorAndThrow("sendStarInfo: type not set.");
+    if (!starInfo.owners) this._logger.errorAndThrow("sendStarInfo: owners not set.");
+    if (!starInfo.creationUtc) this._logger.errorAndThrow("sendStarInfo: creationUtc not set.");
+    await this._starInfo.sendUpdate(starInfo);
+  }
+
+  sendStarProperties = async (starProperties) => {
+    if (!this._starInfo.isReady()) this._logger.errorAndThrow("sendStarProperties: StarInfo not set.");
+    if (!starProperties.admins) this._logger.errorAndThrow("sendStarProperties: admins not set.");
+    if (!starProperties.mods) this._logger.errorAndThrow("sendStarProperties: mods not set.");
+    if (!starProperties.annotations) this._logger.errorAndThrow("sendStarProperties: annotations not set.");
+    if (!isValidUserStringValue(starProperties.annotations)) this._logger.errorAndThrow("sendStarProperties: annotations: invalid user string value.");
+    if (!starProperties.status) this._logger.errorAndThrow("sendStarProperties: status not set.");
+    if (starProperties.status != StarStatus.Bright && starProperties.status != StarStatus.concat) this._logger.errorAndThrow("sendStarProperties: status: Invalid value.");
+    // todo validate config
+    await this._starProperties.sendUpdate(starProperties);
+  }
+
+  sendCdxCid = async (cdxCid) => {
+    if (!this._starInfo.isReady()) this._logger.errorAndThrow("sendCdxCid: StarInfo not set.");
+    if (cdxCid.length < 1) this._logger.errorAndThrow("sendCdxCid: Invalid value.");
+    await this._cdxCid.sendUpdate(cdxCid);
+  }
+
   onPacket = async (packet) => {
     if (await this._starInfo.processPacket(packet)) return;
     if (await this._starProperties.processPacket(packet)) return;

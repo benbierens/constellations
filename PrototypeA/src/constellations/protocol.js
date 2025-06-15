@@ -15,11 +15,9 @@ Redesign:
         "signedData": {
             "utc": "2025-06-123,4345",
             "payload": {
-                "starInfo": {
-                    "type": "meta_star",
-                    "owners": [],
-                    "creationUtc": "2025-06-10203433"
-                }
+                "type": "meta_star",
+                "owners": [],
+                "creationUtc": "2025-06-10203433"
             }
         }
     },
@@ -31,14 +29,12 @@ Redesign:
         "signedData": {
             "utc": "2025-06-12345",
             "payload": {
-                "starProperties": {
-                    "admins": [],
-                    "mods": [],
-                    "annotations": "",
-                    "status": "good",
-                    "configuration": {
-                      // todo
-                    }
+                  "admins": [],
+                  "mods": [],
+                  "annotations": "",
+                  "status": "good",
+                  "configuration": {
+                    // todo
                 }
             }
         }

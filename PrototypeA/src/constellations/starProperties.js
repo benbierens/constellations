@@ -114,17 +114,12 @@ export class StarProperties {
     this._hasChanged = true;
   }
 
-  get utc() {
-    return this._utc;
-  }
-
   commitChanges = async () => {
     if (!this._hasChanged) {
       this.logger.trace("commitChanges: No changes.");
       return;
     }
 
-    this._utc = new Date();
     this.logger.trace(
       "commitChanges: Sending starProperties to change handler...",
     );
