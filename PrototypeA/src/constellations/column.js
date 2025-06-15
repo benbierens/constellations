@@ -104,13 +104,16 @@ export class Column {
   };
 
   sendUpdate = async (newValue) => {
-    this._logger.trace("sendUpdate: Creating update packet...");
+    if (!newValue) this._logger.errorAndThrow("sendUpdate: newValue not set.");
+    this._logger.trace(
+      "sendUpdate: Creating update packet... " + JSON.stringify(newValue),
+    );
     const signedData = {
       utc: new Date(),
       payload: newValue,
     };
-    const json = JSON.stringify(signedData);
-    const signature = await this._core.cryptoService.sign(json);
+    const hash = this._core.cryptoService.sha256(JSON.stringify(signedData));
+    const signature = await this._core.cryptoService.sign(hash);
 
     const updatePacket = {
       header: this._responseHeader,

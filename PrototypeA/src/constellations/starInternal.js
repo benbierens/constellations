@@ -1,7 +1,7 @@
-import { Column, ColumnUpdateCheckResponse } from "./column";
-import { isValidUserStringValue, packetHeaders } from "./protocol";
-import { isDefaultConfiguration } from "./starConfiguration";
-import { StarStatus } from "./starProperties";
+import { Column, ColumnUpdateCheckResponse } from "./column.js";
+import { isValidUserStringValue, packetHeaders } from "./protocol.js";
+import { isDefaultConfiguration } from "./starConfiguration.js";
+import { StarStatus } from "./starProperties.js";
 
 export class StarInternal {
   constructor(core, starId, channel) {
@@ -76,7 +76,7 @@ export class StarInternal {
   };
 
   sendStarInfo = async (starInfo) => {
-    if (this._starInfo.isReady())
+    if (this._starInfo.isReady)
       this._logger.errorAndThrow("sendStarInfo: Already set.");
     if (!starInfo.type)
       this._logger.errorAndThrow("sendStarInfo: type not set.");
@@ -88,7 +88,7 @@ export class StarInternal {
   };
 
   sendStarProperties = async (starProperties) => {
-    if (!this._starInfo.isReady())
+    if (!this._starInfo.isReady)
       this._logger.errorAndThrow("sendStarProperties: StarInfo not set.");
     if (!starProperties.admins)
       this._logger.errorAndThrow("sendStarProperties: admins not set.");
@@ -112,7 +112,7 @@ export class StarInternal {
   };
 
   sendCdxCid = async (cdxCid) => {
-    if (!this._starInfo.isReady())
+    if (!this._starInfo.isReady)
       this._logger.errorAndThrow("sendCdxCid: StarInfo not set.");
     if (cdxCid.length < 1)
       this._logger.errorAndThrow("sendCdxCid: Invalid value.");
@@ -130,7 +130,7 @@ export class StarInternal {
   _starInfo_checkUpdate = async (signer, newValue) => {
     if (this._starInfo.isReady) return ColumnUpdateCheckResponse.Discard;
 
-    const receivedStarId = this.core.generateStarId(newValue);
+    const receivedStarId = this._core.generateStarId(newValue);
     if (!receivedStarId || receivedStarId != this._starId) {
       this._logger.error(
         "_starInfo_checkUpdate: Invalid starInfo values received.",
@@ -211,7 +211,7 @@ export class StarInternal {
 
   _starProperties_onValueChanged = async () => {
     await this._handler.onStarProperties(this._starProperties.value);
-    if (!this._cdxCid.isReady()) {
+    if (!this._cdxCid.isReady) {
       await this._cdxCid.applyDelayedUpdate();
     }
   };
@@ -236,11 +236,11 @@ export class StarInternal {
   };
 
   getAllowedPropertyModifiers = () => {
-    if (!this._starInfo.isReady())
+    if (!this._starInfo.isReady)
       this._logger.assert(
         "_getAllowedPropertyModifiers: called before starInfo is ready.",
       );
-    if (this._starProperties.isReady()) {
+    if (this._starProperties.isReady) {
       return this.starInfo.value.owners.concat(
         this._starProperties.value.admins,
       );
@@ -249,11 +249,11 @@ export class StarInternal {
   };
 
   getAllowedDataModifiers = () => {
-    if (!this._starInfo.isReady())
+    if (!this._starInfo.isReady)
       this._logger.assert(
         "_getAllowedDataModifiers: called before starInfo is ready.",
       );
-    if (!this._starProperties.isReady())
+    if (!this._starProperties.isReady)
       this._logger.assert(
         "_getAllowedDataModifiers: called before starProperties is ready.",
       );

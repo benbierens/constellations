@@ -41,8 +41,9 @@ export class StarFactory {
       creationUtc: creationUtc,
     };
     const starId = this._core.generateStarId(starInfo);
-    const channel = await this._core.starChannelFactory.createById(starId);
+    this._logger.trace(`createNewStar: new starId: '${starId}'`);
 
+    const channel = await this._core.starChannelFactory.createById(starId);
     const internal = new StarInternal(this._core, starId, channel);
     const star = new Star(this._core, internal, handler);
     internal.init(star);
@@ -58,9 +59,7 @@ export class StarFactory {
       this._logger.assert(
         "createNewStar: New star did not initialize correctly.",
       );
-    this._logger.trace(
-      `createNewStar: Success. starId: '${star.starInfo.starId}'`,
-    );
+    this._logger.trace(`createNewStar: Success. starId: '${star.starId}'`);
     return star;
   };
 

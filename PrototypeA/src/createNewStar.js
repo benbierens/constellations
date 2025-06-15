@@ -17,7 +17,7 @@ export async function createNewStarExample(core) {
     autoFetch,
   );
 
-  core.logger.trace(`Star is created. starId: '${star.starInfo.starId}'`);
+  core.logger.trace(`Star is created. starId: '${star.starId}'`);
   await core.sleep(10000);
 
   core.logger.trace(`Starting in 10 seconds.`);

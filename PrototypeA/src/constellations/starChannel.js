@@ -1,4 +1,7 @@
-import { constellationsProtocolVersion } from "./protocol.js";
+import {
+  constellationsProtocolVersion,
+  starIdToContentTopic,
+} from "./protocol.js";
 
 export class StarChannel {
   constructor(core, starId) {
@@ -13,7 +16,7 @@ export class StarChannel {
 
     this._logger.trace("open: Opening...");
     this._handler = handler;
-    const topic = starIdToContentTopic(starId);
+    const topic = starIdToContentTopic(this._starId);
     this._channel = await this._core.wakuService.openChannel(topic, this);
   };
 
