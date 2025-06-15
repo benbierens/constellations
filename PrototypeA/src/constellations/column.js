@@ -114,13 +114,21 @@ export class Column {
         const signature = await this._core.cryptoService.sign(json);
 
         const updatePacket = {
-            responseHeader: this._responseHeader,
+            header: this._responseHeader,
             signature: signature,
             signedData: signedData
         };
 
         this._logger.trace("sendUpdate: Sending update packet...");
         await this._channel.sendPacket(updatePacket);
+    }
+
+    sendRequest = async () => {
+        const requestPacket = {
+            header: this._requestHeader,
+        };
+        this._logger.trace("sendRequest: Sending request packet...");
+        await this._channel.sendPacket(requestPacket);
     }
 
     _getAsPacket = () => {

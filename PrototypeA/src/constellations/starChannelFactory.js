@@ -7,27 +7,9 @@ export class StarChannelFactory {
     this.logger = this.core.logger.prefix("StarChannelFactory");
   }
 
-  openById = async (starId, handler) => {
-    const result = new StarChannel(this.core, starId, handler);
-    const topic = starIdToContentTopic(starId);
-    result._channel = await this.core.wakuService.openChannel(topic, result);
-
-    this.logger.trace(`openById: Channel open.`);
+  createById = async (starId) => {
+    const result = new StarChannel(this.core, starId);
+    this.logger.trace(`createById: Channel created.`);
     return result;
   };
-
-  // openByInfo = async (starInfo, handler) => {
-  //   const result = new StarChannel(this.core, starInfo.starId, handler);
-  //   const topic = starIdToContentTopic(starInfo.starId);
-  //   result._channel = await this.core.wakuService.openChannel(topic, result);
-
-  //   const receivedInfo = await result.getStarInfo();
-  //   if (!receivedInfo) {
-  //     this.logger.trace(`openByInfo: Channel provided no info. Sending it...`);
-  //     await result.setStarInfo(starInfo);
-  //   }
-
-  //   this.logger.trace(`openByInfo: Channel open.`);
-  //   return result;
-  // };
 }

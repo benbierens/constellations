@@ -3,14 +3,25 @@ import {
 } from "./protocol.js";
 
 export class StarChannel {
-  constructor(core, starId, handler) {
+  constructor(core, starId) {
     this._core = core;
     this._starId = starId;
     this._logger = this._core.logger.prefix("StarChannel");
+  }
+
+  open = async (handler) => {
+    if (this._channel) this._logger.assert("open: Already open");
+    if (!handler) this._logger.assert("open: handler not provided.");
+
+    this._logger.trace("open: Opening...");
     this._handler = handler;
+    const topic = starIdToContentTopic(starId);
+    this._channel = await this._core.wakuService.openChannel(topic, this);
   }
 
   close = async () => {
+    if (!this._channel) this._logger.assert("open: Already closed");
+
     this._logger.trace("close: Closing...");
     await this._channel.close();
 

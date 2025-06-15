@@ -10,11 +10,10 @@ const exampleHandler = {
 };
 
 export class StarInternal {
-  constructor(core, starId, handler, channel) {
+  constructor(core, starId, channel) {
     this._core = core;
     this._starId = starId;
     this._logger = core.logger.prefix("StarInternal");
-    this._handler = handler;
     this._channel = channel;
 
     if (!this._starId) this._logger.errorAndThrow("starId not set.");
@@ -31,6 +30,11 @@ export class StarInternal {
       checkUpdate: this._cdxCid_checkUpdate,
       onValueChanged: this._cdxCid_onValueChanged
     });
+  }
+
+  init = (handler) => {
+    if (this._handler) this._logger.errorAndThrow("init: Already initialized.");
+    this._handler = handler;
   }
 
   get starId() {
