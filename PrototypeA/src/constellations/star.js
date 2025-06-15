@@ -1,9 +1,6 @@
 import { getAnnotationsUninitializedValue } from "./protocol.js";
+import { StarConfiguration } from "./starConfiguration.js";
 import { StarProperties, StarStatus } from "./starProperties.js";
-
-const exampleHandler = {
-  onDataChanged: async (star) => {},
-};
 
 export class Star {
   constructor(core, starInternal, handler) {
@@ -55,7 +52,7 @@ export class Star {
   };
 
   getData = async () => {
-    if (!this.cdxCid) {
+    if (!this._cdxCid) {
       this._logger.errorAndThrow("getData: No CID known for star.");
     }
     return await this._core.codexService.downloadData(this._cdxCid);
@@ -87,7 +84,7 @@ export class Star {
   onStarProperties = async (starProperties) => {
     this._properties = new StarProperties(this._core);
     this._properties._status = starProperties.status;
-    this._properties._configuration = new StarConfiguration(core); // todo
+    this._properties._configuration = new StarConfiguration(this._core); // todo
     this._properties._admins = starProperties.admins;
     this._properties._mods = starProperties.mods;
     this._properties._annotations = starProperties.annotations;

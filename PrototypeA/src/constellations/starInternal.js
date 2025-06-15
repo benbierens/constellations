@@ -241,11 +241,11 @@ export class StarInternal {
         "getAllowedPropertyModifiers: called before starInfo is ready.",
       );
     if (this._starProperties.isReady) {
-      return this.starInfo.value.owners.concat(
+      return this._starInfo.value.owners.concat(
         this._starProperties.value.admins,
       );
     }
-    return this.starInfo.value.owners;
+    return this._starInfo.value.owners;
   };
 
   getAllowedDataModifiers = () => {
@@ -257,7 +257,7 @@ export class StarInternal {
       this._logger.assert(
         "getAllowedDataModifiers: called before starProperties is ready.",
       );
-    return this.starInfo.value.owners
+    return this._starInfo.value.owners
       .concat(this._starProperties.value.admins)
       .concat(this._starProperties.value.mods);
   };
