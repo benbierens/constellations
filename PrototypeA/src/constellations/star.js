@@ -95,7 +95,7 @@ export class Star {
 
   onCdxCid = async (cdxCid) => {
     this._cdxCid = cdxCid;
-    await this._handler.onDataChanged();
+    await this._handler.onDataChanged(this);
   };
 
   _canModifyProperties = (nodeId = this._core.constellationNode.address) => {
