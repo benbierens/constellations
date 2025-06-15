@@ -3,9 +3,7 @@ import {
   getUserStringValueConstraintDescription,
   isValidUserStringValue,
 } from "./protocol.js";
-import {
-  StarConfiguration
-} from "./starConfiguration.js";
+import { StarConfiguration } from "./starConfiguration.js";
 
 export const StarStatus = {
   Unknown: "unknown",
@@ -25,9 +23,7 @@ export class StarProperties {
 
     this._hasChanged = false;
     this._canModifyProperties = () => {
-      this.logger.assert(
-        "_canModifyProperties: callback not initialized.",
-      );
+      this.logger.assert("_canModifyProperties: callback not initialized.");
     };
     this._changeHandler = async (props) => {
       this.logger.assert("_changeHandler: callback not initialized.");
@@ -128,7 +124,7 @@ export class StarProperties {
       mods: this.mods,
       annotations: this.annotations,
       status: this.status,
-      configuration: { } // todo
+      configuration: {}, // todo
     });
     this._hasChanged = false;
   };

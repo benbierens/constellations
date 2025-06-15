@@ -25,17 +25,20 @@ export class StarFactory {
     creationUtc = new Date(),
     properties = createDefaultNewStarProperties(this._core),
   ) => {
-    if (!type || !isValidUserStringValue(type)) this._logger.errorAndThrow("createNewStar: type invalid.");
+    if (!type || !isValidUserStringValue(type))
+      this._logger.errorAndThrow("createNewStar: type invalid.");
     if (!owners) owners = []; // todo: change requirement: always 1 or more owners?
-    if (!creationUtc) this._logger.errorAndThrow("createNewStar: creationUtc invalid.");
+    if (!creationUtc)
+      this._logger.errorAndThrow("createNewStar: creationUtc invalid.");
     if (!handler) this._logger.errorAndThrow("createNewStar: handler invalid.");
-    if (!properties) this._logger.errorAndThrow("createNewStar: properties invalid.");
+    if (!properties)
+      this._logger.errorAndThrow("createNewStar: properties invalid.");
     this._logger.trace(`createNewStar: type: '${type}'`);
 
     const starInfo = {
       type: type,
       owners: owners,
-      creationUtc: creationUtc
+      creationUtc: creationUtc,
     };
     const starId = this._core.generateStarId(starInfo);
     const channel = await this._core.starChannelFactory.createById(starId);
@@ -50,12 +53,14 @@ export class StarFactory {
 
     await internal.sendStarInfo(starInfo);
     await internal.sendStarProperties(properties);
-    
-    if (!await this._waitForInitialized(star))
+
+    if (!(await this._waitForInitialized(star)))
       this._logger.assert(
         "createNewStar: New star did not initialize correctly.",
       );
-    this._logger.trace(`createNewStar: Success. starId: '${star.starInfo.starId}'`);
+    this._logger.trace(
+      `createNewStar: Success. starId: '${star.starInfo.starId}'`,
+    );
     return star;
   };
 
@@ -77,10 +82,12 @@ export class StarFactory {
     // These are likely to contain both starInfo and properties.
     // So we wait a moment to receive and process those.
     if (await this._waitForInitialized(star)) {
-      this._logger.trace(`connectToStar: Fast-Success. starId: '${star.starInfo.starId}'`);
+      this._logger.trace(
+        `connectToStar: Fast-Success. starId: '${star.starInfo.starId}'`,
+      );
       return star;
     }
-    
+
     // If we didn't receive them, we ask for them.
     if (!star.isStarInfoInitialized()) {
       await internal._starInfo.sendRequest();
@@ -96,8 +103,10 @@ export class StarFactory {
         `connectToStar: Unable to connect. Failed to initialize star. Required data not received. starId: '${starId}'`,
       );
     }
-    
-    this._logger.trace(`connectToStar: Slow-Success. starId: '${star.starInfo.starId}'`);
+
+    this._logger.trace(
+      `connectToStar: Slow-Success. starId: '${star.starInfo.starId}'`,
+    );
     return star;
   };
 
@@ -113,5 +122,5 @@ export class StarFactory {
       if (count > 30) return false;
     }
     return true;
-  }
+  };
 }

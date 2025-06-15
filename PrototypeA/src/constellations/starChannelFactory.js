@@ -1,4 +1,3 @@
-import { starIdToContentTopic } from "./protocol.js";
 import { StarChannel } from "./starChannel.js";
 
 export class StarChannelFactory {

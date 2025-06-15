@@ -1,6 +1,4 @@
-import {
-  constellationsProtocolVersion,
-} from "./protocol.js";
+import { constellationsProtocolVersion } from "./protocol.js";
 
 export class StarChannel {
   constructor(core, starId) {
@@ -17,7 +15,7 @@ export class StarChannel {
     this._handler = handler;
     const topic = starIdToContentTopic(starId);
     this._channel = await this._core.wakuService.openChannel(topic, this);
-  }
+  };
 
   close = async () => {
     if (!this._channel) this._logger.assert("open: Already closed");
@@ -43,7 +41,9 @@ export class StarChannel {
     const packet = this._parsePacket(msg);
     if (!packet) return;
     if (!packet.version || packet.version != constellationsProtocolVersion) {
-      this.logger.warn(`onMessage: Packet ignored, wrong version: '${packet.version}'`);
+      this.logger.warn(
+        `onMessage: Packet ignored, wrong version: '${packet.version}'`,
+      );
       return;
     }
 
@@ -51,7 +51,9 @@ export class StarChannel {
     try {
       await this._handler.onPacket(packet);
     } catch (error) {
-      this._logger.errorAndThrow("onMessage: Error when handling message: " + error);
+      this._logger.errorAndThrow(
+        "onMessage: Error when handling message: " + error,
+      );
     }
   };
 

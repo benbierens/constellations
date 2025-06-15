@@ -13,8 +13,8 @@ const privateKey =
 const address = "0xd2a1FE498fEA6d3f188C2e6208AA55D7e8eaBdc0";
 // mnemonic: legend culture forum control what render switch above impose surge grab edge
 
-//const codexAddress = "http://192.168.178.26:8081";
-const codexAddress = "http://192.168.178.171:8080";
+const codexAddress = "http://192.168.178.26:8081";
+//const codexAddress = "http://192.168.178.171:8080";
 
 const wakuBootstrapNodes = [
   "/dns4/waku.bloxy.one/tcp/8000/wss/p2p/16Uiu2HAmMJy3oXGzRjt2iKmYoCnaEkj55rE55YperMpemtGs9Da2",

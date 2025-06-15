@@ -20,8 +20,7 @@ export class WakuChannel {
       const timestamp = new Date(meta.timestamp);
       try {
         await handler.onMessage(signer, timestamp, msg);
-      }
-      catch (error) {
+      } catch (error) {
         this.logger.errorAndThrow("onMessage: Error in handler: " + error);
       }
     };

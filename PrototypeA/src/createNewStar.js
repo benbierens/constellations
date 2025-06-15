@@ -5,9 +5,7 @@ export async function createNewStarExample(core) {
   const type = "starType-example";
   const handler = {
     onDataChanged: async (star) => {
-      core.logger.trace(
-        "(APPLICATION) data changed!",
-      );
+      core.logger.trace("(APPLICATION) data changed!");
     },
   };
   const autoFetch = true; // Tells the star to automatically cache the data with its codex node.

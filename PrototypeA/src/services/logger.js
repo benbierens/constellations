@@ -15,7 +15,7 @@ export class Logger {
 
   warn = (msg) => {
     this.trace("Warning: " + msg);
-  }
+  };
 
   error = (msg) => {
     this.trace("ERROR: " + msg);

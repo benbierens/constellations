@@ -1,11 +1,8 @@
 import { getAnnotationsUninitializedValue } from "./protocol.js";
-import {
-  StarProperties,
-  StarStatus,
-} from "./starProperties.js";
+import { StarProperties, StarStatus } from "./starProperties.js";
 
 const exampleHandler = {
-    onDataChanged: async (star) => { }
+  onDataChanged: async (star) => {},
 };
 
 export class Star {
@@ -53,7 +50,7 @@ export class Star {
     }
 
     const cid = await this._core.codexService.upload(data);
-    
+
     await this._internal.sendCdxCid(cid);
   };
 
@@ -85,7 +82,7 @@ export class Star {
 
   onStarInfo = async (starInfo) => {
     this._starInfo = starInfo;
-  }
+  };
 
   onStarProperties = async (starProperties) => {
     this._properties = new StarProperties(this._core);
@@ -97,18 +94,18 @@ export class Star {
 
     this._properties._canModifyProperties = this._canModifyProperties;
     this._properties._changeHandler = this._handleStarPropertiesChanged;
-  }
+  };
 
   onCdxCid = async (cdxCid) => {
     this._cdxCid = cdxCid;
     await this._handler.onDataChanged();
-  }
+  };
 
   _canModifyProperties = (nodeId = this._core.constellationNode.address) => {
     const allowed = this._internal.getAllowedPropertyModifiers();
     return allowed.includes(nodeId);
   };
-  
+
   _canModifyData = (nodeId = this._core.constellationNode.address) => {
     const allowed = this._internal.getAllowedDataModifiers();
     return allowed.includes(nodeId);

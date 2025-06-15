@@ -1,59 +1,6 @@
 export const constellationsProtocolVersion = 1;
 export const systemValuePrefix = "_";
 
-
-Rework: splitting the user-facing API types from the columns/factories/star types
-
-Redesign:
-
-[
-
-    {
-        "version": 1,
-        "header": "starInfo",
-        "signature": "12345",
-        "signedData": {
-            "utc": "2025-06-123,4345",
-            "payload": {
-                "type": "meta_star",
-                "owners": [],
-                "creationUtc": "2025-06-10203433"
-            }
-        }
-    },
-
-
-    {
-        "header": "starProperties",
-        "signature": "19840983",
-        "signedData": {
-            "utc": "2025-06-12345",
-            "payload": {
-                  "admins": [],
-                  "mods": [],
-                  "annotations": "",
-                  "status": "good",
-                  "configuration": {
-                    // todo
-                }
-            }
-        }
-    },
-
-
-    {
-        "header": "requestStarInfo"
-    }
-
-
-
-
-]
-
-
-
-
-
 export const packetHeaders = {
   requestStarInfo: "requestStarInfo",
   requestStarProperties: "requestStarProperties",
@@ -65,43 +12,6 @@ export const packetHeaders = {
 
 export function starIdToContentTopic(starId) {
   return `/constellations/${constellationsProtocolVersion}/${starId}/json`;
-}
-
-export function getRequestStarInfoMsg() {
-  return JSON.stringify({
-    header: packetHeaders.requestStarInfo,
-  });
-}
-
-export function getRequestStarPropertiesMsg() {
-  return JSON.stringify({
-    header: packetHeaders.requestStarProperties,
-  });
-}
-
-export function getStarInfoMsg(starInfo) {
-  return JSON.stringify({
-    header: packetHeaders.starInfo,
-    starInfo: {
-      type: starInfo.type,
-      owners: starInfo.owners,
-      creationUtc: starInfo.creationUtc,
-    },
-  });
-}
-
-export function getStarPropertiesMsg(json) {
-  return JSON.stringify({
-    header: packetHeaders.starProperties,
-    starProperties: json,
-  });
-}
-
-export function getNewCodexCidMsg(cid) {
-  return JSON.stringify({
-    header: packetHeaders.newCodexCid,
-    cdxCid: cid,
-  });
 }
 
 export function isValidUserStringValue(value) {

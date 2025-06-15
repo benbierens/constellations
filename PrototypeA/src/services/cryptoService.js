@@ -12,10 +12,10 @@ export class CryptoService {
   };
 
   sign = async (message) => {
-      return await this.constellationNode.wallet.signMessage(message);
-  }
+    return await this.constellationNode.wallet.signMessage(message);
+  };
 
   verifyGetSigner = async (message, signature) => {
     return await ethers.verifyMessage(message, signature);
-  }
+  };
 }
