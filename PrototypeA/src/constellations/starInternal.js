@@ -154,7 +154,7 @@ export class StarInternal {
   _starProperties_checkUpdate = async (signer, newValue) => {
     if (!this._starInfo.isReady) return ColumnUpdateCheckResponse.Delay;
 
-    const permittedModifiers = this._getAllowedPropertyModifiers();
+    const permittedModifiers = this.getAllowedPropertyModifiers();
     if (permittedModifiers.length > 0 && permittedModifiers.includes(signer)) {
       this._logger.trace(
         "_starProperties_checkUpdate: Update signed by owner or admin.",
@@ -217,7 +217,7 @@ export class StarInternal {
   };
 
   _cdxCid_checkUpdate = async (signer, newValue) => {
-    const permittedModifiers = this._getAllowedDataModifiers();
+    const permittedModifiers = this.getAllowedDataModifiers();
     if (permittedModifiers.length > 0 && permittedModifiers.includes(signer)) {
       this._logger.trace(
         "_cdxCid_checkUpdate: Update signed by owner, admin, or mod.",
@@ -238,7 +238,7 @@ export class StarInternal {
   getAllowedPropertyModifiers = () => {
     if (!this._starInfo.isReady)
       this._logger.assert(
-        "_getAllowedPropertyModifiers: called before starInfo is ready.",
+        "getAllowedPropertyModifiers: called before starInfo is ready.",
       );
     if (this._starProperties.isReady) {
       return this.starInfo.value.owners.concat(
@@ -251,11 +251,11 @@ export class StarInternal {
   getAllowedDataModifiers = () => {
     if (!this._starInfo.isReady)
       this._logger.assert(
-        "_getAllowedDataModifiers: called before starInfo is ready.",
+        "getAllowedDataModifiers: called before starInfo is ready.",
       );
     if (!this._starProperties.isReady)
       this._logger.assert(
-        "_getAllowedDataModifiers: called before starProperties is ready.",
+        "getAllowedDataModifiers: called before starProperties is ready.",
       );
     return this.starInfo.value.owners
       .concat(this._starProperties.value.admins)

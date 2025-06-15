@@ -1,14 +1,16 @@
 import { isValidUserStringValue } from "./protocol.js";
 import { Star } from "./star.js";
 import { StarInternal } from "./starInternal.js";
-import { StarProperties, StarStatus } from "./starProperties.js";
+import { StarStatus } from "./starProperties.js";
 
-function createDefaultNewStarProperties(core) {
-  var result = new StarProperties(core);
-  result._status = StarStatus.Bright;
-  result._annotations = "new_star";
-  result._utc = new Date();
-  return result;
+function createDefaultNewStarProperties() {
+  return {
+    admins: [],
+    mods: [],
+    status: StarStatus.Bright,
+    configuration: {}, // todo
+    annotations: "new_star",
+  };
 }
 
 export class StarFactory {
@@ -23,7 +25,7 @@ export class StarFactory {
     handler,
     autoFetch = false,
     creationUtc = new Date(),
-    properties = createDefaultNewStarProperties(this._core),
+    properties = createDefaultNewStarProperties(),
   ) => {
     if (!type || !isValidUserStringValue(type))
       this._logger.errorAndThrow("createNewStar: type invalid.");
