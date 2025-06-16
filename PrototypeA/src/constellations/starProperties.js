@@ -112,7 +112,7 @@ export class StarProperties {
   }
 
   commitChanges = async () => {
-    if (!this._hasChanged) {
+    if (!this._hasChanged && !this._configuration._hasChanged) {
       this.logger.trace("commitChanges: No changes.");
       return;
     }
@@ -125,16 +125,16 @@ export class StarProperties {
       mods: this.mods,
       annotations: this.annotations,
       status: this.status,
-      configuration: {}, // todo
+      configuration: {
+        maxDiffSize: this.configuration.maxDiffSize,
+        softMinSnapshotDuration: this.configuration.softMinSnapshotDuration,
+        softMaxDiffDuration: this.configuration.softMaxDiffDuration,
+        softMaxNumDiffs: this.configuration.softMaxNumDiffs,
+        channelMonitoringMinutes: this.configuration.channelMonitoringMinutes,
+        cidMonitoringMinutes: this.configuration.cidMonitoringMinutes,
+      },
     });
     this._hasChanged = false;
-  };
-
-  isAdmin = (address) => {
-    return this.admins.includes(address);
-  };
-
-  isMod = (address) => {
-    return this.mods.includes(address);
+    this._configuration._hasChanged = false;
   };
 }

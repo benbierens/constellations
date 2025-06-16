@@ -83,12 +83,26 @@ export class Star {
   onStarProperties = async (starProperties) => {
     this._properties = new StarProperties(this._core);
     this._properties._status = starProperties.status;
-    this._properties._configuration = new StarConfiguration(this._core); // todo
+    this._properties._configuration = new StarConfiguration(this._core);
+    this._properties._configuration._maxDiffSize =
+      starProperties.configuration.maxDiffSize;
+    this._properties._configuration._softMinSnapshotDuration =
+      starProperties.configuration.softMinSnapshotDuration;
+    this._properties._configuration._softMaxDiffDuration =
+      starProperties.configuration.softMaxDiffDuration;
+    this._properties._configuration._softMaxNumDiffs =
+      starProperties.configuration.softMaxNumDiffs;
+    this._properties._configuration._channelMonitoringMinutes =
+      starProperties.configuration.channelMonitoringMinutes;
+    this._properties._configuration._cidMonitoringMinutes =
+      starProperties.configuration.cidMonitoringMinutes;
     this._properties._admins = starProperties.admins;
     this._properties._mods = starProperties.mods;
     this._properties._annotations = starProperties.annotations;
 
     this._properties._canModifyProperties = this._canModifyProperties;
+    this._properties._configuration._canModifyProperties =
+      this._canModifyProperties;
     this._properties._changeHandler = this._handleStarPropertiesChanged;
   };
 

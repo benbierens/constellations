@@ -6,6 +6,7 @@ import { CryptoService } from "../src/services/cryptoService";
 import { Core } from "../src/constellations/core";
 import { MockCodexService, MockWakuService } from "./mocks";
 import { StarStatus } from "../src/constellations/starProperties";
+import { createDefaultNewStarConfiguration } from "../src/constellations/starConfiguration";
 
 describe("TwoStarTest", () => {
   const logger = new Logger("TwoStarTest");
@@ -79,7 +80,14 @@ describe("TwoStarTest", () => {
       admins: [id1],
       mods: [id2],
       status: StarStatus.Bright,
-      configuration: {}, // todo
+      configuration: {
+        maxDiffSize: 21,
+        softMinSnapshotDuration: 22,
+        softMaxDiffDuration: 23,
+        softMaxNumDiffs: 24,
+        channelMonitoringMinutes: 25,
+        cidMonitoringMinutes: 26,
+      },
       annotations: "initial_annotation",
     };
 
@@ -103,9 +111,51 @@ describe("TwoStarTest", () => {
 
     expect(star1.properties.annotations).toEqual(properties.annotations);
     expect(star2.properties.annotations).toEqual(properties.annotations);
+
+    expect(star1.properties.configuration.maxDiffSize).toEqual(
+      properties.configuration.maxDiffSize,
+    );
+    expect(star2.properties.configuration.maxDiffSize).toEqual(
+      properties.configuration.maxDiffSize,
+    );
+
+    expect(star1.properties.configuration.softMinSnapshotDuration).toEqual(
+      properties.configuration.softMinSnapshotDuration,
+    );
+    expect(star2.properties.configuration.softMinSnapshotDuration).toEqual(
+      properties.configuration.softMinSnapshotDuration,
+    );
+
+    expect(star1.properties.configuration.softMaxDiffDuration).toEqual(
+      properties.configuration.softMaxDiffDuration,
+    );
+    expect(star2.properties.configuration.softMaxDiffDuration).toEqual(
+      properties.configuration.softMaxDiffDuration,
+    );
+
+    expect(star1.properties.configuration.softMaxNumDiffs).toEqual(
+      properties.configuration.softMaxNumDiffs,
+    );
+    expect(star2.properties.configuration.softMaxNumDiffs).toEqual(
+      properties.configuration.softMaxNumDiffs,
+    );
+
+    expect(star1.properties.configuration.channelMonitoringMinutes).toEqual(
+      properties.configuration.channelMonitoringMinutes,
+    );
+    expect(star2.properties.configuration.channelMonitoringMinutes).toEqual(
+      properties.configuration.channelMonitoringMinutes,
+    );
+
+    expect(star1.properties.configuration.cidMonitoringMinutes).toEqual(
+      properties.configuration.cidMonitoringMinutes,
+    );
+    expect(star2.properties.configuration.cidMonitoringMinutes).toEqual(
+      properties.configuration.cidMonitoringMinutes,
+    );
   });
 
-  describe("transmiting property updates", async () => {
+  describe("transmiting property updates", () => {
     var star1 = {};
     var star2 = {};
 
@@ -159,6 +209,112 @@ describe("TwoStarTest", () => {
 
       expect(star1.properties.annotations).toBe(updatedAnnotation);
       expect(star2.properties.annotations).toBe(updatedAnnotation);
+    });
+
+    describe("configuration updates", () => {
+      const defaultValues = createDefaultNewStarConfiguration();
+
+      it("updates maxDiffSize", async () => {
+        const newValue = 33;
+        expect(star1.properties.configuration.maxDiffSize).toBe(
+          defaultValues.maxDiffSize,
+        );
+        expect(star2.properties.configuration.maxDiffSize).toBe(
+          defaultValues.maxDiffSize,
+        );
+
+        star1.properties.configuration.maxDiffSize = newValue;
+        await star1.properties.commitChanges();
+
+        expect(star1.properties.configuration.maxDiffSize).toBe(newValue);
+        expect(star2.properties.configuration.maxDiffSize).toBe(newValue);
+      });
+
+      it("updates softMinSnapshotDuration", async () => {
+        const newValue = 33;
+        expect(star1.properties.configuration.softMinSnapshotDuration).toBe(
+          defaultValues.softMinSnapshotDuration,
+        );
+        expect(star2.properties.configuration.softMinSnapshotDuration).toBe(
+          defaultValues.softMinSnapshotDuration,
+        );
+        star1.properties.configuration.softMinSnapshotDuration = newValue;
+        await star1.properties.commitChanges();
+        expect(star1.properties.configuration.softMinSnapshotDuration).toBe(
+          newValue,
+        );
+        expect(star2.properties.configuration.softMinSnapshotDuration).toBe(
+          newValue,
+        );
+      });
+
+      it("updates softMaxDiffDuration", async () => {
+        const newValue = 33;
+        expect(star1.properties.configuration.softMaxDiffDuration).toBe(
+          defaultValues.softMaxDiffDuration,
+        );
+        expect(star2.properties.configuration.softMaxDiffDuration).toBe(
+          defaultValues.softMaxDiffDuration,
+        );
+        star1.properties.configuration.softMaxDiffDuration = newValue;
+        await star1.properties.commitChanges();
+        expect(star1.properties.configuration.softMaxDiffDuration).toBe(
+          newValue,
+        );
+        expect(star2.properties.configuration.softMaxDiffDuration).toBe(
+          newValue,
+        );
+      });
+
+      it("updates softMaxNumDiffs", async () => {
+        const newValue = 33;
+        expect(star1.properties.configuration.softMaxNumDiffs).toBe(
+          defaultValues.softMaxNumDiffs,
+        );
+        expect(star2.properties.configuration.softMaxNumDiffs).toBe(
+          defaultValues.softMaxNumDiffs,
+        );
+        star1.properties.configuration.softMaxNumDiffs = newValue;
+        await star1.properties.commitChanges();
+        expect(star1.properties.configuration.softMaxNumDiffs).toBe(newValue);
+        expect(star2.properties.configuration.softMaxNumDiffs).toBe(newValue);
+      });
+
+      it("updates channelMonitoringMinutes", async () => {
+        const newValue = 33;
+        expect(star1.properties.configuration.channelMonitoringMinutes).toBe(
+          defaultValues.channelMonitoringMinutes,
+        );
+        expect(star2.properties.configuration.channelMonitoringMinutes).toBe(
+          defaultValues.channelMonitoringMinutes,
+        );
+        star1.properties.configuration.channelMonitoringMinutes = newValue;
+        await star1.properties.commitChanges();
+        expect(star1.properties.configuration.channelMonitoringMinutes).toBe(
+          newValue,
+        );
+        expect(star2.properties.configuration.channelMonitoringMinutes).toBe(
+          newValue,
+        );
+      });
+
+      it("updates cidMonitoringMinutes", async () => {
+        const newValue = 33;
+        expect(star1.properties.configuration.cidMonitoringMinutes).toBe(
+          defaultValues.cidMonitoringMinutes,
+        );
+        expect(star2.properties.configuration.cidMonitoringMinutes).toBe(
+          defaultValues.cidMonitoringMinutes,
+        );
+        star1.properties.configuration.cidMonitoringMinutes = newValue;
+        await star1.properties.commitChanges();
+        expect(star1.properties.configuration.cidMonitoringMinutes).toBe(
+          newValue,
+        );
+        expect(star2.properties.configuration.cidMonitoringMinutes).toBe(
+          newValue,
+        );
+      });
     });
   });
 

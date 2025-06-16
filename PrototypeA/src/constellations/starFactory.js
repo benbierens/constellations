@@ -1,6 +1,7 @@
 import { HandlerDebouncer } from "./handlerDebouncer.js";
 import { isValidUserStringValue } from "./protocol.js";
 import { Star } from "./star.js";
+import { createDefaultNewStarConfiguration } from "./starConfiguration.js";
 import { StarInternal } from "./starInternal.js";
 import { StarStatus } from "./starProperties.js";
 
@@ -9,7 +10,7 @@ function createDefaultNewStarProperties() {
     admins: [],
     mods: [],
     status: StarStatus.Bright,
-    configuration: {}, // todo
+    configuration: createDefaultNewStarConfiguration(),
     annotations: "new_star",
   };
 }
