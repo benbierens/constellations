@@ -7,78 +7,92 @@ import { Core } from "../src/constellations/core";
 import { MockCodexService, MockWakuService } from "./mocks";
 
 describe("TwoStarTest", () => {
-    const logger = new Logger("TwoStarTest");
-    const codexService = new MockCodexService();
-    const wakuService = new MockWakuService();
+  const logger = new Logger("TwoStarTest");
+  const codexService = new MockCodexService();
+  const wakuService = new MockWakuService();
 
-    function createCore(name) {
-        const myLogger = logger.prefix(name);
-        const wallet = Wallet.createRandom();
-        const constellationNode = new ConstellationNode(wallet);
-        const cryptoService = new CryptoService(constellationNode);
+  const doNothingHandler = {
+    onDataChanged: async (star) => {},
+  };
 
-        const core = new Core(
-            myLogger,
-            constellationNode,
-            wakuService,
-            codexService,
-            cryptoService,
-        );
+  function createCore(name) {
+    const myLogger = logger.prefix(name);
+    const wallet = Wallet.createRandom();
+    const constellationNode = new ConstellationNode(wallet);
+    const cryptoService = new CryptoService(constellationNode);
 
-        codexService._core = core;
-        wakuService._core = core;
+    const core = new Core(
+      myLogger,
+      constellationNode,
+      wakuService,
+      codexService,
+      cryptoService,
+    );
 
-        return core;
-    }
+    codexService._core = core;
+    wakuService._core = core;
 
-    var core1 = {};
-    var core2 = {};
+    return core;
+  }
 
-    beforeEach(() =>{
-        core1 = createCore("One");
-        core2 = createCore("Two");
-    });
+  var core1 = {};
+  var core2 = {};
 
-    async function createStar(core, type, handler) {
-        const owners = [core.constellationNode.address];
-        return await core.starFactory.createNewStar(
-            type,
-            owners,
-            handler,
-        );
-    }
+  beforeEach(() => {
+    core1 = createCore("One");
+    core2 = createCore("Two");
+  });
 
-    async function connectStar(core, starId, handler) {
-        return await core.starFactory.connectToStar(starId, handler);
-    }
+  async function createStar(core, type, handler) {
+    const owners = [core.constellationNode.address];
+    return await core.starFactory.createNewStar(type, owners, handler);
+  }
 
-    it("runs", async () => {
-        const pastData = "pastData";
-        const presentData = "presentData";
-        const futureData = "futureData";
+  async function connectStar(core, starId, handler) {
+    return await core.starFactory.connectToStar(starId, handler);
+  }
 
-        const doNothingHandler = {
-            onDataChanged: async (star) => {}
-        };
-        const star1 = await createStar(core1, "test_star", doNothingHandler);
-        const starId = star1.starId;
+  it("transmits starInfo", async () => {
+    const type = "test_type_a";
 
-        // Set past and present data before second node connects.
-        await star1.setData(pastData);
-        await star1.setData(presentData);
+    const star1 = await createStar(core1, type, doNothingHandler);
+    const star2 = await connectStar(core2, star1.starId, doNothingHandler);
 
-        var receivedData = [];
-        const receiveHandler = {
-            onDataChanged: async (star) => {
-                receivedData.push(await star.getData());
-            }
-        };
-        const star2 = await connectStar(core2, starId, receiveHandler);
+    expect(star1.starId).toEqual(star2.starId);
 
-        // Set future data.
-        await star1.setData(futureData);
+    expect(star1.starInfo.type).toEqual(type);
+    expect(star2.starInfo.type).toEqual(type);
 
-        // star2 has received present and future data.
-        expect(receivedData).toEqual([presentData, futureData]);
-    })
+    expect(star1.starInfo.owners).toEqual([core1.constellationNode.address]);
+    expect(star2.starInfo.owners).toEqual([core1.constellationNode.address]);
+
+    expect(star1.starInfo.creationUtc).toEqual(star2.starInfo.creationUtc);
+  });
+
+  it("transmits data", async () => {
+    const pastData = "pastData";
+    const presentData = "presentData";
+    const futureData = "futureData";
+
+    const star1 = await createStar(core1, "test_star", doNothingHandler);
+    const starId = star1.starId;
+
+    // Set past and present data before second node connects.
+    await star1.setData(pastData);
+    await star1.setData(presentData);
+
+    var receivedData = [];
+    const receiveHandler = {
+      onDataChanged: async (star) => {
+        receivedData.push(await star.getData());
+      },
+    };
+    const star2 = await connectStar(core2, starId, receiveHandler);
+
+    // Set future data.
+    await star1.setData(futureData);
+
+    // star2 has received present and future data.
+    expect(receivedData).toEqual([presentData, futureData]);
+  });
 });
