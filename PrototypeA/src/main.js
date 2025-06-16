@@ -7,6 +7,8 @@ import { Core } from "./constellations/core.js";
 import { CryptoService } from "./services/cryptoService.js";
 import { ConstellationNode } from "./constellations/constellationNode.js";
 import { connectStarExample } from "./connectStar.js";
+import { Wallet } from "ethers";
+import { WakuNode } from "./services/wakuNode.js";
 
 const privateKey =
   "0x821f73df2d38ac506e9735306766be701afcec7def45f7bfa184b6fd4e96185d";
@@ -82,17 +84,19 @@ async function wakuExample(wakuService) {
 export async function main() {
   log("Initializing...");
 
-  const constellationNode = new ConstellationNode(privateKey);
+  const wallet = new Wallet(privateKey);
+  const constellationNode = new ConstellationNode(wallet);
   const cryptoService = new CryptoService(constellationNode);
   const codexService = new CodexService(logger, codexAddress);
+  const wakuNode = new WakuNode(logger, wakuBootstrapNodes);
   const wakuService = new WakuService(
     logger,
-    constellationNode.wallet,
-    wakuBootstrapNodes,
+    wallet,
+    wakuNode,
   );
 
-  await wakuService.start();
-  log("Started Waku service.");
+  await wakuNode.start();
+  log("Started Waku node.");
 
   // await codexExample(codexService);
   // await wakuExample(wakuService);
@@ -108,6 +112,6 @@ export async function main() {
   if (connectId.length < 1) await createNewStarExample(core);
   else await connectStarExample(core, connectId);
 
-  await wakuService.stop();
-  log("Stopped Waku service");
+  await wakuNode.stop();
+  log("Stopped Waku node.");
 }

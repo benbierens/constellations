@@ -5,7 +5,6 @@ import { Protocols, createLightNode, waitForRemotePeer } from "@waku/sdk";
 import { Dispatcher, Store } from "waku-dispatcher";
 
 const messageType = "yes";
-const networkConfig = { clusterId: 42, shards: [0] };
 
 export class WakuChannel {
   constructor(logger, handler, wallet, dispatcher, contentTopic) {
@@ -58,37 +57,18 @@ export class WakuChannel {
 }
 
 export class WakuService {
-  constructor(logger, wallet, bootstrapNodes) {
+  constructor(logger, wallet, wakuNode) {
     this.logger = logger.prefix("Waku");
     this.wallet = wallet;
-    this.bootstrapNodes = bootstrapNodes;
+    this.wakuNode = wakuNode;
   }
-
-  start = async () => {
-    this.node = await createLightNode({
-      networkConfig: networkConfig,
-      defaultBootstrap: false,
-      bootstrapPeers: this.bootstrapNodes,
-      numPeersToUse: 3,
-    });
-    await this.node.start();
-    await this.node.waitForPeers([
-      Protocols.Store,
-      Protocols.Filter,
-      Protocols.LightPush,
-    ]);
-  };
-
-  stop = async () => {
-    await this.node.stop();
-  };
 
   openChannel = async (contentTopic, handler, ephemeral = true) => {
     const store = new Store(`constellations-${contentTopic}`);
     await store.ready();
     this.logger.trace("Store ready");
     const dispatcher = new Dispatcher(
-      this.node,
+      this.wakuNode.node,
       contentTopic,
       ephemeral,
       store,
