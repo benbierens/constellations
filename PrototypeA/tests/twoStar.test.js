@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, it } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, it } from "vitest";
 import { Logger } from "../src/services/logger";
 import { ConstellationNode } from "../src/constellations/constellationNode";
 import { Wallet } from "ethers";
@@ -6,6 +6,7 @@ import { CryptoService } from "../src/services/cryptoService";
 import { WakuService } from "../src/services/wakuService";
 import { CodexService } from "../src/services/codexService";
 import { Core } from "../src/constellations/core";
+import { WakuNode } from "../src/services/wakuNode";
 
 const codexAddress = "http://192.168.178.26:8081";
 
@@ -18,8 +19,9 @@ const wakuBootstrapNodes = [
 describe("TwoStarTest", () => {
     const logger = new Logger("TwoStarTest");
     const codexService = new CodexService(logger, codexAddress);
+    const wakuNode = new WakuNode(logger, wakuBootstrapNodes);
 
-    async function createCore(name) {
+    function createCore(name) {
         const myLogger = logger.prefix(name);
         const wallet = Wallet.createRandom();
         const constellationNode = new ConstellationNode(wallet);
@@ -27,11 +29,9 @@ describe("TwoStarTest", () => {
         const wakuService = new WakuService(
         myLogger,
         wallet,
-        wakuBootstrapNodes,
+        wakuNode,
         );
     
-        await wakuService.start();
-        
         return new Core(
             myLogger,
             constellationNode,
@@ -41,26 +41,22 @@ describe("TwoStarTest", () => {
         );
     }
 
-    async function destroyCore(core) {
-        await core.wakuService.stop();
-    }
-
     var core1 = {};
     var core2 = {};
 
-    beforeEach(async () =>{
+    beforeAll(async () => {
         if (!await codexService.isOnline()) logger.errorAndThrow("Test requires a codex node.");
-
-        core1 = await createCore("One");
-        core2 = await createCore("Two");
-    }, 60 * 1000);
-
-    afterEach(async () => {
-        await destroyCore(core1);
-        await destroyCore(core2);
-
+        await wakuNode.start();
     })
 
+    afterAll(async () => {
+        await wakuNode.stop();
+    });
+
+    beforeEach(() =>{
+        core1 = createCore("One");
+        core2 = createCore("Two");
+    });
 
 
     it("runs", async () => {
