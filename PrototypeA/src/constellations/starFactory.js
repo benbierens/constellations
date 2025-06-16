@@ -82,7 +82,7 @@ export class StarFactory {
     // So we wait a moment to receive and process those.
     if (await this._waitForInitialized(star)) {
       this._logger.trace(
-        `connectToStar: Fast-Success. starId: '${star.starInfo.starId}'`,
+        `connectToStar: Fast-Success. starId: '${star.starId}'`,
       );
       await debouncer.resolve();
       return star;
@@ -104,9 +104,7 @@ export class StarFactory {
       );
     }
 
-    this._logger.trace(
-      `connectToStar: Slow-Success. starId: '${star.starInfo.starId}'`,
-    );
+    this._logger.trace(`connectToStar: Slow-Success. starId: '${star.starId}'`);
     await debouncer.resolve();
     return star;
   };

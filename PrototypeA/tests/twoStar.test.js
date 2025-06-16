@@ -5,6 +5,7 @@ import { Wallet } from "ethers";
 import { CryptoService } from "../src/services/cryptoService";
 import { Core } from "../src/constellations/core";
 import { MockCodexService, MockWakuService } from "./mocks";
+import { StarStatus } from "../src/constellations/starProperties";
 
 describe("TwoStarTest", () => {
   const logger = new Logger("TwoStarTest");
@@ -36,11 +37,15 @@ describe("TwoStarTest", () => {
   }
 
   var core1 = {};
+  var id1 = "";
   var core2 = {};
+  var id2 = "";
 
   beforeEach(() => {
     core1 = createCore("One");
+    id1 = core1.constellationNode.address;
     core2 = createCore("Two");
+    id2 = core2.constellationNode.address;
   });
 
   async function createStar(core, type, handler) {
@@ -63,10 +68,41 @@ describe("TwoStarTest", () => {
     expect(star1.starInfo.type).toEqual(type);
     expect(star2.starInfo.type).toEqual(type);
 
-    expect(star1.starInfo.owners).toEqual([core1.constellationNode.address]);
-    expect(star2.starInfo.owners).toEqual([core1.constellationNode.address]);
+    expect(star1.starInfo.owners).toEqual([id1]);
+    expect(star2.starInfo.owners).toEqual([id1]);
 
     expect(star1.starInfo.creationUtc).toEqual(star2.starInfo.creationUtc);
+  });
+
+  it("transmits initial properties", async () => {
+    const properties = {
+      admins: [id1],
+      mods: [id2],
+      status: StarStatus.Bright,
+      configuration: {}, // todo
+      annotations: "initial_annotation",
+    };
+
+    const star1 = await core1.starFactory.createNewStar(
+      "test_type",
+      [id1],
+      doNothingHandler,
+      new Date(),
+      properties,
+    );
+    const star2 = await connectStar(core2, star1.starId, doNothingHandler);
+
+    expect(star1.properties.admins).toEqual([id1]);
+    expect(star2.properties.admins).toEqual([id1]);
+
+    expect(star1.properties.mods).toEqual([id2]);
+    expect(star2.properties.mods).toEqual([id2]);
+
+    expect(star1.properties.status).toEqual(StarStatus.Bright);
+    expect(star2.properties.status).toEqual(StarStatus.Bright);
+
+    expect(star1.properties.annotations).toEqual(properties.annotations);
+    expect(star2.properties.annotations).toEqual(properties.annotations);
   });
 
   it("transmits data", async () => {
