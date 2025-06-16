@@ -89,11 +89,7 @@ export async function main() {
   const cryptoService = new CryptoService(constellationNode);
   const codexService = new CodexService(logger, codexAddress);
   const wakuNode = new WakuNode(logger, wakuBootstrapNodes);
-  const wakuService = new WakuService(
-    logger,
-    wallet,
-    wakuNode,
-  );
+  const wakuService = new WakuService(logger, wallet, wakuNode);
 
   await wakuNode.start();
   log("Started Waku node.");

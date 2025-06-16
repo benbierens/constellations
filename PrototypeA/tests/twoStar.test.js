@@ -1,21 +1,10 @@
-import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { Logger } from "../src/services/logger";
 import { ConstellationNode } from "../src/constellations/constellationNode";
 import { Wallet } from "ethers";
 import { CryptoService } from "../src/services/cryptoService";
-import { WakuService } from "../src/services/wakuService";
-import { CodexService } from "../src/services/codexService";
 import { Core } from "../src/constellations/core";
-import { WakuNode } from "../src/services/wakuNode";
 import { MockCodexService, MockWakuService } from "./mocks";
-
-const codexAddress = "http://192.168.178.26:8081";
-
-const wakuBootstrapNodes = [
-  "/dns4/waku.bloxy.one/tcp/8000/wss/p2p/16Uiu2HAmMJy3oXGzRjt2iKmYoCnaEkj55rE55YperMpemtGs9Da2",
-  "/dns4/waku-test.bloxy.one/tcp/8095/wss/p2p/16Uiu2HAmSZbDB7CusdRhgkD81VssRjQV5ZH13FbzCGcdnbbh6VwZ",
-  "/dns4/node-01.do-ams3.waku.sandbox.status.im/tcp/8000/wss/p2p/16Uiu2HAmNaeL4p3WEYzC9mgXBmBWSgWjPHRvatZTXnp8Jgv3iKsb",
-];
 
 describe("TwoStarTest", () => {
     const logger = new Logger("TwoStarTest");
