@@ -89,9 +89,7 @@ describe("TwoStarTest", () => {
         // Set future data.
         await star1.setData(futureData);
 
-        // star1 has received present and future data.
-        expect(receivedData.length).toBe(2);
-        expect(receivedData[0]).toEqual(presentData);
-        expect(receivedData[1]).toEqual(futureData);
+        // star2 has received present and future data.
+        expect(receivedData).toEqual([presentData, futureData]);
     })
 });

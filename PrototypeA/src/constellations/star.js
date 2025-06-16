@@ -9,7 +9,6 @@ export class Star {
     this._internal = starInternal;
     this._handler = handler;
 
-    this.autoFetch = false;
     this._starInfo = null;
     this._starProperties = null;
     this._cdxCid = null;

@@ -1,3 +1,4 @@
+import { HandlerDebouncer } from "./handlerDebouncer.js";
 import { isValidUserStringValue } from "./protocol.js";
 import { Star } from "./star.js";
 import { StarInternal } from "./starInternal.js";
@@ -23,7 +24,6 @@ export class StarFactory {
     type,
     owners,
     handler,
-    autoFetch = false,
     creationUtc = new Date(),
     properties = createDefaultNewStarProperties(),
   ) => {
@@ -50,8 +50,6 @@ export class StarFactory {
     const star = new Star(this._core, internal, handler);
     internal.init(star);
 
-    star.autoFetch = autoFetch;
-
     await channel.open(internal);
 
     await internal.sendStarInfo(starInfo);
@@ -65,7 +63,7 @@ export class StarFactory {
     return star;
   };
 
-  connectToStar = async (starId, handler, autoFetch = false) => {
+  connectToStar = async (starId, handler) => {
     if (!starId) this._logger.errorAndThrow("connectToStar: starId invalid.");
     if (!handler) this._logger.errorAndThrow("connectToStar: handler invalid.");
 
@@ -73,10 +71,10 @@ export class StarFactory {
     const channel = await this._core.starChannelFactory.createById(starId);
 
     const internal = new StarInternal(this._core, starId, channel);
-    const star = new Star(this._core, internal, handler);
+    const debouncer = new HandlerDebouncer(this._core, handler);
+    const star = new Star(this._core, internal, debouncer);
     internal.init(star);
 
-    star.autoFetch = autoFetch;
     await channel.open(internal);
 
     // Now that the channel is open, the star starts processing historic messages.
@@ -86,6 +84,7 @@ export class StarFactory {
       this._logger.trace(
         `connectToStar: Fast-Success. starId: '${star.starInfo.starId}'`,
       );
+      await debouncer.resolve();
       return star;
     }
 
@@ -108,6 +107,7 @@ export class StarFactory {
     this._logger.trace(
       `connectToStar: Slow-Success. starId: '${star.starInfo.starId}'`,
     );
+    await debouncer.resolve();
     return star;
   };
 

@@ -8,13 +8,10 @@ export async function createNewStarExample(core) {
       core.logger.trace("(APPLICATION) data changed!");
     },
   };
-  const autoFetch = true; // Tells the star to automatically cache the data with its codex node.
-
   const star = await core.starFactory.createNewStar(
     type,
     owners,
     handler,
-    autoFetch,
   );
 
   core.logger.trace(`Star is created. starId: '${star.starId}'`);
