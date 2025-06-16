@@ -13,6 +13,7 @@ export const StarStatus = {
 
 export class StarProperties {
   constructor(core) {
+    this._core = core;
     this.logger = core.logger.prefix("StarProperties");
 
     this._status = StarStatus.Unknown;
@@ -65,7 +66,7 @@ export class StarProperties {
       this.logger.errorAndThrow(
         "set admins: Attempt to set admins to non-array value",
       );
-    if (this.core.arraysEqual(this._admins, newValue)) return;
+    if (this._core.arraysEqual(this._admins, newValue)) return;
     this._admins = newValue;
     this._hasChanged = true;
   }
@@ -83,7 +84,7 @@ export class StarProperties {
       this.logger.errorAndThrow(
         "set mods: Attempt to set mods to non-array value",
       );
-    if (this.core.arraysEqual(this._mods, newValue)) return;
+    if (this._core.arraysEqual(this._mods, newValue)) return;
     this._mods = newValue;
     this._hasChanged = true;
   }

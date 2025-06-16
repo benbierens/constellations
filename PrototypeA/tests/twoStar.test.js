@@ -105,6 +105,63 @@ describe("TwoStarTest", () => {
     expect(star2.properties.annotations).toEqual(properties.annotations);
   });
 
+  describe("transmiting property updates", async () => {
+    var star1 = {};
+    var star2 = {};
+
+    beforeEach(async () => {
+      star1 = await createStar(core1, "test_type", doNothingHandler);
+      star2 = await connectStar(core2, star1.starId, doNothingHandler);
+    });
+
+    it("updates admins", async () => {
+      expect(star1.properties.admins).toEqual([]);
+      expect(star2.properties.admins).toEqual([]);
+
+      star1.properties.admins = [id2];
+      await star1.properties.commitChanges();
+
+      expect(star1.properties.admins).toEqual([id2]);
+      expect(star2.properties.admins).toEqual([id2]);
+    });
+
+    it("updates mods", async () => {
+      expect(star1.properties.mods).toEqual([]);
+      expect(star2.properties.mods).toEqual([]);
+
+      star1.properties.mods = [id2];
+      await star1.properties.commitChanges();
+
+      expect(star1.properties.mods).toEqual([id2]);
+      expect(star2.properties.mods).toEqual([id2]);
+    });
+
+    it("updates status", async () => {
+      expect(star1.properties.status).toBe(StarStatus.Bright);
+      expect(star2.properties.status).toBe(StarStatus.Bright);
+
+      star1.properties.status = StarStatus.Cold;
+      await star1.properties.commitChanges();
+
+      expect(star1.properties.status).toBe(StarStatus.Cold);
+      expect(star2.properties.status).toBe(StarStatus.Cold);
+    });
+
+    it("updates annotations", async () => {
+      const defaultAnnotation = "new_star";
+      const updatedAnnotation = "updated_annnotation";
+
+      expect(star1.properties.annotations).toBe(defaultAnnotation);
+      expect(star2.properties.annotations).toBe(defaultAnnotation);
+
+      star1.properties.annotations = updatedAnnotation;
+      await star1.properties.commitChanges();
+
+      expect(star1.properties.annotations).toBe(updatedAnnotation);
+      expect(star2.properties.annotations).toBe(updatedAnnotation);
+    });
+  });
+
   it("transmits data", async () => {
     const pastData = "pastData";
     const presentData = "presentData";

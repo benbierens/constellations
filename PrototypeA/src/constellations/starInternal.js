@@ -104,7 +104,7 @@ export class StarInternal {
       this._logger.errorAndThrow("sendStarProperties: status not set.");
     if (
       starProperties.status != StarStatus.Bright &&
-      starProperties.status != StarStatus.concat
+      starProperties.status != StarStatus.Cold
     )
       this._logger.errorAndThrow("sendStarProperties: status: Invalid value.");
     // todo validate config
