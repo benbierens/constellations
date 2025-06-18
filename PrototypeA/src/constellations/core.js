@@ -1,3 +1,4 @@
+import { TimerService } from "../services/timerService.js";
 import { StarChannelFactory } from "./starChannelFactory.js";
 import { StarFactory } from "./starFactory.js";
 
@@ -16,6 +17,7 @@ export class Core {
     this.cryptoService = cryptoService;
     this.starChannelFactory = new StarChannelFactory(this);
     this.starFactory = new StarFactory(this);
+    this.timerService = new TimerService(this);
   }
 
   sleep = async (ms) => {
