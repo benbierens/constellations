@@ -27,7 +27,13 @@ export class Timer {
   _timerWorker = async () => {
     while (this._isRunning) {
       await this._core.sleep(this._interval);
-      await this._callback();
+      try {
+        await this._callback();
+      }
+      catch (error) {
+        this._logger.error("_timerWorker: Timer stopped. Error during callback: " + error);
+        return;
+      }
     }
   }
 }
