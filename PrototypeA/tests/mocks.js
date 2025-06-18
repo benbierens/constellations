@@ -21,9 +21,9 @@ export class MockCodexService {
         d.mimetype == mimetype
       )
         return d.cid;
-      await this._core.sleep(10);
+      await this._core.sleep(1);
     }
-    await this._core.sleep(100);
+    await this._core.sleep(1);
     const cid = this._newCid();
     this._data.push({
       cid: cid,
@@ -35,15 +35,15 @@ export class MockCodexService {
   };
 
   fetchData = async (cid) => {
-    await this._core.sleep(100);
+    await this._core.sleep(1);
   };
 
   downloadData = async (cid) => {
-    await this._core.sleep(500);
+    await this._core.sleep(5);
     for (var i = 0; i < this._data.length; i++) {
       const d = this._data[i];
       if (d.cid == cid) return d.fileData;
-      await this._core.sleep(30);
+      await this._core.sleep(3);
     }
     throw new Error("mockCodex data not found.");
   };
@@ -65,7 +65,7 @@ export class MockWakuChannel {
     for (var i = 0; i < this._messages.length; i++) {
       const m = this._messages[i];
       await this.sendToAll(m);
-      await this._core.sleep(50);
+      await this._core.sleep(5);
     }
   };
 
@@ -89,16 +89,16 @@ export class MockWakuService {
   }
 
   openChannel = async (contentTopic, handler, ephemeral = true) => {
-    await this._core.sleep(100);
+    await this._core.sleep(1);
 
     for (var i = 0; i < this._channels.length; i++) {
       const c = this._channels[i];
       if (c.topic == contentTopic) {
-        await this._core.sleep(100);
+        await this._core.sleep(1);
         await c.obj.pushMessages(handler);
         return c.obj;
       }
-      await this._core.sleep(10);
+      await this._core.sleep(1);
     }
 
     const newChannel = {
@@ -107,7 +107,7 @@ export class MockWakuService {
     };
     newChannel.obj._core = this._core;
     this._channels.push(newChannel);
-    await this._core.sleep(100);
+    await this._core.sleep(1);
     return newChannel.obj;
   };
 }

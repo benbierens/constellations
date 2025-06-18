@@ -117,9 +117,9 @@ export class StarFactory {
   _waitFor = async (condition) => {
     var count = 0;
     while (!condition()) {
-      await this._core.sleep(100);
+      await this._core.sleep(20);
       count++;
-      if (count > 30) return false;
+      if (count > 200) return false;
     }
     return true;
   };

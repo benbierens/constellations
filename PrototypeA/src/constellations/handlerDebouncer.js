@@ -14,7 +14,7 @@ export class HandlerDebouncer {
   }
 
   resolve = async () => {
-    await this._core.sleep(500);
+    await this._core.sleep(100);
     this._resolved = true;
 
     if (this.__star) {
