@@ -13,7 +13,7 @@ export class Timer {
     if (this._isRunning) this._logger.errorAndThrow("start: Already started");
     this._isRunning = true;
     this._worker = this._timerWorker();
-  }
+  };
 
   stop = async () => {
     if (!this._isRunning) this._logger.errorAndThrow("stop: Not started");
@@ -22,7 +22,7 @@ export class Timer {
     // await this._worker;? This will block the stop function for the remaining sleep time.
     this._worker = null;
     this._logger.trace("stop: Stopped.");
-  }
+  };
 
   _timerWorker = async () => {
     while (this._isRunning) {
@@ -31,13 +31,14 @@ export class Timer {
         if (this._isRunning) {
           await this._callback();
         }
-      }
-      catch (error) {
-        this._logger.error("_timerWorker: Timer stopped. Error during callback: " + error);
+      } catch (error) {
+        this._logger.error(
+          "_timerWorker: Timer stopped. Error during callback: " + error,
+        );
         return;
       }
     }
-  }
+  };
 }
 
 export class TimerService {
@@ -51,5 +52,5 @@ export class TimerService {
     this._logger.trace(`Starting new timer: '${name}'`);
     timer.start();
     return timer;
-  }
+  };
 }

@@ -10,7 +10,7 @@ export const packetHeaders = {
   responseCdxCid: "responseCdxCid",
 
   healthChannel: "hChn",
-  healthCid: "hCid"
+  healthCid: "hCid",
 };
 
 export function starIdToContentTopic(starId) {

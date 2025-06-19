@@ -59,11 +59,11 @@ export class StarInternal {
 
   get health() {
     if (!this._starProperties.isReady) {
-      this._logger.error("get health: Accessed before initialized")
+      this._logger.error("get health: Accessed before initialized");
       return {};
     }
     return {
-      channel: this._healthMonitor.channelHealth
+      channel: this._healthMonitor.channelHealth,
     };
   }
 
@@ -229,7 +229,9 @@ export class StarInternal {
       await this._cdxCid.applyDelayedUpdate();
     }
 
-    this._logger.trace("_starProperties_onValueChanged: Updating health monitor");
+    this._logger.trace(
+      "_starProperties_onValueChanged: Updating health monitor",
+    );
     if (this._healthMonitor) {
       await this._healthMonitor.stop();
     }
