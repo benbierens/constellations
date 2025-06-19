@@ -102,7 +102,7 @@ describe(
     }
 
     for (var numStars = 2; numStars < 10; numStars++) {
-      it(`Channel count - ${numStars} stars`, async () => {
+      it(`measures channel health - ${numStars} stars`, async () => {
         const stars = await startStars(numStars);
         expect(stars.length).toEqual(numStars);
 
@@ -110,22 +110,31 @@ describe(
           expect(star.isInitialized()).toBeTruthy();
 
           const health = star.health;
+          const recent = new Date() - 2 * testHealthUpdateInterval;
           expect(health.channel.count).toEqual(numStars);
+          expect(health.channel.lastUpdate.getTime()).toBeGreaterThan(recent);
+        });
+      });
+
+      it(`measures data health - ${numStars} stars`, async () => {
+        const stars = await startStars(numStars);
+        expect(stars.length).toEqual(numStars);
+
+        stars.forEach((star) => {
+          expect(star.isInitialized()).toBeTruthy();
+          star.setAutoFetch(true);
+        });
+
+        await stars[0].setData("ThisIsTheData");
+        await waitForHealthUpdate();
+
+        stars.forEach((star) => {
+          const health = star.health;
+          const recent = new Date() - 2 * testHealthUpdateInterval;
+          expect(health.cid.count).toEqual(numStars);
+          expect(health.cid.lastUpdate.getTime()).toBeGreaterThan(recent);
         });
       });
     }
   },
 );
-
-// health() {
-//     return {
-//       channel: {
-//         count: this._channelMetric.count,
-//         lastUpdate: this._channelMetric.lastUpdate,
-//       },
-//       cid: {
-//         count: this._cidMetric.count,
-//         lastUpdate: this._cidMetric.lastUpdate,
-//       },
-//     };
-//   }

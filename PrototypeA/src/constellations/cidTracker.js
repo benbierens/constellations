@@ -67,6 +67,8 @@ export class CidTracker {
 
       this._lastFetch = new Date();
       this._have = true;
+      todo when _have goes from false to true, trigger healtmonitor cid metric.trySendNow
+      this._logger.trace("doFetch: Successful");
     } catch (error) {
       this._logger.errorAndThrow("Failed to fetch CID: " + error);
     }
@@ -83,6 +85,8 @@ export class CidTracker {
       const data = await this._core.codexService.downloadData(this._cid);
       this._lastFetch = new Date();
       this._have = true;
+      todo when _have goes from false to true, trigger healtmonitor cid metric.trySendNow
+      this._logger.trace("doDownload: Successful");
       return data;
     } catch (error) {
       this._logger.errorAndThrow("Failed to download CID: " + error);

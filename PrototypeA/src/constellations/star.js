@@ -57,6 +57,10 @@ export class Star {
     return await this._cidTracker.doDownload();
   };
 
+  setAutoFetch = (autoFetch) => {
+    this._cidTracker.shouldFetch = autoFetch;
+  };
+
   isInitialized = () => {
     return this.isStarInfoInitialized() && this.arePropertiesInitialized();
   };

@@ -214,9 +214,16 @@ export class HealthMonitor {
 
   _checkCanSendCid = () => {
     // Check that the CID is known, and that we have it stored.
-    if (this._cidTracker.cid && this._cidTracker.have) {
-      return true;
+    if (!this._cidTracker.cid) {
+      this._logger.trace("Tracker has no cid");
+      return false;
     }
-    return false;
+
+    if (!this._cidTracker.have) {
+      this._logger.trace("Tracker has not fetched the data");
+      return false;
+    }
+
+    return true;
   };
 }
