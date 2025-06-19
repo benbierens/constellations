@@ -35,6 +35,11 @@ export class WakuChannel {
     this.log("Channel is open.");
   }
 
+  start = async () => {
+    await this.dispatcher.start();
+    await this.dispatcher.dispatchLocalQuery();
+  }
+
   send = async (msg) => {
     const res = await this.dispatcher.emitTo(
       this.dispatcher.encoder,
@@ -85,9 +90,6 @@ export class WakuService {
       dispatcher,
       contentTopic,
     );
-
-    await dispatcher.start();
-    await dispatcher.dispatchLocalQuery();
 
     this.logger.trace("Dispatcher started");
 

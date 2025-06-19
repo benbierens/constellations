@@ -18,6 +18,7 @@ export class StarChannel {
     this._handler = handler;
     const topic = starIdToContentTopic(this._starId);
     this._channel = await this._core.wakuService.openChannel(topic, this);
+    await this._channel.start();
   };
 
   close = async () => {

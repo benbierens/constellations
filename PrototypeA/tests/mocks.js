@@ -60,6 +60,10 @@ export class MockWakuChannelForSender {
     this._sender = sender;
   }
 
+  start = async () => {
+    await this._mock._start();
+  }
+
   send = async (msg) => {
     await this._mock._send(this._sender, msg);
   };
@@ -73,13 +77,16 @@ export class MockWakuChannel {
     this._messages = [];
   }
 
-  _pushMessages = async (newHandler) => {
-    this._handlers.push(newHandler);
+  _start = async () => {
     for (var i = 0; i < this._messages.length; i++) {
       const m = this._messages[i];
       await this._sendToAll(m.sender, m.msg);
       await this._core.sleep(5);
     }
+  }
+
+  _pushMessages = async (newHandler) => {
+    this._handlers.push(newHandler);
   };
 
   _send = async (sender, msg) => {
