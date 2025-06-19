@@ -25,6 +25,14 @@ export class CidTracker {
     await this._timer.stop();
   };
 
+  get cid() {
+    return this._cid;
+  }
+
+  get have() {
+    return this._have;
+  }
+
   onNewCid = async (newCid) => {
     if (this._cid == newCid) return;
 
@@ -35,10 +43,6 @@ export class CidTracker {
       await this.doFetch();
     }
   };
-
-  get have() {
-    return this._have;
-  }
 
   doFetch = async () => {
     if (!this._cid) {

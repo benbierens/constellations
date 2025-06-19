@@ -7,7 +7,7 @@ class HealthMetric {
     logger,
     channel,
     header,
-    requiredPayload,
+    getRequiredPayload,
     checkCanSend,
   ) {
     this._name = name;
@@ -15,7 +15,7 @@ class HealthMetric {
     this._logger = logger.prefix(name);
     this._channel = channel;
     this._header = header;
-    this._requiredPayload = requiredPayload;
+    this._getRequiredPayload = getRequiredPayload;
     this._check = checkCanSend;
 
     this._timer = null;
@@ -56,7 +56,8 @@ class HealthMetric {
   onPacket = async (sender, packet) => {
     if (packet.header != this._header) return false;
 
-    if (this._requiredPayload && packet.payload != this._requiredPayload) {
+    const requiredPayload = this._getRequiredPayload();
+    if (requiredPayload && packet.payload != requiredPayload) {
       this._logger.trace("onPacket: Ignored, required payload absent");
       return true;
     }
@@ -82,10 +83,11 @@ class HealthMetric {
       return;
     }
 
-    if (this._requiredPayload) {
+    const requiredPayload = this._getRequiredPayload();
+    if (requiredPayload) {
       await this._channel.sendPacket({
         header: this._header,
-        payload: this._requiredPayload,
+        payload: requiredPayload,
       });
     } else {
       await this._channel.sendPacket({
@@ -114,15 +116,27 @@ export class HealthMonitor {
     this._channel = channel;
     this._cidTracker = cidTracker;
 
-    const channelRequiredPayload = null;
+    const getChannelRequiredPayload = () => {
+      return null;
+    };
     this._channelMetric = new HealthMetric(
       "CHN",
       core,
       this._logger,
       this._channel,
       packetHeaders.healthChannel,
-      channelRequiredPayload,
+      getChannelRequiredPayload,
       this._checkCanSendChannel,
+    );
+
+    this._cidMetric = new HealthMetric(
+      "CID",
+      core,
+      this._logger,
+      this._channel,
+      packetHeaders.healthCid,
+      this._getCidRequiredPayload,
+      this._checkCanSendCid,
     );
   }
 
@@ -151,5 +165,18 @@ export class HealthMonitor {
 
   _checkCanSendChannel = async () => {
     return true; // We're in the channel, so can always send.
+  };
+
+  _getCidRequiredPayload = () => {
+    const cid = this._cidTracker.cid;
+    if (!cid) return "_cid_not_initialized_";
+    return cid;
+  };
+
+  _checkCanSendCid = async () => {
+    if (this._cidTracker.cid && this._cidTracker.have) {
+      return true;
+    }
+    return false;
   };
 }
