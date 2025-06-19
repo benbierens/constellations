@@ -78,31 +78,22 @@ class HealthMetric {
   };
 
   trySendNow = async () => {
-    this._logger.trace("trySendNow: checking...");
-
     if (!(await this._check())) {
       this._logger.trace("trySendNow: Denied by canSendCheck");
       return;
     }
-this._logger.trace("trySendNow: payload...");
-    
+
     const requiredPayload = this._getRequiredPayload();
     if (requiredPayload) {
-      this._logger.trace("trySendNow: send with payload...");
-    
       await this._channel.sendPacket({
         header: this._header,
         payload: requiredPayload,
       });
     } else {
-      this._logger.trace("trySendNow: send without payload...");
-    
       await this._channel.sendPacket({
         header: this._header,
       });
     }
-
-    this._logger.trace("trySendNow: Packet sent");
   };
 
   _onTimer = async () => {
@@ -145,17 +136,17 @@ export class HealthMonitor {
   }
 
   start = async (starConfig) => {
-    // await this._channelMetric.start(
-    //   starConfig.channelMonitoringMinutes * millisecondsPerMinute,
-    // );
-    // await this._cidMetric.start(
-    //   starConfig.cidMonitoringMinutes * millisecondsPerMinute,
-    // );
+    await this._channelMetric.start(
+      starConfig.channelMonitoringMinutes * millisecondsPerMinute,
+    );
+    await this._cidMetric.start(
+      starConfig.cidMonitoringMinutes * millisecondsPerMinute,
+    );
   };
 
   stop = async () => {
-    // await this._channelMetric.stop();
-    // await this._cidMetric.stop();
+    await this._channelMetric.stop();
+    await this._cidMetric.stop();
   };
 
   onPacket = async (sender, packet) => {

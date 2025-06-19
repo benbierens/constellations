@@ -38,7 +38,7 @@ export class WakuChannel {
   start = async () => {
     await this.dispatcher.start();
     await this.dispatcher.dispatchLocalQuery();
-  }
+  };
 
   send = async (msg) => {
     const res = await this.dispatcher.emitTo(
