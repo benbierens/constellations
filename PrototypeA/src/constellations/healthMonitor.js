@@ -116,16 +116,13 @@ export class HealthMonitor {
     this._channel = channel;
     this._cidTracker = cidTracker;
 
-    const getChannelRequiredPayload = () => {
-      return null;
-    };
     this._channelMetric = new HealthMetric(
       "CHN",
       core,
       this._logger,
       this._channel,
       packetHeaders.healthChannel,
-      getChannelRequiredPayload,
+      this._getChannelRequiredPayload,
       this._checkCanSendChannel,
     );
 
@@ -144,26 +141,41 @@ export class HealthMonitor {
     await this._channelMetric.start(
       starConfig.channelMonitoringMinutes * millisecondsPerMinute,
     );
+    await this._cidMetric.start(
+      starConfig.cidMonitoringMinutes * millisecondsPerMinute,
+    );
   };
 
   stop = async () => {
     await this._channelMetric.stop();
+    await this._cidMetric.stop();
   };
 
   onPacket = async (sender, packet) => {
     if (await this._channelMetric.onPacket(sender, packet)) return true;
+    if (await this._cidMetric.onPacket(sender, packet)) return true;
 
     return false;
   };
 
-  get channelHealth() {
+  get health() {
     return {
-      count: this._channelMetric.count,
-      lastUpdate: this._channelMetric.lastUpdate,
+      channel: {
+        count: this._channelMetric.count,
+        lastUpdate: this._channelMetric.lastUpdate,
+      },
+      cid: {
+        count: this._cidMetric.count,
+        lastUpdate: this._cidMetric.lastUpdate,
+      },
     };
   }
 
-  _checkCanSendChannel = async () => {
+  _getChannelRequiredPayload = () => {
+    return null;
+  };
+
+  _checkCanSendChannel = () => {
     return true; // We're in the channel, so can always send.
   };
 
@@ -173,7 +185,8 @@ export class HealthMonitor {
     return cid;
   };
 
-  _checkCanSendCid = async () => {
+  _checkCanSendCid = () => {
+    // Check that the CID is known, and that we have it stored.
     if (this._cidTracker.cid && this._cidTracker.have) {
       return true;
     }

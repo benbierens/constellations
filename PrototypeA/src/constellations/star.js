@@ -30,6 +30,10 @@ export class Star {
     return this._internal.starId;
   }
 
+  get health() {
+    return this._internal.health;
+  }
+
   get starInfo() {
     return this._starInfo;
   }

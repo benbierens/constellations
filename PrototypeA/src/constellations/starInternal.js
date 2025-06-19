@@ -65,9 +65,7 @@ export class StarInternal {
       this._logger.error("get health: Accessed before initialized");
       return {};
     }
-    return {
-      channel: this._healthMonitor.channelHealth,
-    };
+    return this._healthMonitor.health;
   }
 
   disconnect = async () => {
