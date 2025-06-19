@@ -14,12 +14,16 @@ export class CidTracker {
   }
 
   start = () => {
-    this._timer = this._core.timerService.createAndStar("CidTracker", this._onTimer, trackerInterval);
-  }
+    this._timer = this._core.timerService.createAndStar(
+      "CidTracker",
+      this._onTimer,
+      trackerInterval,
+    );
+  };
 
   stop = async () => {
     await this._timer.stop();
-  }
+  };
 
   onNewCid = async (newCid) => {
     if (this._cid == newCid) return;
@@ -37,6 +41,11 @@ export class CidTracker {
   }
 
   doFetch = async () => {
+    if (!this._cid) {
+      this._logger.warn("doFetch: No CID known for star.");
+      return;
+    }
+
     try {
       await this._core.codexService.fetchData(this._cid);
 
@@ -60,6 +69,10 @@ export class CidTracker {
   };
 
   doDownload = async () => {
+    if (!this._cid) {
+      this._logger.errorAndThrow("doDownload: No CID known for star.");
+    }
+
     // Same idea as doFetch except actually return the data.
     // Same TODO w.r.t. expiry applies.
     try {
@@ -67,18 +80,17 @@ export class CidTracker {
       this._lastFetch = new Date();
       this._have = true;
       return data;
+    } catch (error) {
+      this._logger.errorAndThrow("Failed to download CID: " + error);
     }
-    catch (error) {
-        this._logger.errorAndThrow("Failed to download CID: " + error);
-    }
-  }
+  };
 
   _onTimer = async () => {
     if (this.shouldFetch) {
-        await this.doFetch();
+      await this.doFetch();
     }
 
     const now = new Date();
-    this._have = (now - this._lastFetch) < codexDataTimeout;
-  }
+    this._have = now - this._lastFetch < codexDataTimeout;
+  };
 }

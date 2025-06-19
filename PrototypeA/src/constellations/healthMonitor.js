@@ -108,11 +108,11 @@ class HealthMetric {
 const millisecondsPerMinute = 1000 * 60;
 
 export class HealthMonitor {
-  constructor(core, channel) {
+  constructor(core, channel, cidTracker) {
     this._core = core;
     this._logger = core.logger.prefix("Health");
-
     this._channel = channel;
+    this._cidTracker = cidTracker;
 
     const channelRequiredPayload = null;
     this._channelMetric = new HealthMetric(

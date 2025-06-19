@@ -1,3 +1,4 @@
+import { CidTracker } from "./cidTracker.js";
 import { HandlerDebouncer } from "./handlerDebouncer.js";
 import { isValidUserStringValue } from "./protocol.js";
 import { Star } from "./star.js";
@@ -47,8 +48,9 @@ export class StarFactory {
     this._logger.trace(`createNewStar: new starId: '${starId}'`);
 
     const channel = await this._core.starChannelFactory.createById(starId);
-    const internal = new StarInternal(this._core, starId, channel);
-    const star = new Star(this._core, internal, handler);
+    const cidTracker = new CidTracker(this._core);
+    const internal = new StarInternal(this._core, starId, channel, cidTracker);
+    const star = new Star(this._core, internal, handler, cidTracker);
     internal.init(star);
 
     await channel.open(internal);
@@ -70,10 +72,10 @@ export class StarFactory {
 
     this._logger.trace(`connectToStar: Connecting... starId: '${starId}'`);
     const channel = await this._core.starChannelFactory.createById(starId);
-
-    const internal = new StarInternal(this._core, starId, channel);
+    const cidTracker = new CidTracker(this._core);
+    const internal = new StarInternal(this._core, starId, channel, cidTracker);
     const debouncer = new HandlerDebouncer(this._core, handler);
-    const star = new Star(this._core, internal, debouncer);
+    const star = new Star(this._core, internal, debouncer, cidTracker);
     internal.init(star);
 
     await channel.open(internal);

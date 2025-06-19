@@ -1,3 +1,4 @@
+import { CidTracker } from "./cidTracker.js";
 import { Column, ColumnUpdateCheckResponse } from "./column.js";
 import { HealthMonitor } from "./healthMonitor.js";
 import { isValidUserStringValue, packetHeaders } from "./protocol.js";
@@ -5,11 +6,12 @@ import { isDefaultConfiguration } from "./starConfiguration.js";
 import { StarStatus } from "./starProperties.js";
 
 export class StarInternal {
-  constructor(core, starId, channel) {
+  constructor(core, starId, channel, cidTracker) {
     this._core = core;
     this._starId = starId;
     this._logger = core.logger.prefix("StarInternal");
     this._channel = channel;
+    this._cidTracker = cidTracker;
 
     if (!this._starId) this._logger.errorAndThrow("starId not set.");
 
@@ -51,6 +53,7 @@ export class StarInternal {
   init = (handler) => {
     if (this._handler) this._logger.errorAndThrow("init: Already initialized.");
     this._handler = handler;
+    this._cidTracker.start();
   };
 
   get starId() {
@@ -68,6 +71,7 @@ export class StarInternal {
   }
 
   disconnect = async () => {
+    await this._cidTracker.stop();
     this._logger.trace("disconnect: Disconnecting...");
     await this._channel.close();
     this._starInfo.close();
@@ -235,7 +239,11 @@ export class StarInternal {
     if (this._healthMonitor) {
       await this._healthMonitor.stop();
     }
-    this._healthMonitor = new HealthMonitor(this._core, this._channel);
+    this._healthMonitor = new HealthMonitor(
+      this._core,
+      this._channel,
+      this._cidTracker,
+    );
     await this._healthMonitor.start(this._starProperties.value.configuration);
   };
 
@@ -255,6 +263,7 @@ export class StarInternal {
   };
 
   _cdxCid_onValueChanged = async () => {
+    await this._cidTracker.onNewCid(this._cdxCid.value);
     await this._handler.onCdxCid(this._cdxCid.value);
   };
 

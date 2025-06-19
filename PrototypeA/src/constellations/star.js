@@ -3,15 +3,15 @@ import { StarConfiguration } from "./starConfiguration.js";
 import { StarProperties, StarStatus } from "./starProperties.js";
 
 export class Star {
-  constructor(core, starInternal, handler) {
+  constructor(core, starInternal, handler, cidTracker) {
     this._core = core;
     this._logger = core.logger.prefix("Star");
     this._internal = starInternal;
     this._handler = handler;
+    this._cidTracker = cidTracker;
 
     this._starInfo = null;
     this._starProperties = null;
-    this._cdxCid = null;
   }
 
   disconnect = async () => {
@@ -24,7 +24,6 @@ export class Star {
     this._handler = null;
     this._starInfo = null;
     this._starProperties = null;
-    this._cdxCid = null;
   };
 
   get starId() {
@@ -51,10 +50,7 @@ export class Star {
   };
 
   getData = async () => {
-    if (!this._cdxCid) {
-      this._logger.errorAndThrow("getData: No CID known for star.");
-    }
-    return await this._core.codexService.downloadData(this._cdxCid);
+    return await this._cidTracker.doDownload();
   };
 
   isInitialized = () => {
