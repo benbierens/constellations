@@ -34,6 +34,8 @@ export class StarChannel {
   };
 
   sendPacket = async (packet) => {
+    if (!this._channel) this._logger.errorAndThrow("sendPacket: Channel not open");
+    
     this._logger.trace("sendPacket: Sending...");
 
     packet.version = constellationsProtocolVersion;

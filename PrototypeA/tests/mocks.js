@@ -54,32 +54,63 @@ export class MockCodexService {
   };
 }
 
+export class MockWakuChannelForSender {
+  constructor(mock, sender) {
+    this._mock = mock;
+    this._sender = sender;
+  }
+
+  send = async (msg) => {
+    await this._mock._send(this._sender, msg);
+  };
+
+  close = async () => {};
+}
+
 export class MockWakuChannel {
   constructor(handler) {
     this._handlers = [handler];
     this._messages = [];
   }
 
-  pushMessages = async (newHandler) => {
+  _pushMessages = async (newHandler) => {
     this._handlers.push(newHandler);
     for (var i = 0; i < this._messages.length; i++) {
       const m = this._messages[i];
-      await this.sendToAll(m);
+      await this._sendToAll(m.sender, m.msg);
       await this._core.sleep(5);
     }
   };
 
-  send = async (msg) => {
-    this._messages.push(msg);
-    await this.sendToAll(msg);
+  _send = async (sender, msg) => {
+    this._messages.push({
+      sender: sender,
+      msg: msg,
+    });
+    await this._sendToAll(sender, msg);
   };
 
-  close = async () => {};
-
-  sendToAll = async (msg) => {
+  _sendToAll = async (sender, msg) => {
     for (var i = 0; i < this._handlers.length; i++) {
-      await this._handlers[i].onMessage(null, null, msg);
+      await this._handlers[i].onMessage(sender, null, msg);
     }
+  };
+}
+
+export class MockWakuServiceForSender {
+  constructor(mockWakuService, sender) {
+    this._mock = mockWakuService;
+    this._sender = sender;
+  }
+
+  openChannel = async (contentTopic, handler, ephemeral = true) => {
+    const channel = await this._mock._openChannel(
+      contentTopic,
+      handler,
+      ephemeral,
+    );
+
+    return new MockWakuChannelForSender(channel, this._sender);
   };
 }
 
@@ -88,14 +119,14 @@ export class MockWakuService {
     this._channels = [];
   }
 
-  openChannel = async (contentTopic, handler, ephemeral = true) => {
+  _openChannel = async (contentTopic, handler, ephemeral = true) => {
     await this._core.sleep(1);
 
     for (var i = 0; i < this._channels.length; i++) {
       const c = this._channels[i];
       if (c.topic == contentTopic) {
         await this._core.sleep(1);
-        await c.obj.pushMessages(handler);
+        await c.obj._pushMessages(handler);
         return c.obj;
       }
       await this._core.sleep(1);

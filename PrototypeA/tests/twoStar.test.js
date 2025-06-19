@@ -4,7 +4,12 @@ import { ConstellationNode } from "../src/constellations/constellationNode";
 import { Wallet } from "ethers";
 import { CryptoService } from "../src/services/cryptoService";
 import { Core } from "../src/constellations/core";
-import { MockCodexService, MockWakuService } from "./mocks";
+import {
+  MockCodexService,
+  MockWakuChannelForSender,
+  MockWakuService,
+  MockWakuServiceForSender,
+} from "./mocks";
 import { StarStatus } from "../src/constellations/starProperties";
 import { createDefaultNewStarConfiguration } from "../src/constellations/starConfiguration";
 
@@ -26,7 +31,7 @@ describe("TwoStarTest", () => {
     const core = new Core(
       myLogger,
       constellationNode,
-      wakuService,
+      new MockWakuServiceForSender(wakuService, constellationNode.address),
       codexService,
       cryptoService,
     );

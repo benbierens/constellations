@@ -14,7 +14,7 @@ export class CidTracker {
   }
 
   start = () => {
-    this._timer = this._core.timerService.createAndStar(
+    this._timer = this._core.timerService.createAndStart(
       "CidTracker",
       this._onTimer,
       trackerInterval,
