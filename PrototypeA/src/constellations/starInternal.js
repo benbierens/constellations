@@ -1,4 +1,5 @@
 import { Column, ColumnUpdateCheckResponse } from "./column.js";
+import { HealthMonitor } from "./healthMonitor.js";
 import { isValidUserStringValue, packetHeaders } from "./protocol.js";
 import { isDefaultConfiguration } from "./starConfiguration.js";
 import { StarStatus } from "./starProperties.js";
@@ -54,6 +55,16 @@ export class StarInternal {
 
   get starId() {
     return this._starId;
+  }
+
+  get health() {
+    if (!this._starProperties.isReady) {
+      this._logger.error("get health: Accessed before initialized")
+      return {};
+    }
+    return {
+      channel: this._healthMonitor.channelHealth
+    };
   }
 
   disconnect = async () => {
@@ -120,6 +131,9 @@ export class StarInternal {
   };
 
   onPacket = async (sender, packet) => {
+    if (this._healthMonitor) {
+      if (await this._healthMonitor.onPacket(sender, packet)) return;
+    }
     if (await this._starInfo.processPacket(packet)) return;
     if (await this._starProperties.processPacket(packet)) return;
     if (await this._cdxCid.processPacket(packet)) return;
@@ -214,6 +228,13 @@ export class StarInternal {
     if (!this._cdxCid.isReady) {
       await this._cdxCid.applyDelayedUpdate();
     }
+
+    this._logger.trace("_starProperties_onValueChanged: Updating health monitor");
+    if (this._healthMonitor) {
+      await this._healthMonitor.stop();
+    }
+    this._healthMonitor = new HealthMonitor(this._core, this._channel);
+    await this._healthMonitor.start(this._starProperties.value.configuration);
   };
 
   _cdxCid_checkUpdate = async (signer, newValue) => {
