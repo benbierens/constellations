@@ -1,12 +1,11 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { Logger } from "../src/services/logger";
+import { NullLogger } from "../src/services/logger";
 import { ConstellationNode } from "../src/constellations/constellationNode";
 import { Wallet } from "ethers";
 import { CryptoService } from "../src/services/cryptoService";
 import { Core } from "../src/constellations/core";
 import {
   MockCodexService,
-  MockWakuChannelForSender,
   MockWakuService,
   MockWakuServiceForSender,
 } from "./mocks";
@@ -14,7 +13,7 @@ import { StarStatus } from "../src/constellations/starProperties";
 import { createDefaultNewStarConfiguration } from "../src/constellations/starConfiguration";
 
 describe("TwoStarTest", () => {
-  const logger = new Logger("TwoStarTest");
+  const logger = new NullLogger("TwoStarTest");
   const codexService = new MockCodexService();
   const wakuService = new MockWakuService();
 

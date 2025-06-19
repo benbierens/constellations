@@ -18,7 +18,8 @@ class HealthMetric {
     this._getRequiredPayload = getRequiredPayload;
     this._check = checkCanSend;
 
-    this._timer = null;
+    this._refreshTimer = null;
+    this._resendTimer = null;
     this._idsReceived = [];
     this._count = 0;
     this._lastCycleUtc = new Date(0);
@@ -29,20 +30,34 @@ class HealthMetric {
     this._count = 0;
     this._lastCycleUtc = new Date(0);
 
-    if (this._timer) this._logger.assert("start: Already started");
-    this._timer = this._core.timerService.createAndStart(
-      `health_${this._name}`,
-      this._onTimer,
+    if (this._refreshTimer)
+      this._logger.assert("start: Refresh timer already started");
+    this._refreshTimer = this._core.timerService.createAndStart(
+      `hRefresh_${this._name}`,
+      this._onRefreshTimer,
       interval,
+    );
+    if (this._resendTimer)
+      this._logger.assert("start: Resend timer already started");
+    this._resendTimer = this._core.timerService.createAndStart(
+      `hResend_${this._name}`,
+      this._onResendTimer,
+      interval * this._getResendIntervalFactor(),
     );
 
     await this.trySendNow();
   };
 
   stop = async () => {
-    if (!this._timer) this._logger.assert("stop: Not started");
-    await this._timer.stop();
-    this._timer = null;
+    if (!this._refreshTimer)
+      this._logger.assert("stop: Refresh timer not started");
+    await this._refreshTimer.stop();
+    this._refreshTimer = null;
+
+    if (!this._resendTimer)
+      this._logger.assert("stop: Resend timer not started");
+    await this._resendTimer.stop();
+    this._resendTimer = null;
   };
 
   get count() {
@@ -68,7 +83,7 @@ class HealthMetric {
     }
 
     if (this._idsReceived.includes(sender)) {
-      this._logger.trace("onPacket: Ignored, already known");
+      // Ignored, already known
       return true;
     }
 
@@ -96,12 +111,26 @@ class HealthMetric {
     }
   };
 
-  _onTimer = async () => {
+  _getResendIntervalFactor = () => {
+    // The metric refreshes every <interval>. The new value is the number of unique packets
+    // received during this time. We send those packets slightly faster than <interval>
+    // to make sure we will be include in the count.
+    // If we send twice during the same cycle, no problem: the duplicate is ignored.
+    return 0.9;
+  };
+
+  _onRefreshTimer = async () => {
     this._lastCycleUtc = new Date();
     this._count = this._idsReceived.length;
     this._idsReceived = [];
+    this._logger.trace(
+      `_onRefreshTimer: Health value updated to ${this._count}`,
+    );
+  };
+
+  _onResendTimer = async () => {
     await this.trySendNow();
-    this._logger.trace("_onTimer: Cycle completed");
+    this._logger.trace("_onResendTimer: Send cycle");
   };
 }
 

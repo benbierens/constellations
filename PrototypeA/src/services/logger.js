@@ -1,5 +1,26 @@
 import fs from "fs";
 
+export class NullLogger {
+  trace = (msg) => {};
+
+  warn = (msg) => {};
+
+  error = (msg) => {};
+
+  errorAndThrow = (msg) => {
+    throw new Error(msg);
+  };
+
+  assert = (msg) => {
+    console.assert(msg);
+    die(msg);
+  };
+
+  prefix = (newTag) => {
+    return this;
+  };
+}
+
 export class Logger {
   constructor(tag = "") {
     this.tag = tag;

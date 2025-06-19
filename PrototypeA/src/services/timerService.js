@@ -49,7 +49,9 @@ export class TimerService {
 
   createAndStart = (name, callback, interval) => {
     const timer = new Timer(this._core, name, callback, interval);
-    this._logger.trace(`Starting new timer: '${name}'`);
+    this._logger.trace(
+      `Starting new timer: '${name}' with interval '${interval}'`,
+    );
     timer.start();
     return timer;
   };

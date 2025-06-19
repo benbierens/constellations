@@ -140,7 +140,7 @@ export class StarInternal {
     if (await this._starProperties.processPacket(packet)) return;
     if (await this._cdxCid.processPacket(packet)) return;
 
-    this._logger.assert(`Unknown packet: '${packet.header}'`);
+    this._logger.warn(`Unknown packet: '${packet.header}'`);
   };
 
   _starInfo_checkUpdate = async (signer, newValue) => {

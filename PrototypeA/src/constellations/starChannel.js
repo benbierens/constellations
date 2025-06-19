@@ -54,7 +54,9 @@ export class StarChannel {
       return;
     }
 
-    this._logger.trace("onMessage: Packet received: " + JSON.stringify(packet));
+    this._logger.trace(
+      `onMessage: Packet received from '${signer}': '${JSON.stringify(packet)}'`,
+    );
     try {
       await this._handler.onPacket(signer, packet);
     } catch (error) {
