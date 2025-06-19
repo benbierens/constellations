@@ -119,7 +119,7 @@ export class StarInternal {
     await this._cdxCid.sendUpdate(cdxCid);
   };
 
-  onPacket = async (packet) => {
+  onPacket = async (sender, packet) => {
     if (await this._starInfo.processPacket(packet)) return;
     if (await this._starProperties.processPacket(packet)) return;
     if (await this._cdxCid.processPacket(packet)) return;

@@ -52,7 +52,7 @@ export class StarChannel {
 
     this._logger.trace("onMessage: Packet received: " + JSON.stringify(packet));
     try {
-      await this._handler.onPacket(packet);
+      await this._handler.onPacket(signer, packet);
     } catch (error) {
       this._logger.errorAndThrow(
         "onMessage: Error when handling message: " + error,

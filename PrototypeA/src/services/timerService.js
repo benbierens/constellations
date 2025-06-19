@@ -19,7 +19,7 @@ export class Timer {
     if (!this._isRunning) this._logger.errorAndThrow("stop: Not started");
     this._logger.trace("stop: Stopping...");
     this._isRunning = false;
-    await this._worker;
+    // await this._worker;? This will block the stop function for the remaining sleep time.
     this._worker = null;
     this._logger.trace("stop: Stopped.");
   }
@@ -28,7 +28,9 @@ export class Timer {
     while (this._isRunning) {
       await this._core.sleep(this._interval);
       try {
-        await this._callback();
+        if (this._isRunning) {
+          await this._callback();
+        }
       }
       catch (error) {
         this._logger.error("_timerWorker: Timer stopped. Error during callback: " + error);

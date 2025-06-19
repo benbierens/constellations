@@ -8,6 +8,9 @@ export const packetHeaders = {
   responseStarInfo: "responseStarInfo",
   responseStarProperties: "responseStarProperties",
   responseCdxCid: "responseCdxCid",
+
+  healthChannel: "hChn",
+  healthCid: "hCid"
 };
 
 export function starIdToContentTopic(starId) {
