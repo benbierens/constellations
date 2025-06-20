@@ -88,7 +88,7 @@ class HealthMetric {
     }
 
     this._idsReceived.push(sender);
-    this._logger.trace("onPacket: New sender added");
+    this._logger.trace(`onPacket: New sender added. next count: ${this._idsReceived.length}`);
     return true;
   };
 
@@ -142,6 +142,7 @@ export class HealthMonitor {
     this._logger = core.logger.prefix("Health");
     this._channel = channel;
     this._cidTracker = cidTracker;
+    this._cidTracker.setHealthMonitor(this);
 
     this._channelMetric = new HealthMetric(
       "CHN",
@@ -183,6 +184,10 @@ export class HealthMonitor {
     if (await this._cidMetric.onPacket(sender, packet)) return true;
 
     return false;
+  };
+
+  trySendCidNow = async () => {
+    await this._cidMetric.trySendNow();
   };
 
   get health() {

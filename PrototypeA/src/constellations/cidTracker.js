@@ -36,8 +36,10 @@ export class CidTracker {
   onNewCid = async (newCid) => {
     if (this._cid == newCid) return;
 
+    this._logger.trace("onNewCid: cleared");
     this._cid = newCid;
     this._lastFetch = null;
+    this._have = false;
 
     if (this.shouldFetch) {
       await this.doFetch();
@@ -65,10 +67,8 @@ export class CidTracker {
       // next <codexDataTimeout> duration.
       // Which is probably but not necessarily true.
 
-      this._lastFetch = new Date();
-      this._have = true;
-      todo when _have goes from false to true, trigger healtmonitor cid metric.trySendNow
       this._logger.trace("doFetch: Successful");
+      await this._nowHave();
     } catch (error) {
       this._logger.errorAndThrow("Failed to fetch CID: " + error);
     }
@@ -83,14 +83,16 @@ export class CidTracker {
     // Same TODO w.r.t. expiry applies.
     try {
       const data = await this._core.codexService.downloadData(this._cid);
-      this._lastFetch = new Date();
-      this._have = true;
-      todo when _have goes from false to true, trigger healtmonitor cid metric.trySendNow
       this._logger.trace("doDownload: Successful");
+      await this._nowHave();
       return data;
     } catch (error) {
       this._logger.errorAndThrow("Failed to download CID: " + error);
     }
+  };
+
+  setHealthMonitor = (monitor) => {
+    this._monitor = monitor;
   };
 
   _onTimer = async () => {
@@ -100,5 +102,20 @@ export class CidTracker {
 
     const now = new Date();
     this._have = now - this._lastFetch < codexDataTimeout;
+  };
+
+  _nowHave = async () => {
+    this._lastFetch = new Date();
+
+    if (this._have) return;
+    this._logger.trace("_nowHave: set");
+    this._have = true;
+
+    // We let the monitor know that we now are now storing the CID.
+    if (!this._monitor) {
+      this._logger.warn("_nowHave: No monitor is set");
+    } else {
+      await this._monitor.trySendCidNow();
+    }
   };
 }

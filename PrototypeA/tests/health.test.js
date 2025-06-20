@@ -126,6 +126,13 @@ describe(
         });
 
         await stars[0].setData("ThisIsTheData");
+        // We need two update cycles here, because
+        // during the first one, not all stars will receive the new CID before
+        // receiving the health update messages for that cid. So
+        // they will discard it. It's not worth building a caching system
+        // for health messages for CIDs that *may at some point* become relevant.
+        // if we wait an extra cycle, the stars reach agreement.
+        await waitForHealthUpdate();
         await waitForHealthUpdate();
 
         stars.forEach((star) => {
