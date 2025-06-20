@@ -1,5 +1,7 @@
 import fs from "fs";
 
+var replacements = [];
+
 export class NullLogger {
   trace = (msg) => {};
 
@@ -27,6 +29,8 @@ export class Logger {
   }
 
   trace = (msg) => {
+    msg = this._applyReplacements(msg);
+
     console.log(`[${new Date().toISOString()}]${this.tag} ${msg}`);
 
     if (this.filename) {
@@ -60,4 +64,19 @@ export class Logger {
     }
     return result;
   };
+
+  addReplacement = (from, to) => {
+    this.trace(`Replacing '${from}' => '${to}'`);
+    replacements.push({
+      from: from,
+      to: to
+    });
+  }
+
+  _applyReplacements = (msg) => {
+    replacements.forEach(r => {
+      msg = msg.replaceAll(r.from, r.to);
+    });
+    return msg;
+  }
 }

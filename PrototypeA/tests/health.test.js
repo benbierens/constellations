@@ -32,9 +32,12 @@ describe(
 
     function createCore(name) {
       const myLogger = logger.prefix(name);
+      myLogger.filename = `healthtest_${name}.log`;
       const wallet = Wallet.createRandom();
       const constellationNode = new ConstellationNode(wallet);
       const cryptoService = new CryptoService(constellationNode);
+
+      myLogger.addReplacement(constellationNode.address, `<${name}>`);
 
       const core = new Core(
         myLogger,
@@ -91,10 +94,10 @@ describe(
     }
 
     async function startStars(numStars) {
-      const starter = await createStar(`star_1/${numStars}`);
+      const starter = await createStar(`star_1_${numStars}`);
       var stars = [];
       for (var i = 0; i < numStars - 1; i++) {
-        const starName = `star_${i + 2}/${numStars}`;
+        const starName = `star_${i + 2}_${numStars}`;
         stars.push(await connectStar(starName, starter.starId));
       }
       await waitForHealthUpdate();
@@ -143,5 +146,43 @@ describe(
         });
       });
     }
+
+    it(`resets data health when CID changes`, async () => {
+      const originalData = "OriginalData";
+      const updateData = "UpdateData";
+      const stars = await startStars(3);
+
+      async function assertDataHealth(expected) {
+        await waitForHealthUpdate();
+        await waitForHealthUpdate();
+        stars.forEach((star) => {
+          const health = star.health;
+          const recent = new Date() - 2 * testHealthUpdateInterval;
+          expect(health.cid.count).toEqual(expected);
+          expect(health.cid.lastUpdate.getTime()).toBeGreaterThan(recent);
+        });
+      }
+
+      // We do not use autofetch.
+      // We send out the original data, make sure everyone has it and agrees on the health numbers.
+      await stars[0].setData(originalData);
+      expect(await stars[1].getData()).toEqual(originalData);
+      expect(await stars[2].getData()).toEqual(originalData);
+      await assertDataHealth(3);
+
+      // We change the data but do not download it.
+      // This means only stars[0] has it.
+      await stars[0].setData(updateData);
+      await assertDataHealth(1);
+
+      // Now we fetch the data to stars[1].
+      // Two stars are holding the data.
+      expect(await stars[1].getData(updateData)).toEqual(updateData);
+      await assertDataHealth(2);
+
+      // Now stars[2].
+      expect(await stars[2].getData(updateData)).toEqual(updateData);
+      await assertDataHealth(3);
+    });
   },
 );

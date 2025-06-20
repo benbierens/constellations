@@ -88,7 +88,9 @@ class HealthMetric {
     }
 
     this._idsReceived.push(sender);
-    this._logger.trace(`onPacket: New sender added. next count: ${this._idsReceived.length}`);
+    this._logger.trace(
+      `onPacket: New sender added. next count: ${this._idsReceived.length}`,
+    );
     return true;
   };
 
