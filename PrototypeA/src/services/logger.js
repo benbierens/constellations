@@ -69,14 +69,14 @@ export class Logger {
     this.trace(`Replacing '${from}' => '${to}'`);
     replacements.push({
       from: from,
-      to: to
+      to: to,
     });
-  }
+  };
 
   _applyReplacements = (msg) => {
-    replacements.forEach(r => {
+    replacements.forEach((r) => {
       msg = msg.replaceAll(r.from, r.to);
     });
     return msg;
-  }
+  };
 }

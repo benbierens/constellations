@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { Logger, NullLogger } from "../src/services/logger";
+import { describe, expect, it } from "vitest";
+import { NullLogger } from "../src/services/logger";
 import { ConstellationNode } from "../src/constellations/constellationNode";
 import { Wallet } from "ethers";
 import { CryptoService } from "../src/services/cryptoService";
@@ -10,7 +10,6 @@ import {
   MockWakuServiceForSender,
 } from "./mocks";
 import { StarStatus } from "../src/constellations/starProperties";
-import { createDefaultNewStarConfiguration } from "../src/constellations/starConfiguration";
 
 const testHealthUpdateInterval = 500;
 const millisecondsPerMinute = 1000 * 60;
@@ -21,8 +20,8 @@ describe(
     timeout: 1 * millisecondsPerMinute,
   },
   () => {
+    // Replace this NullLogger with normal Logger to get output.
     const logger = new NullLogger("HealthTests");
-    //logger.filename = "healthtest.log";
     const codexService = new MockCodexService();
     const wakuService = new MockWakuService();
 

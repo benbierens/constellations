@@ -38,8 +38,6 @@ export class StarChannel {
     if (!this._channel)
       this._logger.errorAndThrow("sendPacket: Channel not open");
 
-    this._logger.trace("sendPacket: Sending...");
-
     packet.version = constellationsProtocolVersion;
     await this._channel.send(JSON.stringify(packet));
   };

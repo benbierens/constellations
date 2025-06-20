@@ -51,6 +51,8 @@ export class Star {
     const cid = await this._core.codexService.upload(data);
 
     await this._internal.sendCdxCid(cid);
+
+    await this._cidTracker.afterUpload(cid);
   };
 
   getData = async () => {
