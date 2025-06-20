@@ -21,6 +21,8 @@ export class NullLogger {
   prefix = (newTag) => {
     return this;
   };
+
+  addReplacement = (from, to) => {};
 }
 
 export class Logger {
