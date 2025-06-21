@@ -27,6 +27,7 @@ describe(
 
     const doNothingHandler = {
       onDataChanged: async (star) => {},
+      onPropertiesChanged: async (star) => {},
     };
 
     function createCore(name) {

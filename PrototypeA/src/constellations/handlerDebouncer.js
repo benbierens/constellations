@@ -10,16 +10,21 @@ export class HandlerDebouncer {
 
     this._resolved = false;
     // For each signal, cache the latest values.
-    this.__star = null;
+    this._data_star = null;
+    this._properties_star = null;
   }
 
   resolve = async () => {
     await this._core.sleep(100);
     this._resolved = true;
 
-    if (this.__star) {
-      await this._handler.onDataChanged(this.__star);
-      this.__star = null;
+    if (this._data_star) {
+      await this._handler.onDataChanged(this._data_star);
+      this._data_star = null;
+    }
+    if (this._properties_star) {
+      await this._handler.onPropertiesChanged(this._properties_star);
+      this._properties_star = null;
     }
   };
 
@@ -27,7 +32,15 @@ export class HandlerDebouncer {
     if (this._resolved) {
       await this._handler.onDataChanged(star);
     } else {
-      this.__star = star;
+      this._data_star = star;
+    }
+  };
+
+  onPropertiesChanged = async (star) => {
+    if (this._resolved) {
+      await this._handler.onPropertiesChanged(star);
+    } else {
+      this._properties_star = star;
     }
   };
 }

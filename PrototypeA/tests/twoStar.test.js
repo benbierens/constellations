@@ -19,6 +19,7 @@ describe("TwoStarTest", () => {
 
   const doNothingHandler = {
     onDataChanged: async (star) => {},
+    onPropertiesChanged: async (star) => {},
   };
 
   function createCore(name) {
@@ -162,10 +163,27 @@ describe("TwoStarTest", () => {
   describe("transmiting property updates", () => {
     var star1 = {};
     var star2 = {};
+    var propertiesChangedArgs = [];
+
+    const watchPropertiesHandler = {
+      onDataChanged: async (star) => {},
+      onPropertiesChanged: async (star) => {
+        propertiesChangedArgs.push(star);
+      },
+    };
+
+    function assertPropertyChangedRaised() {
+      expect(propertiesChangedArgs.length).toBe(2);
+      expect(propertiesChangedArgs.includes(star1));
+      expect(propertiesChangedArgs.includes(star2));
+      propertiesChangedArgs = [];
+    }
 
     beforeEach(async () => {
-      star1 = await createStar(core1, "test_type", doNothingHandler);
-      star2 = await connectStar(core2, star1.starId, doNothingHandler);
+      propertiesChangedArgs = [];
+      star1 = await createStar(core1, "test_type", watchPropertiesHandler);
+      star2 = await connectStar(core2, star1.starId, watchPropertiesHandler);
+      assertPropertyChangedRaised();
     });
 
     it("updates admins", async () => {
@@ -177,6 +195,7 @@ describe("TwoStarTest", () => {
 
       expect(star1.properties.admins).toEqual([id2]);
       expect(star2.properties.admins).toEqual([id2]);
+      assertPropertyChangedRaised();
     });
 
     it("updates mods", async () => {
@@ -188,6 +207,7 @@ describe("TwoStarTest", () => {
 
       expect(star1.properties.mods).toEqual([id2]);
       expect(star2.properties.mods).toEqual([id2]);
+      assertPropertyChangedRaised();
     });
 
     it("updates status", async () => {
@@ -199,6 +219,7 @@ describe("TwoStarTest", () => {
 
       expect(star1.properties.status).toBe(StarStatus.Cold);
       expect(star2.properties.status).toBe(StarStatus.Cold);
+      assertPropertyChangedRaised();
     });
 
     it("updates annotations", async () => {
@@ -213,6 +234,7 @@ describe("TwoStarTest", () => {
 
       expect(star1.properties.annotations).toBe(updatedAnnotation);
       expect(star2.properties.annotations).toBe(updatedAnnotation);
+      assertPropertyChangedRaised();
     });
 
     describe("configuration updates", () => {
@@ -232,6 +254,7 @@ describe("TwoStarTest", () => {
 
         expect(star1.properties.configuration.maxDiffSize).toBe(newValue);
         expect(star2.properties.configuration.maxDiffSize).toBe(newValue);
+        assertPropertyChangedRaised();
       });
 
       it("updates softMinSnapshotDuration", async () => {
@@ -250,6 +273,7 @@ describe("TwoStarTest", () => {
         expect(star2.properties.configuration.softMinSnapshotDuration).toBe(
           newValue,
         );
+        assertPropertyChangedRaised();
       });
 
       it("updates softMaxDiffDuration", async () => {
@@ -268,6 +292,7 @@ describe("TwoStarTest", () => {
         expect(star2.properties.configuration.softMaxDiffDuration).toBe(
           newValue,
         );
+        assertPropertyChangedRaised();
       });
 
       it("updates softMaxNumDiffs", async () => {
@@ -282,6 +307,7 @@ describe("TwoStarTest", () => {
         await star1.properties.commitChanges();
         expect(star1.properties.configuration.softMaxNumDiffs).toBe(newValue);
         expect(star2.properties.configuration.softMaxNumDiffs).toBe(newValue);
+        assertPropertyChangedRaised();
       });
 
       it("updates channelMonitoringMinutes", async () => {
@@ -300,6 +326,7 @@ describe("TwoStarTest", () => {
         expect(star2.properties.configuration.channelMonitoringMinutes).toBe(
           newValue,
         );
+        assertPropertyChangedRaised();
       });
 
       it("updates cidMonitoringMinutes", async () => {
@@ -318,6 +345,7 @@ describe("TwoStarTest", () => {
         expect(star2.properties.configuration.cidMonitoringMinutes).toBe(
           newValue,
         );
+        assertPropertyChangedRaised();
       });
     });
   });
@@ -339,6 +367,7 @@ describe("TwoStarTest", () => {
       onDataChanged: async (star) => {
         receivedData.push(await star.getData());
       },
+      onPropertiesChanged: async (star) => {},
     };
     const star2 = await connectStar(core2, starId, receiveHandler);
 

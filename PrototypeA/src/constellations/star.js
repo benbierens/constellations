@@ -110,6 +110,8 @@ export class Star {
     this._properties._configuration._canModifyProperties =
       this._canModifyProperties;
     this._properties._changeHandler = this._handleStarPropertiesChanged;
+
+    await this._handler.onPropertiesChanged(this);
   };
 
   onCdxCid = async (cdxCid) => {
