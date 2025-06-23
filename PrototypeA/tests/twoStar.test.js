@@ -353,7 +353,7 @@ describe("TwoStarTest", () => {
   function assertDatesWithin(date1, date2, tolerance) {
     date1 = new Date(date1);
     date2 = new Date(date2);
-    if (Math.abs(date1.getTime() - date2.getTime())  > tolerance) {
+    if (Math.abs(date1.getTime() - date2.getTime()) > tolerance) {
       throw new Error("Dates not within tolerance");
     }
   }
@@ -377,7 +377,7 @@ describe("TwoStarTest", () => {
     const presentDataUtc = new Date();
     expect(star1.size).toEqual(presentData.length);
     assertDatesWithin(star1.lastChangeUtc, presentDataUtc, 100);
-    
+
     var receivedData = [];
     var receivedSizes = [];
     var receivedUtcs = [];
