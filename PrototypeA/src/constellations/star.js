@@ -17,6 +17,8 @@ export class Star {
   disconnect = async () => {
     this._logger.trace("disconnect: Disconnecting...");
 
+    await this._internal.disconnect();
+
     // Clean up everything, prevent accidental use.
     this._core = null;
     this._logger = null;
@@ -24,6 +26,8 @@ export class Star {
     this._handler = null;
     this._starInfo = null;
     this._starProperties = null;
+    
+    this._logger.trace("disconnect: Disconnected");
   };
 
   get starId() {

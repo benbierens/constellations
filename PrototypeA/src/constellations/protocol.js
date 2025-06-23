@@ -34,3 +34,7 @@ export function getUserStringValueConstraintDescription() {
 export function getAnnotationsUninitializedValue() {
   return `${systemValuePrefix}uninitialized`;
 }
+
+export function getConstellationStarType() {
+  return `${systemValuePrefix}constellation`;
+}

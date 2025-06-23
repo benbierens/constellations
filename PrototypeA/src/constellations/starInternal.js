@@ -69,8 +69,8 @@ export class StarInternal {
   }
 
   disconnect = async () => {
-    await this._cidTracker.stop();
     this._logger.trace("disconnect: Disconnecting...");
+    await this._cidTracker.stop();
     await this._channel.close();
     this._starInfo.close();
     this._starProperties.close();
@@ -82,10 +82,11 @@ export class StarInternal {
     this._logger = null;
     this._handler = null;
     this._channel = null;
-
     this._starInfo = null;
     this._starProperties = null;
     this._cdxCid = null;
+
+    this._logger.trace("disconnect: Disconnected");
   };
 
   sendStarInfo = async (starInfo) => {
