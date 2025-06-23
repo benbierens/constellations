@@ -1,5 +1,7 @@
 import { packetHeaders } from "./protocol";
 
+const healthCountMax = 99;
+
 class HealthMetric {
   constructor(
     name,
@@ -77,7 +79,7 @@ class HealthMetric {
       return true;
     }
 
-    if (this._idsReceived.length >= 99) {
+    if (this._idsReceived.length >= healthCountMax) {
       this._logger.trace("onPacket: Ignored, health count at max.");
       return true;
     }
@@ -95,6 +97,11 @@ class HealthMetric {
   };
 
   trySendNow = async () => {
+    if (this._idsReceived.length >= healthCountMax) {
+      this._logger.trace("trySendNow: Ignored, health count at max.");
+      return;
+    }
+
     if (!(await this._check())) {
       this._logger.trace("trySendNow: Denied by canSendCheck");
       return;
