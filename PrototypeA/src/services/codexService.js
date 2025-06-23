@@ -76,6 +76,7 @@ export class CodexService {
       throw new Error(response.data);
     }
     this.logger.trace(`Fetching '${cid}'`);
+    return response.data.manifest;
   };
 
   downloadData = async (cid) => {

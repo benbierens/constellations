@@ -34,8 +34,12 @@ export class MockCodexService {
     return cid;
   };
 
+  getManifest = async (cid) => {
+    return await this._returnManifest(cid);
+  };
+
   fetchData = async (cid) => {
-    await this._core.sleep(1);
+    return await this._returnManifest(cid);
   };
 
   downloadData = async (cid) => {
@@ -51,6 +55,19 @@ export class MockCodexService {
   _newCid = () => {
     this._counter++;
     return `_mockcodexservice_cid_${this._counter}_`;
+  };
+
+  _returnManifest = async (cid) => {
+    await this._core.sleep(1);
+    for (var i = 0; i < this._data.length; i++) {
+      const d = this._data[i];
+      if (d.cid == cid)
+        return {
+          datasetSize: d.fileData.length,
+        };
+      await this._core.sleep(3);
+    }
+    throw new Error("mockCodex data not found.");
   };
 }
 

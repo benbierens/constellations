@@ -11,6 +11,7 @@ export class CidTracker {
     this._cid = null;
     this._lastFetch = null;
     this._have = false;
+    this._size = 0;
   }
 
   start = () => {
@@ -33,6 +34,10 @@ export class CidTracker {
     return this._have;
   }
 
+  get size() {
+    return this._size;
+  }
+
   onNewCid = async (newCid) => {
     if (this._cid == newCid) return;
 
@@ -43,6 +48,8 @@ export class CidTracker {
 
     if (this.shouldFetch) {
       await this.doFetch();
+    } else {
+      await this._updateSize();
     }
   };
 
@@ -53,7 +60,8 @@ export class CidTracker {
     }
 
     try {
-      await this._core.codexService.fetchData(this._cid);
+      const manifest = await this._core.codexService.fetchData(this._cid);
+      this._size = manifest.datasetSize;
 
       // BIG TODO:
       // There's currently no way to use the CODEX api to figure out
@@ -118,12 +126,22 @@ export class CidTracker {
     if (this._have) return;
     this._logger.trace("_nowHave: set");
     this._have = true;
+    await this._updateSize();
 
     // We let the monitor know that we now are now storing the CID.
     if (!this._monitor) {
       this._logger.warn("_nowHave: No monitor is set");
     } else {
       await this._monitor.trySendCidNow();
+    }
+  };
+
+  _updateSize = async () => {
+    try {
+      const manifest = await this._core.codexService.getManifest(this._cid);
+      this._size = manifest.datasetSize;
+    } catch (error) {
+      this._logger.errorAndThrow("Failed to fetch manifest for CID: " + error);
     }
   };
 }

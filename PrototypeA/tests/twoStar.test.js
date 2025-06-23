@@ -360,12 +360,16 @@ describe("TwoStarTest", () => {
 
     // Set past and present data before second node connects.
     await star1.setData(pastData);
+    expect(star1.size).toEqual(pastData.length);
     await star1.setData(presentData);
+    expect(star1.size).toEqual(presentData.length);
 
     var receivedData = [];
+    var receivedSizes = [];
     const receiveHandler = {
       onDataChanged: async (star) => {
         receivedData.push(await star.getData());
+        receivedSizes.push(star.size);
       },
       onPropertiesChanged: async (star) => {},
     };
@@ -376,5 +380,6 @@ describe("TwoStarTest", () => {
 
     // star2 has received present and future data.
     expect(receivedData).toEqual([presentData, futureData]);
+    expect(receivedSizes).toEqual([presentData.length, futureData.length]);
   });
 });

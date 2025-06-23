@@ -42,6 +42,10 @@ export class Star {
     return this._properties;
   }
 
+  get size() {
+    return this._cidTracker.size;
+  }
+
   setData = async (data) => {
     if (!this._canModifyData()) {
       this._logger.trace("setData: cannot modify this star.");
