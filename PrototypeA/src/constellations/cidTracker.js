@@ -9,6 +9,7 @@ export class CidTracker {
     this.shouldFetch = false;
 
     this._cid = null;
+    this._utc = new Date(0);
     this._lastFetch = null;
     this._have = false;
     this._size = 0;
@@ -30,6 +31,10 @@ export class CidTracker {
     return this._cid;
   }
 
+  get utc() {
+    return this._utc;
+  }
+
   get have() {
     return this._have;
   }
@@ -38,11 +43,12 @@ export class CidTracker {
     return this._size;
   }
 
-  onNewCid = async (newCid) => {
+  onNewCid = async (newCid, utc) => {
     if (this._cid == newCid) return;
 
     this._logger.trace("onNewCid: cleared");
     this._cid = newCid;
+    this._utc = utc;
     this._lastFetch = null;
     this._have = false;
 

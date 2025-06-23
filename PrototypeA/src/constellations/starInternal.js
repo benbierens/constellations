@@ -261,7 +261,7 @@ export class StarInternal {
   };
 
   _cdxCid_onValueChanged = async () => {
-    await this._cidTracker.onNewCid(this._cdxCid.value);
+    await this._cidTracker.onNewCid(this._cdxCid.value, this._cdxCid.utc);
     await this._handler.onCdxCid(this._cdxCid.value);
   };
 

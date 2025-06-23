@@ -350,6 +350,14 @@ describe("TwoStarTest", () => {
     });
   });
 
+  function assertDatesWithin(date1, date2, tolerance) {
+    date1 = new Date(date1);
+    date2 = new Date(date2);
+    if (Math.abs(date1.getTime() - date2.getTime())  > tolerance) {
+      throw new Error("Dates not within tolerance");
+    }
+  }
+
   it("transmits data", async () => {
     const pastData = "pastData";
     const presentData = "presentData";
@@ -361,25 +369,39 @@ describe("TwoStarTest", () => {
     // Set past and present data before second node connects.
     await star1.setData(pastData);
     expect(star1.size).toEqual(pastData.length);
-    await star1.setData(presentData);
-    expect(star1.size).toEqual(presentData.length);
+    assertDatesWithin(star1.lastChangeUtc, new Date(), 100);
 
+    await core1.sleep(500);
+
+    await star1.setData(presentData);
+    const presentDataUtc = new Date();
+    expect(star1.size).toEqual(presentData.length);
+    assertDatesWithin(star1.lastChangeUtc, presentDataUtc, 100);
+    
     var receivedData = [];
     var receivedSizes = [];
+    var receivedUtcs = [];
     const receiveHandler = {
       onDataChanged: async (star) => {
         receivedData.push(await star.getData());
         receivedSizes.push(star.size);
+        receivedUtcs.push(star.lastChangeUtc);
       },
       onPropertiesChanged: async (star) => {},
     };
     const star2 = await connectStar(core2, starId, receiveHandler);
 
     // Set future data.
+    await core1.sleep(500);
+    const futureDataUtc = new Date();
     await star1.setData(futureData);
+    assertDatesWithin(star1.lastChangeUtc, futureDataUtc, 100);
 
     // star2 has received present and future data.
     expect(receivedData).toEqual([presentData, futureData]);
     expect(receivedSizes).toEqual([presentData.length, futureData.length]);
+    expect(receivedUtcs.length).toEqual(2);
+    assertDatesWithin(presentDataUtc, receivedUtcs[0], 100);
+    assertDatesWithin(futureDataUtc, receivedUtcs[1], 100);
   });
 });
