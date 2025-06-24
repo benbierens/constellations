@@ -77,6 +77,7 @@ export class StarInternal {
     this._cdxCid.close();
 
     // Clean up everything, prevent accidental use.
+    const logger = this._logger;
     this._core = null;
     this._starId = null;
     this._logger = null;
@@ -86,7 +87,7 @@ export class StarInternal {
     this._starProperties = null;
     this._cdxCid = null;
 
-    this._logger.trace("disconnect: Disconnected");
+    logger.trace("disconnect: Disconnected");
   };
 
   sendStarInfo = async (starInfo) => {

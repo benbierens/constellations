@@ -73,6 +73,43 @@ export class Constellation {
     return this._map(this._root);
   }
 
+  activate = async (path) => {
+    var entry = this._findEntryByFullPath(path);
+    if (!entry) return;
+
+    if (entry.star) {
+      this._logger.warn(`activate: star '${entry.starId}' already active`);
+      return;
+    }
+
+    this._logger.trace(`activate: activating star '${entry.starId}'...`);
+    entry.star = await this._activateStar(entry.starId);
+    // the onDataChanged callback will handle the unpacking of a constellation type star.
+  };
+
+  deactivate = async (path) => {
+    var entry = this._findEntryByFullPath(path);
+    if (!entry) return;
+
+    if (!entry.star) {
+      this._logger.warn(`deactivate: star '${entry.starId}' not active`);
+      return;
+    }
+
+    this._logger.trace(`deactivate: deactivating star '${entry.starId}'...`);
+    await this._deactivateStar(entry.star);
+    entry.star = null;
+    entry.entries = [];
+
+    await this._raisePathsChangedEvent(entry.starId);
+  };
+
+  info = async (path) => {
+    // path = "/folder"
+    // if star at path is active, return all star info
+    // if not found, or not active error
+  };
+
   onDataChanged = async (star) => {
     // If this is one of our constellation type stars, we must fetch the data and update our tree.
     if (!this._isConstellation(star)) {
@@ -94,25 +131,6 @@ export class Constellation {
   };
 
   onPropertiesChanged = async (star) => {};
-
-  activate = async (path) => {
-    // path = "/folder" or "/file"
-    // if path exists in star data, connect to that star
-    // update star as active in state object
-    // is constellation type? get the data, add to state object
-    // public updated state object
-  };
-
-  deactivate = async (path) => {
-    // reverse of above
-    // if "/", deactivate all. empty state object
-  };
-
-  info = async (path) => {
-    // path = "/folder"
-    // if star at path is active, return all star info
-    // if not found, or not active error
-  };
 
   _updateEntry = async (here, star) => {
     if (here.starId != star.starId)
@@ -198,6 +216,28 @@ export class Constellation {
     }
   };
 
+  _findEntryByFullPath = (fullPath) => {
+    var entry = this._root;
+    for (const part of fullPath) {
+      entry = this._findEntryByPath(entry, part);
+      if (!entry) {
+        this._logger.warn(
+          `_findEntryByFullPath: full path '${fullPath}' does not exist.`,
+        );
+        return null;
+      }
+    }
+    return entry;
+  };
+
+  _findEntryByPath = (here, path) => {
+    for (const entry of here.entries) {
+      if (entry.path == path) return entry;
+    }
+    this._logger.trace(`_findEntryByPath: Unable to find path '${path}'`);
+    return null;
+  };
+
   _activateStar = async (starId) => {
     const star = await this._core.starFactory.connectToStar(starId, this);
     this._activeStars.push(star);
@@ -226,7 +266,7 @@ export class Constellation {
       path: entry.path,
       starId: entry.starId,
       isActive: isActive,
-      entries: entry.entries.map((e) => this._map(e))
+      entries: entry.entries.map((e) => this._map(e)),
     };
-  }
+  };
 }

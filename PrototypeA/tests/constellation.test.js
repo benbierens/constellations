@@ -50,15 +50,11 @@ describe("ConstellationTest", () => {
   }
 
   var core1 = {};
-  var id1 = "";
   var core2 = {};
-  var id2 = "";
 
   beforeEach(() => {
     core1 = createCore("One");
-    id1 = core1.constellationNode.address;
     core2 = createCore("Two");
-    id2 = core2.constellationNode.address;
     onPathsUpdatedArgs = [];
   });
 
@@ -67,7 +63,7 @@ describe("ConstellationTest", () => {
     return await core.starFactory.createNewStar(type, owners, handler);
   }
 
-  it("can open a simple constellation", async () => {
+  it("can initialize a simple constellation", async () => {
     const rootStar = await createStar(
       core1,
       getConstellationStarType(),
@@ -93,6 +89,7 @@ describe("ConstellationTest", () => {
     await constellation.initialize(rootStar.starId);
 
     expect(onPathsUpdatedArgs.length).toEqual(1);
+    expect(onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
 
     const root = constellation.root;
     expect(root.path).toEqual("");
@@ -104,10 +101,149 @@ describe("ConstellationTest", () => {
     expect(root.entries[0].starId).toEqual(leaf1.starId);
     expect(root.entries[0].isActive).toBeFalsy();
     expect(root.entries[0].entries.length).toEqual(0);
-    
+
     expect(root.entries[1].path).toEqual("leaf2");
     expect(root.entries[1].starId).toEqual(leaf2.starId);
     expect(root.entries[1].isActive).toBeFalsy();
     expect(root.entries[1].entries.length).toEqual(0);
+  });
+
+  it("can activate a nested constellation star", async () => {
+    const rootStar = await createStar(
+      core1,
+      getConstellationStarType(),
+      doNothingStarHandler,
+    );
+    const folder = await createStar(
+      core1,
+      getConstellationStarType(),
+      doNothingStarHandler,
+    );
+    const leaf = await createStar(core1, "leaf", doNothingStarHandler);
+
+    await rootStar.setData(
+      JSON.stringify([
+        {
+          starId: folder.starId,
+          path: "folder",
+        },
+      ]),
+    );
+    await folder.setData(
+      JSON.stringify([
+        {
+          starId: leaf.starId,
+          path: "leaf",
+        },
+      ]),
+    );
+
+    const constellation = new Constellation(core2, constellationHandler);
+    await constellation.initialize(rootStar.starId);
+    expect(onPathsUpdatedArgs.length).toEqual(1);
+    expect(onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
+
+    var root = constellation.root;
+    expect(root.path).toEqual("");
+    expect(root.starId).toEqual(rootStar.starId);
+    expect(root.isActive).toBeTruthy();
+    expect(root.entries.length).toEqual(1);
+
+    expect(root.entries[0].path).toEqual("folder");
+    expect(root.entries[0].starId).toEqual(folder.starId);
+    expect(root.entries[0].isActive).toBeFalsy();
+    expect(root.entries[0].entries.length).toEqual(0);
+
+    // when we activate the folder, we expect another update event.
+    // after that, we expect the leaf to be visible.
+    await constellation.activate(["folder"]);
+    await core1.sleep(100);
+    expect(onPathsUpdatedArgs.length).toEqual(2);
+    expect(onPathsUpdatedArgs[1]).toEqual(folder.starId);
+
+    root = constellation.root;
+    expect(root.path).toEqual("");
+    expect(root.starId).toEqual(rootStar.starId);
+    expect(root.isActive).toBeTruthy();
+    expect(root.entries.length).toEqual(1);
+
+    expect(root.entries[0].path).toEqual("folder");
+    expect(root.entries[0].starId).toEqual(folder.starId);
+    expect(root.entries[0].isActive).toBeTruthy(); // Is now activated.
+    expect(root.entries[0].entries.length).toEqual(1); // Has 1 entry.
+
+    expect(root.entries[0].entries[0].path).toEqual("leaf");
+    expect(root.entries[0].entries[0].starId).toEqual(leaf.starId);
+    expect(root.entries[0].entries[0].isActive).toBeFalsy();
+    expect(root.entries[0].entries[0].entries.length).toEqual(0);
+  });
+
+  it("can deactivate a nested constellation star", async () => {
+    const rootStar = await createStar(
+      core1,
+      getConstellationStarType(),
+      doNothingStarHandler,
+    );
+    const folder = await createStar(
+      core1,
+      getConstellationStarType(),
+      doNothingStarHandler,
+    );
+    const leaf = await createStar(core1, "leaf", doNothingStarHandler);
+
+    await rootStar.setData(
+      JSON.stringify([
+        {
+          starId: folder.starId,
+          path: "folder",
+        },
+      ]),
+    );
+    await folder.setData(
+      JSON.stringify([
+        {
+          starId: leaf.starId,
+          path: "leaf",
+        },
+      ]),
+    );
+
+    const constellation = new Constellation(core2, constellationHandler);
+    await constellation.initialize(rootStar.starId);
+    expect(onPathsUpdatedArgs.length).toEqual(1);
+    expect(onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
+
+    var root = constellation.root;
+    // when we activate the folder, we expect another update event.
+    // after that, we expect the leaf to be visible.
+    await constellation.activate(["folder"]);
+    await core1.sleep(100);
+    expect(onPathsUpdatedArgs.length).toEqual(2);
+    expect(onPathsUpdatedArgs[1]).toEqual(folder.starId);
+
+    root = constellation.root;
+    expect(root.entries.length).toEqual(1); // root
+    expect(root.entries[0].isActive).toBeTruthy();
+    expect(root.entries[0].entries.length).toEqual(1); // folder
+    expect(root.entries[0].entries[0].entries.length).toEqual(0); // leaf
+
+    // We deactivate the folder, expecting another update event
+    // and expecting the leaf to disappear from view.
+    await constellation.deactivate(["folder"]);
+    await core1.sleep(100);
+    
+    expect(onPathsUpdatedArgs.length).toEqual(3);
+    expect(onPathsUpdatedArgs[1]).toEqual(folder.starId);
+
+    root = constellation.root;
+    expect(root.path).toEqual("");
+    expect(root.starId).toEqual(rootStar.starId);
+    expect(root.isActive).toBeTruthy();
+    expect(root.entries.length).toEqual(1);
+
+    expect(root.entries[0].path).toEqual("folder");
+    expect(root.entries[0].starId).toEqual(folder.starId);
+    expect(root.entries[0].isActive).toBeFalsy();
+    expect(root.entries[0].entries.length).toEqual(0);
   });
 });
