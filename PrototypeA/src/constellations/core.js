@@ -59,5 +59,5 @@ export class Core {
       if (path1[i] != path2[i]) return false;
     }
     return true;
-  }
+  };
 }

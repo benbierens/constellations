@@ -1,8 +1,8 @@
 import { getConstellationStarType } from "./protocol";
 
 const exampleHandler = {
-  onPathsUpdated: async () => {}
-}
+  onPathsUpdated: async (starId) => {},
+};
 
 export class Constellation {
   constructor(core, handler = exampleHandler) {
@@ -10,52 +10,84 @@ export class Constellation {
     this._handler = handler;
     this._logger = core.logger.prefix("Constellation");
 
-    // do not flatten.
-    // paths need to exist behind the stars they came from
-    // so that when they change, we can clean-wipe-update
-    todo
-    this._state = [
+    this._activeStars = [];
+    this._root = [
       {
-        path: [],
+        path: "",
         starId: "aaa",
-        star: rootStar
+        star: rootStar,
+        entries: [
+          {
+            path: "folderName",
+            starId: "bbb",
+            star: null, // inactive
+            entries: [], // not known because not active
+          },
+          {
+            path: "fileName",
+            starId: "ccc",
+            star: star,
+            entries: [], // leaf node
+          },
+          {
+            path: "folderActive",
+            starId: "ddd",
+            star: star,
+            entries: [
+              {
+                path: "nestedFile",
+                starId: "eee",
+                star: null,
+                entries: [],
+              },
+            ],
+          },
+        ],
       },
-      {
-        path: ["folder"],
-        starId: "aaa",
-        star: null // inactive
-      },
-      {
-        path: ["file"],
-        starId: "aaa",
-        star: fileStar
-      }
-    ]
+    ];
   }
 
   initialize = async (rootStarId) => {
-    if (this._state.length > 0) this._logger.errorAndThrow("already initialized");
+    if (this._root) this._logger.errorAndThrow("already initialized");
 
-    todo
-    this._state.push({
-      path: [],
+    this._logger.trace("initialize: initializing...");
+
+    this._root = {
+      path: "",
       starId: rootStarId,
-      star: rootStar
-    });
+      star: null,
+      entries: [],
+    };
 
-    // after this line, update events can trigger! set the state entry first.
-    const rootStar = this._core.starFactory.connectToStar(rootStarId, this);
+    // after this line, update events will trigger. _root must be set before this.
+    // we expect a data callback and we'll process the root entries from there.
+    this._root.star = await this._activateStar(rootStarId);
 
+    if (!this._isConstellation(this._root.star))
+      this._logger.errorAndThrow("Root star is not a constellation type");
+  };
 
-    // if (rootStar.starInfo.type != getConstellationStarType()) this._logger.errorAndThrow("Root star is not of constellation type");
+  onDataChanged = async (star) => {
+    // If this is one of our constellation type stars, we must fetch the data and update our tree.
+    if (!this._isConstellation(star)) {
+      this._logger.trace(
+        `onDataChanged: star '${star.starId}' is not a constellation type`,
+      );
+      return;
+    }
 
-    // await this._ingestConstellationStarData(rootStar, []);
+    const entry = this._findEntryByStarId(this._root, star.starId);
+    if (!entry) {
+      this._logger.trace(
+        `onDataChanged: no entry found for star '${star.starId}'`,
+      );
+      return;
+    }
 
-    // this._logger.trace("initialize: initialized");
-  }
+    await this._updateEntry(entry, star);
+  };
 
-  onDataChanged = async (star) => {}
-  onPropertiesChanged = async (star) => {}
+  onPropertiesChanged = async (star) => {};
 
   activate = async (path) => {
     // path = "/folder" or "/file"
@@ -63,59 +95,120 @@ export class Constellation {
     // update star as active in state object
     // is constellation type? get the data, add to state object
     // public updated state object
-  }
+  };
 
   deactivate = async (path) => {
     // reverse of above
     // if "/", deactivate all. empty state object
-  }
+  };
 
   info = async (path) => {
     // path = "/folder"
     // if star at path is active, return all star info
     // if not found, or not active error
-  }
+  };
 
-  _ingestConstellationStarData = async (newStar, basePath) => {
-    // Check that this star isn't already mapped somewhere.
-    for (const entry of this._state) {
-      if (entry.starId == newStar.starId) {
-        this._logger.warn(`_ingestConstellationStarData: Attempt to add new star '${newStar.starId}' that is already known here '${entry.path}'`);
-        return;
-      }
-    }
+  _updateEntry = async (here, star) => {
+    if (here.starId != star.starId)
+      this._logger.assert("_updateEntry: Inconsistent starId");
 
-    const data = await newStar.getData();
-    const json = JSON.parse(data);
-    for (const entry of json) {
-      await this._ingestConstellationStarDataEntry(basePath, entry);
-    };
-  }
+    const data = await star.getData();
+    const update = JSON.parse(data);
 
-  _ingestConstellationStarDataEntry = async (basePath, entry) => {
-    //   entry: {
+    //   [
+    //    {
     //     "starId": "aaa",
-    //     "path": [
-    //       "rootfile"
-    //     ]
-    //   },
+    //     "path": "rootfile"
+    //    },
+    //    ...
+    //  ]
 
-    const fullPath = [...basePath, ...entry.path];
+    var changed = false;
 
-    // Check this path isn't already mapped somewhere.
-    for (const stateEntry of this._state) {
-      if (this._core.pathsEqual(fullPath, stateEntry.path)) {
-        this._logger.warn(`_ingestConstellationStarDataEntry: Attempt to add a new entry at '${fullPath}' for star '${entry.starId}' that already belongs to star '${stateEntry.starId}'`);
-        return;
+    const updateStarIds = update.map((e) => e.starId);
+    // for each entry that already exists but doesn't exist in the update
+    // we must deactivate the star if it is active.
+    // todo: this implies that the star.status was switched to COLD and support is no longer
+    // wanted for it. But this isn't necessarily true. It's possible the star got
+    // kicked out of the constellation but remains active independently.
+    // so, todo, check this and communicate it to the user somehow.
+    const copy = [...here.entries];
+    for (const oldEntry of copy) {
+      if (!updateStarIds.includes(oldEntry.starId)) {
+        if (oldEntry.star) {
+          await this._deactivateStar(oldEntry.star);
+          oldEntry.star = null;
+        }
+        const idx = here.entries.indexOf(oldEntry);
+        here.entries.splice(idx, 1);
+        this._logger.trace(
+          `_updateEntry: removed old entry for star '${oldEntry.starId}'`,
+        );
+        changed = true;
       }
     }
 
-    this._state.push({
-      starId: entry.starId,
-      path: fullPath,
-      star: null
-    });
+    const existingStarIds = here.entries.map((e) => e.starId);
+    // each new entry should be added, but not automatically activated.
+    // each existing entry, maybe the path changed, check and update if needed.
+    for (const newEntry of update) {
+      if (existingStarIds.includes(newEntry.starId)) {
+        const existingEntry = this._findEntryByStarId(here, newEntry.starId);
+        if (newEntry.path != existingEntry.path) {
+          this._logger.trace(
+            `_updateEntry: name '${existingEntry.path}' changed to '${newEntry.path}'`,
+          );
+          existingEntry.path = newEntry.path;
+          changed = true;
+        }
+      } else {
+        here.entries.push({
+          path: newEntry.path,
+          starId: newEntry.starId,
+          star: null,
+          entries: [],
+        });
+        changed = true;
+      }
+    }
 
-    this._logger.trace(`_ingestConstellationStarDataEntry: Learned of new star at '${fullPath}' with id '${entry.starId}'`);
-  }
+    // entry was updated. If there were changes, raise the event.
+    if (changed) {
+      await this._raisePathsChangedEvent(here.starId);
+    }
+  };
+
+  _isConstellation = (star) => {
+    return star.starInfo.type == getConstellationStarType();
+  };
+
+  _findEntryByStarId = (start, starId) => {
+    var todo = [start];
+    while (todo.length > 0) {
+      const current = todo.pop();
+      if (!current) return null;
+      if (current.starId == starId) return current;
+      todo = todo.concat(current.entries);
+    }
+  };
+
+  _activateStar = async (starId) => {
+    const star = await this._core.starFactory.connectToStar(starId, this);
+    this._activeStars.push(star);
+    this._logger.trace("_activateStar: success");
+    return star;
+  };
+
+  _deactivateStar = async (star) => {
+    const index = this._activeStars.indexOf(star);
+    if (index < 0)
+      this._logger.assert("_deactivateStar: active star not found");
+    this._activeStars = this._activeStars.splice(index, 1);
+    await star.disconnect();
+    this._logger.trace("_deactivateStar: success");
+  };
+
+  _raisePathsChangedEvent = async (starId) => {
+    await this._handler.onPathsUpdated(starId);
+  };
 }

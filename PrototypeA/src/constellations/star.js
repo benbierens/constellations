@@ -26,7 +26,7 @@ export class Star {
     this._handler = null;
     this._starInfo = null;
     this._starProperties = null;
-    
+
     this._logger.trace("disconnect: Disconnected");
   };
 

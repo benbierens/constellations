@@ -5,7 +5,7 @@ export class StarFactory {
   }
 
   createNewConstellation = async () => {
-    throw new Error("entirely todo")
+    throw new Error("entirely todo");
   };
 
   connectToConstellation = async (constellationId, handler) => {
