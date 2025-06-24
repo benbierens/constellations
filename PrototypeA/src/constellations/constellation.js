@@ -11,44 +11,46 @@ export class Constellation {
     this._logger = core.logger.prefix("Constellation");
 
     this._activeStars = [];
-    this._root = [
-      {
-        path: "",
-        starId: "aaa",
-        star: rootStar,
-        entries: [
-          {
-            path: "folderName",
-            starId: "bbb",
-            star: null, // inactive
-            entries: [], // not known because not active
-          },
-          {
-            path: "fileName",
-            starId: "ccc",
-            star: star,
-            entries: [], // leaf node
-          },
-          {
-            path: "folderActive",
-            starId: "ddd",
-            star: star,
-            entries: [
-              {
-                path: "nestedFile",
-                starId: "eee",
-                star: null,
-                entries: [],
-              },
-            ],
-          },
-        ],
-      },
-    ];
+    this._root = null;
+    // [
+    //   {
+    //     path: "",
+    //     starId: "aaa",
+    //     star: rootStar,
+    //     entries: [
+    //       {
+    //         path: "folderName",
+    //         starId: "bbb",
+    //         star: null, // inactive
+    //         entries: [], // not known because not active
+    //       },
+    //       {
+    //         path: "fileName",
+    //         starId: "ccc",
+    //         star: star,
+    //         entries: [], // leaf node
+    //       },
+    //       {
+    //         path: "folderActive",
+    //         starId: "ddd",
+    //         star: star,
+    //         entries: [
+    //           {
+    //             path: "nestedFile",
+    //             starId: "eee",
+    //             star: null,
+    //             entries: [],
+    //           },
+    //         ],
+    //       },
+    //     ],
+    //   },
+    // ];
   }
 
   initialize = async (rootStarId) => {
-    if (this._root) this._logger.errorAndThrow("already initialized");
+    if (this._root)
+      this._logger.errorAndThrow("initialize: already initialized");
 
     this._logger.trace("initialize: initializing...");
 
@@ -66,6 +68,10 @@ export class Constellation {
     if (!this._isConstellation(this._root.star))
       this._logger.errorAndThrow("Root star is not a constellation type");
   };
+
+  get root() {
+    return this._map(this._root);
+  }
 
   onDataChanged = async (star) => {
     // If this is one of our constellation type stars, we must fetch the data and update our tree.
@@ -211,4 +217,16 @@ export class Constellation {
   _raisePathsChangedEvent = async (starId) => {
     await this._handler.onPathsUpdated(starId);
   };
+
+  _map = (entry) => {
+    var isActive = false;
+    if (entry.star) isActive = true;
+
+    return {
+      path: entry.path,
+      starId: entry.starId,
+      isActive: isActive,
+      entries: entry.entries.map((e) => this._map(e))
+    };
+  }
 }

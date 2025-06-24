@@ -29,7 +29,8 @@ export class StarFactory {
     creationUtc = new Date(),
     properties = createDefaultNewStarProperties(),
   ) => {
-    if (!type || !isValidUserStringValue(type))
+    if (!type)
+      // todo: validate user string input at api level: !isValidUserStringValue(type)
       this._logger.errorAndThrow("createNewStar: type invalid.");
     if (!owners) owners = []; // todo: change requirement: always 1 or more owners?
     if (!creationUtc)
