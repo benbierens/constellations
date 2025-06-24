@@ -231,7 +231,7 @@ describe("ConstellationTest", () => {
     // and expecting the leaf to disappear from view.
     await constellation.deactivate(["folder"]);
     await core1.sleep(100);
-    
+
     expect(onPathsUpdatedArgs.length).toEqual(3);
     expect(onPathsUpdatedArgs[1]).toEqual(folder.starId);
 
@@ -245,5 +245,91 @@ describe("ConstellationTest", () => {
     expect(root.entries[0].starId).toEqual(folder.starId);
     expect(root.entries[0].isActive).toBeFalsy();
     expect(root.entries[0].entries.length).toEqual(0);
+  });
+
+  it("returns star info, size, lastChange, health, autofetch, and properties", async () => {
+    const rootStar = await createStar(
+      core1,
+      getConstellationStarType(),
+      doNothingStarHandler,
+    );
+    const leafStar = await createStar(core1, "leaf", doNothingStarHandler);
+    await rootStar.setData(
+      JSON.stringify([
+        {
+          starId: leafStar.starId,
+          path: "leaf",
+        },
+      ]),
+    );
+
+    const constellation = new Constellation(core2, constellationHandler);
+    await constellation.initialize(rootStar.starId);
+    expect(onPathsUpdatedArgs.length).toEqual(1);
+
+    const rootInfo = constellation.info([]);
+    expect(rootInfo.starId).toEqual(rootStar.starId);
+    expect(rootInfo.path.length).toEqual(0);
+    expect(rootInfo.starInfo.type).toEqual(getConstellationStarType());
+    expect(rootInfo.starInfo).toStrictEqual(rootStar.starInfo);
+    expect(rootInfo.health).toStrictEqual(rootStar.health);
+    expect(rootInfo.properties.admins.length).toEqual(0);
+    expect(rootInfo.properties.mods.length).toEqual(0);
+    expect(rootInfo.properties.annotations).toEqual(
+      rootStar.properties.annotations,
+    );
+    expect(rootInfo.properties.status).toEqual(rootStar.properties.status);
+    expect(rootInfo.properties.configuration.maxDiffSize).toEqual(
+      rootStar.properties.configuration.maxDiffSize,
+    );
+    expect(rootInfo.properties.configuration.softMinSnapshotDuration).toEqual(
+      rootStar.properties.configuration.softMinSnapshotDuration,
+    );
+    expect(rootInfo.properties.configuration.softMaxDiffDuration).toEqual(
+      rootStar.properties.configuration.softMaxDiffDuration,
+    );
+    expect(rootInfo.properties.configuration.softMaxNumDiffs).toEqual(
+      rootStar.properties.configuration.softMaxNumDiffs,
+    );
+    expect(rootInfo.properties.configuration.channelMonitoringMinutes).toEqual(
+      rootStar.properties.configuration.channelMonitoringMinutes,
+    );
+    expect(rootInfo.properties.configuration.cidMonitoringMinutes).toEqual(
+      rootStar.properties.configuration.cidMonitoringMinutes,
+    );
+
+    await constellation.activate(["leaf"]);
+
+    const leafInfo = constellation.info(["leaf"]);
+    expect(leafInfo.starId).toEqual(leafStar.starId);
+    expect(leafInfo.path.length).toEqual(1);
+    expect(leafInfo.path[0]).toEqual("leaf");
+    expect(leafInfo.starInfo.type).toEqual("leaf");
+    expect(leafInfo.starInfo).toStrictEqual(leafStar.starInfo);
+    expect(leafInfo.health).toStrictEqual(leafStar.health);
+    expect(leafInfo.properties.admins.length).toEqual(0);
+    expect(leafInfo.properties.mods.length).toEqual(0);
+    expect(leafInfo.properties.annotations).toEqual(
+      leafStar.properties.annotations,
+    );
+    expect(leafInfo.properties.status).toEqual(leafStar.properties.status);
+    expect(leafInfo.properties.configuration.maxDiffSize).toEqual(
+      leafStar.properties.configuration.maxDiffSize,
+    );
+    expect(leafInfo.properties.configuration.softMinSnapshotDuration).toEqual(
+      leafStar.properties.configuration.softMinSnapshotDuration,
+    );
+    expect(leafInfo.properties.configuration.softMaxDiffDuration).toEqual(
+      leafStar.properties.configuration.softMaxDiffDuration,
+    );
+    expect(leafInfo.properties.configuration.softMaxNumDiffs).toEqual(
+      leafStar.properties.configuration.softMaxNumDiffs,
+    );
+    expect(leafInfo.properties.configuration.channelMonitoringMinutes).toEqual(
+      leafStar.properties.configuration.channelMonitoringMinutes,
+    );
+    expect(leafInfo.properties.configuration.cidMonitoringMinutes).toEqual(
+      leafStar.properties.configuration.cidMonitoringMinutes,
+    );
   });
 });

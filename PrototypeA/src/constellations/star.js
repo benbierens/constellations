@@ -55,6 +55,10 @@ export class Star {
     return this._cidTracker.utc;
   }
 
+  get autoFetch() {
+    return this._cidTracker.shouldFetch;
+  }
+
   setData = async (data) => {
     if (!this._canModifyData()) {
       this._logger.trace("setData: cannot modify this star.");

@@ -2,6 +2,17 @@ import fs from "fs";
 
 var replacements = [];
 
+const ignore = [
+  // "Column",
+  // "CidTracker",
+  // "StarChannel",
+  // "StarFactory",
+  // "StarChannelFactory",
+  // "Health",
+  // "TimerService",
+  // "StarInternal"
+];
+
 export class NullLogger {
   trace = (msg) => {};
 
@@ -31,6 +42,9 @@ export class Logger {
   }
 
   trace = (msg) => {
+    for (const i of ignore) {
+      if (this.tag.includes(i)) return;
+    }
     msg = this._applyReplacements(msg);
 
     console.log(`[${new Date().toISOString()}]${this.tag} ${msg}`);

@@ -104,10 +104,40 @@ export class Constellation {
     await this._raisePathsChangedEvent(entry.starId);
   };
 
-  info = async (path) => {
-    // path = "/folder"
-    // if star at path is active, return all star info
-    // if not found, or not active error
+  info = (path) => {
+    const entry = this._findEntryByFullPath(path);
+    if (!entry) {
+      this._logger.trace(`info: Nothing found at path '${path}'`);
+      return;
+    }
+    if (!entry.star) {
+      this._logger.trace(`info: Star at path '${path}' is not active`);
+      return;
+    }
+
+    const star = entry.star;
+    const props = star.properties;
+    return {
+      starId: entry.starId,
+      path: path,
+      starInfo: star.starInfo,
+      health: star.health,
+      properties: {
+        status: props.status,
+        configuration: {
+          maxDiffSize: props.configuration.maxDiffSize,
+          softMinSnapshotDuration: props.configuration.softMinSnapshotDuration,
+          softMaxDiffDuration: props.configuration.softMaxDiffDuration,
+          softMaxNumDiffs: props.configuration.softMaxNumDiffs,
+          channelMonitoringMinutes:
+            props.configuration.channelMonitoringMinutes,
+          cidMonitoringMinutes: props.configuration.cidMonitoringMinutes,
+        },
+        admins: props.admins,
+        mods: props.mods,
+        annotations: props.annotations,
+      },
+    };
   };
 
   onDataChanged = async (star) => {
