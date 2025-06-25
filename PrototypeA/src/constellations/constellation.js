@@ -188,32 +188,57 @@ export class Constellation {
 
   createNewFile = async (path, type, owners) => {
     if (!type) this._logger.errorAndThrow("createNewFile: Type not provided.");
-    if (!isValidUserStringValue(type)) this._logger.errorAndThrow("createNewFile: Invalid input for 'type'.");
-    
+    if (!isValidUserStringValue(type))
+      this._logger.errorAndThrow("createNewFile: Invalid input for 'type'.");
+
     return await this._createNewStar(path, type, owners);
-  }
+  };
 
   createNewFolder = async (path, owners) => {
     return await this._createNewStar(path, getConstellationStarType(), owners);
-  }
+  };
+
+  delete = async (path) => {};
 
   _createNewStar = async (path, type, owners) => {
-    if (path.length < 1) this._logger.errorAndThrow("_createNewStar: Invalid path: empty.");
-    if (this._findEntryByFullPath(path)) this._logger.errorAndThrow(`_createNewStar: Invalid path '${path}'. Already exists.`);
+    if (path.length < 1)
+      this._logger.errorAndThrow("_createNewStar: Invalid path: empty.");
+    if (this._findEntryByFullPath(path))
+      this._logger.errorAndThrow(
+        `_createNewStar: Invalid path '${path}'. Already exists.`,
+      );
     if (!type) this._logger.errorAndThrow("_createNewStar: Type not provided.");
-    if (!owners || owners.length < 1) this._logger.errorAndThrow("_createNewStar: One or more owners required.");
+    if (!owners || owners.length < 1)
+      this._logger.errorAndThrow(
+        "_createNewStar: One or more owners required.",
+      );
 
     const parentPath = [...path];
     const pathHead = parentPath.pop();
     const parentStar = this._findActiveStarByFullPath(parentPath);
-    if (!parentStar) this._logger.errorAndThrow(`_createNewStar: Attempt to create star at '${path}' requires modification to constellation type at '${parentPath}' which was not found.`);
-    if (!this._isConstellation(parentStar)) this._logger.errorAndThrow(`_createNewStar: Attempt to create star at '${path}' requires modification to '${parentPath}' which is not a constellation type.`);
-    if (!parentStar.canModifyData()) this._logger.errorAndThrow(`_createNewStar: Attempt to create star at '${path}' requires modification to constellation type at '${parentPath}' which is not permitted.`)
+    if (!parentStar)
+      this._logger.errorAndThrow(
+        `_createNewStar: Attempt to create star at '${path}' requires modification to constellation type at '${parentPath}' which was not found.`,
+      );
+    if (!this._isConstellation(parentStar))
+      this._logger.errorAndThrow(
+        `_createNewStar: Attempt to create star at '${path}' requires modification to '${parentPath}' which is not a constellation type.`,
+      );
+    if (!parentStar.canModifyData())
+      this._logger.errorAndThrow(
+        `_createNewStar: Attempt to create star at '${path}' requires modification to constellation type at '${parentPath}' which is not permitted.`,
+      );
 
     this._print("before star create");
 
-    this._logger.trace(`_createNewStar: At path '${path}' creating a new star of type '${type}' with owners '${owners}'...`);
-    const newStar = await this._core.starFactory.createNewStar(type, owners, this);
+    this._logger.trace(
+      `_createNewStar: At path '${path}' creating a new star of type '${type}' with owners '${owners}'...`,
+    );
+    const newStar = await this._core.starFactory.createNewStar(
+      type,
+      owners,
+      this,
+    );
     this._activeStars.push(newStar);
 
     this._logger.trace("_createNewStar: Updating local structure...");
@@ -222,7 +247,7 @@ export class Constellation {
       path: pathHead,
       starId: newStar.starId,
       star: newStar,
-      entries: []
+      entries: [],
     });
 
     this._print("after parentEntry update");
@@ -243,7 +268,7 @@ export class Constellation {
     await this._raisePathsChangedEvent(parentStar.starId);
 
     return newStar.starId;
-  }
+  };
 
   onDataChanged = async (star) => {
     // If this is one of our constellation type stars, we must fetch the data and update our tree.
@@ -431,23 +456,23 @@ export class Constellation {
     for (const e of entry.entries) {
       result.push({
         path: e.path,
-        starId: e.starId
+        starId: e.starId,
       });
     }
     return result;
-  }
+  };
 
   __getIndent = (indent) => {
     var result = "";
     for (var i = 0; i < indent; i++) result = result + "  ";
     return result;
-  }
+  };
 
   _print = (msg) => {
     // console.log(" ");
     // console.log("print: " + msg);
     // this._debugPrintStructure(this._root, 1);
-  }
+  };
 
   _debugPrintStructure = (here, indent) => {
     const id = this.__getIndent(indent);
@@ -458,5 +483,5 @@ export class Constellation {
     for (const e of here.entries) {
       this._debugPrintStructure(e, indent + 1);
     }
-  }
+  };
 }

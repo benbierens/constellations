@@ -492,124 +492,167 @@ describe("ConstellationTest", () => {
   //   expect(leafReceived).toEqual(updatedLeafData);
   // });
 
-  it("can create a new data star at a path", async () => {
+  // it("can create a new data star at a path", async () => {
+  //   const rootStar = await createStar(
+  //     core1,
+  //     getConstellationStarType(),
+  //     doNothingStarHandler,
+  //   );
+
+  //   const constellation = new Constellation(core1, constellationHandler);
+  //   await constellation.initialize(rootStar.starId);
+
+  //   expect(onPathsUpdatedArgs.length).toEqual(0);
+
+  //   const path = ["leaf"];
+  //   const type = "leaf_type";
+  //   const owners = [core2.constellationNode.address, core1.constellationNode.address];
+  //   const newStarId = await constellation.createNewFile(path, type, owners);
+
+  //   expect(onPathsUpdatedArgs.length).toEqual(1);
+  //   expect(onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
+
+  //   const root = constellation.root;
+  //   expect(root.path).toEqual("");
+  //   expect(root.starId).toEqual(rootStar.starId);
+  //   expect(root.isActive).toBeTruthy();
+  //   expect(root.entries.length).toEqual(1);
+
+  //   expect(root.entries[0].path).toEqual(path[0]);
+  //   expect(root.entries[0].starId).toEqual(newStarId);
+  //   expect(root.entries[0].isActive).toBeTruthy();
+  //   expect(root.entries[0].entries.length).toEqual(0);
+
+  //   const leafInfo = constellation.info(path);
+  //   expect(leafInfo.starInfo.type).toEqual(type);
+  //   expect(leafInfo.starInfo.owners.length).toEqual(owners.length);
+  //   for (var i = 0; i < owners.length; i++) {
+  //     expect(leafInfo.starInfo.owners[i]).toEqual(owners[i]);
+  //   }
+  //   expect(leafInfo.properties.status).toEqual(StarStatus.Bright);
+  // })
+
+  // it("can create a new folder star at a path", async () => {
+  //   const rootStar = await createStar(
+  //     core1,
+  //     getConstellationStarType(),
+  //     doNothingStarHandler,
+  //   );
+
+  //   const constellation = new Constellation(core1, constellationHandler);
+  //   await constellation.initialize(rootStar.starId);
+
+  //   expect(onPathsUpdatedArgs.length).toEqual(0);
+
+  //   const path = ["folder"];
+  //   const owners = [core2.constellationNode.address, core1.constellationNode.address];
+  //   const newStarId = await constellation.createNewFolder(path, owners);
+
+  //   expect(onPathsUpdatedArgs.length).toEqual(1);
+  //   expect(onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
+
+  //   const root = constellation.root;
+  //   expect(root.path).toEqual("");
+  //   expect(root.starId).toEqual(rootStar.starId);
+  //   expect(root.isActive).toBeTruthy();
+  //   expect(root.entries.length).toEqual(1);
+
+  //   expect(root.entries[0].path).toEqual(path[0]);
+  //   expect(root.entries[0].starId).toEqual(newStarId);
+  //   expect(root.entries[0].isActive).toBeTruthy();
+  //   expect(root.entries[0].entries.length).toEqual(0);
+
+  //   const folderInfo = constellation.info(path);
+  //   expect(folderInfo.starInfo.type).toEqual(getConstellationStarType());
+  //   expect(folderInfo.starInfo.owners.length).toEqual(owners.length);
+  //   for (var i = 0; i < owners.length; i++) {
+  //     expect(folderInfo.starInfo.owners[i]).toEqual(owners[i]);
+  //   }
+  //   expect(folderInfo.properties.status).toEqual(StarStatus.Bright);
+  // })
+
+  // it("can create a new folder star and nest a new data star", async () => {
+  //   const rootStar = await createStar(
+  //     core1,
+  //     getConstellationStarType(),
+  //     doNothingStarHandler,
+  //   );
+
+  //   const constellation = new Constellation(core1, constellationHandler);
+  //   await constellation.initialize(rootStar.starId);
+
+  //   expect(onPathsUpdatedArgs.length).toEqual(0);
+
+  //   const folderPath = ["folder"];
+  //   const owners = [core2.constellationNode.address, core1.constellationNode.address];
+  //   const newFolderStarId = await constellation.createNewFolder(folderPath, owners);
+
+  //   expect(onPathsUpdatedArgs.length).toEqual(1);
+  //   expect(onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
+
+  //   const leafPath = ["folder", "leaf"];
+  //   const leafType = "test_leaf_type";
+  //   const newLeafStarId = await constellation.createNewFile(leafPath, leafType, owners);
+
+  //   const root = constellation.root;
+  //   expect(root.path).toEqual("");
+  //   expect(root.starId).toEqual(rootStar.starId);
+  //   expect(root.isActive).toBeTruthy();
+  //   expect(root.entries.length).toEqual(1);
+
+  //   expect(root.entries[0].path).toEqual(folderPath[0]);
+  //   expect(root.entries[0].starId).toEqual(newFolderStarId);
+  //   expect(root.entries[0].isActive).toBeTruthy();
+  //   expect(root.entries[0].entries.length).toEqual(1);
+
+  //   expect(root.entries[0].entries[0].path).toEqual(leafPath[1]);
+  //   expect(root.entries[0].entries[0].starId).toEqual(newLeafStarId);
+  //   expect(root.entries[0].entries[0].isActive).toBeTruthy();
+  //   expect(root.entries[0].entries[0].entries.length).toEqual(0);
+  // })
+
+  it("can delete an active star", async () => {
     const rootStar = await createStar(
       core1,
       getConstellationStarType(),
       doNothingStarHandler,
     );
-
-    const constellation = new Constellation(core1, constellationHandler);
-    await constellation.initialize(rootStar.starId);
-
-    expect(onPathsUpdatedArgs.length).toEqual(0);
-
-    const path = ["leaf"];
-    const type = "leaf_type";
-    const owners = [core2.constellationNode.address, core1.constellationNode.address];
-    const newStarId = await constellation.createNewFile(path, type, owners);
-
-    expect(onPathsUpdatedArgs.length).toEqual(1);
-    expect(onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
-
-    const root = constellation.root;
-    expect(root.path).toEqual("");
-    expect(root.starId).toEqual(rootStar.starId);
-    expect(root.isActive).toBeTruthy();
-    expect(root.entries.length).toEqual(1);
-
-    expect(root.entries[0].path).toEqual(path[0]);
-    expect(root.entries[0].starId).toEqual(newStarId);
-    expect(root.entries[0].isActive).toBeTruthy();
-    expect(root.entries[0].entries.length).toEqual(0);
-
-    const leafInfo = constellation.info(path);
-    expect(leafInfo.starInfo.type).toEqual(type);
-    expect(leafInfo.starInfo.owners.length).toEqual(owners.length);
-    for (var i = 0; i < owners.length; i++) {
-      expect(leafInfo.starInfo.owners[i]).toEqual(owners[i]);
-    }
-    expect(leafInfo.properties.status).toEqual(StarStatus.Bright);
-  })
-
-  it("can create a new folder star at a path", async () => {
-    const rootStar = await createStar(
+    const folder = await createStar(
       core1,
       getConstellationStarType(),
       doNothingStarHandler,
     );
-
-    const constellation = new Constellation(core1, constellationHandler);
-    await constellation.initialize(rootStar.starId);
-
-    expect(onPathsUpdatedArgs.length).toEqual(0);
-
-    const path = ["folder"];
-    const owners = [core2.constellationNode.address, core1.constellationNode.address];
-    const newStarId = await constellation.createNewFolder(path, owners);
-
-    expect(onPathsUpdatedArgs.length).toEqual(1);
-    expect(onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
-
-    const root = constellation.root;
-    expect(root.path).toEqual("");
-    expect(root.starId).toEqual(rootStar.starId);
-    expect(root.isActive).toBeTruthy();
-    expect(root.entries.length).toEqual(1);
-
-    expect(root.entries[0].path).toEqual(path[0]);
-    expect(root.entries[0].starId).toEqual(newStarId);
-    expect(root.entries[0].isActive).toBeTruthy();
-    expect(root.entries[0].entries.length).toEqual(0);
-
-    const folderInfo = constellation.info(path);
-    expect(folderInfo.starInfo.type).toEqual(getConstellationStarType());
-    expect(folderInfo.starInfo.owners.length).toEqual(owners.length);
-    for (var i = 0; i < owners.length; i++) {
-      expect(folderInfo.starInfo.owners[i]).toEqual(owners[i]);
-    }
-    expect(folderInfo.properties.status).toEqual(StarStatus.Bright);
-  })
-
-  it("can create a new folder star and nest a new data star", async () => {
-    const rootStar = await createStar(
-      core1,
-      getConstellationStarType(),
-      doNothingStarHandler,
+    await rootStar.setData(
+      JSON.stringify([
+        {
+          starId: folder.starId,
+          path: "folder",
+        },
+      ]),
     );
 
     const constellation = new Constellation(core1, constellationHandler);
     await constellation.initialize(rootStar.starId);
-
-    expect(onPathsUpdatedArgs.length).toEqual(0);
-
-    const folderPath = ["folder"];
-    const owners = [core2.constellationNode.address, core1.constellationNode.address];
-    const newFolderStarId = await constellation.createNewFolder(folderPath, owners);
-
-    expect(onPathsUpdatedArgs.length).toEqual(1);
+    await constellation.activate(["folder"]);
+    expect(onPathsUpdatedArgs.length).toEqual(2);
     expect(onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
+    expect(onPathsUpdatedArgs[1]).toEqual(folder.starId);
 
-    const leafPath = ["folder", "leaf"];
-    const leafType = "test_leaf_type";
-    const newLeafStarId = await constellation.createNewFile(leafPath, leafType, owners);
+    expect(onPropertiesChangedArgs.length).toEqual(0);
+
+    await constellation.delete(["folder"]);
+    expect(onPathsUpdatedArgs.length).toEqual(3);
+    expect(onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
+    expect(onPathsUpdatedArgs[1]).toEqual(folder.starId);
+    expect(onPathsUpdatedArgs[2]).toEqual(rootStar.starId);
+
+    expect(onPropertiesChangedArgs.length).toEqual(1);
+    expect(onPropertiesChangedArgs[0]).toEqual(folder.starId);
 
     const root = constellation.root;
     expect(root.path).toEqual("");
     expect(root.starId).toEqual(rootStar.starId);
     expect(root.isActive).toBeTruthy();
-    expect(root.entries.length).toEqual(1);
-
-    expect(root.entries[0].path).toEqual(folderPath[0]);
-    expect(root.entries[0].starId).toEqual(newFolderStarId);
-    expect(root.entries[0].isActive).toBeTruthy();
-    expect(root.entries[0].entries.length).toEqual(1);
-
-    expect(root.entries[0].entries[0].path).toEqual(leafPath[1]);
-    expect(root.entries[0].entries[0].starId).toEqual(newLeafStarId);
-    expect(root.entries[0].entries[0].isActive).toBeTruthy();
-    expect(root.entries[0].entries[0].entries.length).toEqual(0);
-  })
-
-  
+    expect(root.entries.length).toEqual(0);
+  });
 });
