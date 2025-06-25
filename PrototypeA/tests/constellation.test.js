@@ -273,6 +273,8 @@ describe("ConstellationTest", () => {
     expect(rootInfo.starInfo.type).toEqual(getConstellationStarType());
     expect(rootInfo.starInfo).toStrictEqual(rootStar.starInfo);
     expect(rootInfo.health).toStrictEqual(rootStar.health);
+    expect(rootInfo.size).toEqual(rootStar.size);
+    expect(rootInfo.lastChangeUtc).toEqual(rootStar.lastChangeUtc);
     expect(rootInfo.properties.admins.length).toEqual(0);
     expect(rootInfo.properties.mods.length).toEqual(0);
     expect(rootInfo.properties.annotations).toEqual(
@@ -307,6 +309,8 @@ describe("ConstellationTest", () => {
     expect(leafInfo.starInfo.type).toEqual("leaf");
     expect(leafInfo.starInfo).toStrictEqual(leafStar.starInfo);
     expect(leafInfo.health).toStrictEqual(leafStar.health);
+    expect(leafInfo.size).toEqual(leafStar.size);
+    expect(leafInfo.lastChangeUtc).toEqual(leafStar.lastChangeUtc);
     expect(leafInfo.properties.admins.length).toEqual(0);
     expect(leafInfo.properties.mods.length).toEqual(0);
     expect(leafInfo.properties.annotations).toEqual(

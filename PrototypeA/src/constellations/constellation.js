@@ -122,6 +122,8 @@ export class Constellation {
       path: path,
       starInfo: star.starInfo,
       health: star.health,
+      size: star.size,
+      lastChangeUtc: star.lastChangeUtc,
       properties: {
         status: props.status,
         configuration: {
