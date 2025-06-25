@@ -11,6 +11,7 @@ import {
 } from "./mocks";
 import { Constellation } from "../src/constellations/constellation";
 import { getConstellationStarType } from "../src/constellations/protocol";
+import { StarStatus } from "../src/constellations/starProperties";
 
 describe("ConstellationTest", () => {
   const logger = new NullLogger("ConstellationTest");
@@ -23,9 +24,13 @@ describe("ConstellationTest", () => {
   };
 
   var onPathsUpdatedArgs = [];
+  var onPropertiesChangedArgs = [];
   const constellationHandler = {
     onPathsUpdated: async (starId) => {
       onPathsUpdatedArgs.push(starId);
+    },
+    onPropertiesChanged: async (starId) => {
+      onPropertiesChangedArgs.push(starId);
     },
   };
 
@@ -56,6 +61,7 @@ describe("ConstellationTest", () => {
     core1 = createCore("One");
     core2 = createCore("Two");
     onPathsUpdatedArgs = [];
+    onPropertiesChangedArgs = [];
   });
 
   async function createStar(core, type, handler) {
@@ -334,6 +340,81 @@ describe("ConstellationTest", () => {
     );
     expect(leafInfo.properties.configuration.cidMonitoringMinutes).toEqual(
       leafStar.properties.configuration.cidMonitoringMinutes,
+    );
+  });
+
+  it("can update properties", async () => {
+    const rootStar = await createStar(
+      core1,
+      getConstellationStarType(),
+      doNothingStarHandler,
+    );
+    const leafStar = await createStar(core1, "leaf", doNothingStarHandler);
+    await rootStar.setData(
+      JSON.stringify([
+        {
+          starId: leafStar.starId,
+          path: "leaf",
+        },
+      ]),
+    );
+
+    // Important: use the same core as for createStar.
+    // else we won't be allowed to modify the properties.
+    const constellation = new Constellation(core1, constellationHandler);
+    await constellation.initialize(rootStar.starId);
+    await constellation.activate(["leaf"]);
+
+    const newProps = {
+      status: StarStatus.Cold,
+      admins: ["admin"],
+      mods: ["mod"],
+      annotations: "test_annotate_plz",
+      configuration: {
+        maxDiffSize: 10201,
+        softMinSnapshotDuration: 10202,
+        softMaxDiffDuration: 10203,
+        softMaxNumDiffs: 10204,
+        channelMonitoringMinutes: 10205,
+        cidMonitoringMinutes: 10206,
+      },
+    };
+
+    expect(onPropertiesChangedArgs.length).toEqual(2);
+    expect(onPropertiesChangedArgs[0]).toEqual(rootStar.starId);
+    expect(onPropertiesChangedArgs[1]).toEqual(leafStar.starId);
+
+    await constellation.updateProperties(["leaf"], newProps);
+
+    expect(onPropertiesChangedArgs.length).toEqual(3);
+    expect(onPropertiesChangedArgs[2]).toEqual(leafStar.starId);
+
+    const info = constellation.info(["leaf"]);
+    const props = info.properties;
+
+    expect(props.admins.length).toEqual(1);
+    expect(props.admins[0]).toEqual(newProps.admins[0]);
+    expect(props.mods.length).toEqual(1);
+    expect(props.mods[0]).toEqual(newProps.mods[0]);
+    expect(props.annotations).toEqual(newProps.annotations);
+    expect(props.status).toEqual(newProps.status);
+    expect(props.configuration.maxDiffSize).toEqual(
+      newProps.configuration.maxDiffSize,
+    );
+    expect(props.configuration.softMinSnapshotDuration).toEqual(
+      newProps.configuration.softMinSnapshotDuration,
+    );
+    expect(props.configuration.softMaxDiffDuration).toEqual(
+      newProps.configuration.softMaxDiffDuration,
+    );
+    expect(props.configuration.softMaxNumDiffs).toEqual(
+      newProps.configuration.softMaxNumDiffs,
+    );
+    expect(props.configuration.channelMonitoringMinutes).toEqual(
+      newProps.configuration.channelMonitoringMinutes,
+    );
+    expect(props.configuration.cidMonitoringMinutes).toEqual(
+      newProps.configuration.cidMonitoringMinutes,
     );
   });
 });

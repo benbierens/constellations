@@ -2,6 +2,7 @@ import { getConstellationStarType } from "./protocol";
 
 const exampleHandler = {
   onPathsUpdated: async (starId) => {},
+  onPropertiesChanged: async (starId) => {},
 };
 
 export class Constellation {
@@ -105,20 +106,12 @@ export class Constellation {
   };
 
   info = (path) => {
-    const entry = this._findEntryByFullPath(path);
-    if (!entry) {
-      this._logger.trace(`info: Nothing found at path '${path}'`);
-      return;
-    }
-    if (!entry.star) {
-      this._logger.trace(`info: Star at path '${path}' is not active`);
-      return;
-    }
+    const star = this._findActiveStarByFullPath(path);
+    if (!star) return;
 
-    const star = entry.star;
     const props = star.properties;
     return {
-      starId: entry.starId,
+      starId: star.starId,
       path: path,
       starInfo: star.starInfo,
       health: star.health,
@@ -142,6 +135,37 @@ export class Constellation {
     };
   };
 
+  updateProperties = async (path, properties) => {
+    const star = this._findActiveStarByFullPath(path);
+    if (!star) return;
+
+    const i = properties;
+    if (!i) return;
+    const c = i.configuration;
+    const p = star.properties;
+
+    if (i.status) p.status = i.status;
+    if (i.admins) p.admins = i.admins;
+    if (i.mods) p.mods = i.mods;
+    if (i.annotations) p.annotations = i.annotations;
+
+    if (c) {
+      if (c.maxDiffSize) p.configuration.maxDiffSize = c.maxDiffSize;
+      if (c.softMinSnapshotDuration)
+        p.configuration.softMinSnapshotDuration = c.softMinSnapshotDuration;
+      if (c.softMaxDiffDuration)
+        p.configuration.softMaxDiffDuration = c.softMaxDiffDuration;
+      if (c.softMaxNumDiffs)
+        p.configuration.softMaxNumDiffs = c.softMaxNumDiffs;
+      if (c.channelMonitoringMinutes)
+        p.configuration.channelMonitoringMinutes = c.channelMonitoringMinutes;
+      if (c.cidMonitoringMinutes)
+        p.configuration.cidMonitoringMinutes = c.cidMonitoringMinutes;
+    }
+
+    await p.commitChanges();
+  };
+
   onDataChanged = async (star) => {
     // If this is one of our constellation type stars, we must fetch the data and update our tree.
     if (!this._isConstellation(star)) {
@@ -162,7 +186,9 @@ export class Constellation {
     await this._updateEntry(entry, star);
   };
 
-  onPropertiesChanged = async (star) => {};
+  onPropertiesChanged = async (star) => {
+    await this._handler.onPropertiesChanged(star.starId);
+  };
 
   _updateEntry = async (here, star) => {
     if (here.starId != star.starId)
@@ -260,6 +286,18 @@ export class Constellation {
       }
     }
     return entry;
+  };
+
+  _findActiveStarByFullPath = (fullPath) => {
+    const entry = this._findEntryByFullPath(fullPath);
+    if (!entry) return;
+    if (!entry.star) {
+      this._logger.warn(
+        `_findActiveStarByFullPath: Star at path '${fullPath}' is not active`,
+      );
+      return;
+    }
+    return entry.star;
   };
 
   _findEntryByPath = (here, path) => {

@@ -10,6 +10,7 @@ const ignore = [
   // "StarChannelFactory",
   // "Health",
   // "TimerService",
+  // "Timer",
   // "StarInternal"
 ];
 
