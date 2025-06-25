@@ -60,7 +60,7 @@ export class Star {
   }
 
   setData = async (data) => {
-    if (!this._canModifyData()) {
+    if (!this.canModifyData()) {
       this._logger.trace("setData: cannot modify this star.");
       return;
     }
@@ -123,9 +123,9 @@ export class Star {
     this._properties._mods = starProperties.mods;
     this._properties._annotations = starProperties.annotations;
 
-    this._properties._canModifyProperties = this._canModifyProperties;
+    this._properties._canModifyProperties = this.canModifyProperties;
     this._properties._configuration._canModifyProperties =
-      this._canModifyProperties;
+      this.canModifyProperties;
     this._properties._changeHandler = this._handleStarPropertiesChanged;
 
     await this._handler.onPropertiesChanged(this);
@@ -136,12 +136,12 @@ export class Star {
     await this._handler.onDataChanged(this);
   };
 
-  _canModifyProperties = (nodeId = this._core.constellationNode.address) => {
+  canModifyProperties = (nodeId = this._core.constellationNode.address) => {
     const allowed = this._internal.getAllowedPropertyModifiers();
     return allowed.includes(nodeId);
   };
 
-  _canModifyData = (nodeId = this._core.constellationNode.address) => {
+  canModifyData = (nodeId = this._core.constellationNode.address) => {
     const allowed = this._internal.getAllowedDataModifiers();
     return allowed.includes(nodeId);
   };

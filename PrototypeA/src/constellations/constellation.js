@@ -1,4 +1,4 @@
-import { getConstellationStarType } from "./protocol";
+import { getConstellationStarType, isValidUserStringValue } from "./protocol";
 
 const exampleHandler = {
   onPathsUpdated: async (starId) => {},
@@ -186,6 +186,53 @@ export class Constellation {
     return await star.setData(newData);
   };
 
+  createNewFile = async (path, type, owners) => {
+    if (path.length < 1) this._logger.errorAndThrow("createNewFile: Invalid path: empty.");
+    if (this._findEntryByFullPath(path)) this._logger.errorAndThrow(`createNewFile: Invalid path '${path}'. Already exists.`);
+    if (!type) this._logger.errorAndThrow("createNewFile: Type not provided.");
+    if (!isValidUserStringValue(type)) this._logger.errorAndThrow("createNewFile: Invalid input for 'type'.");
+    if (!owners || owners.length < 1) this._logger.errorAndThrow("createNewFile: One or more owners required.");
+
+    const parentPath = [...path];
+    const pathHead = parentPath.pop();
+    const parentStar = this._findActiveStarByFullPath(parentPath);
+    if (!parentStar) this._logger.errorAndThrow(`createNewFile: Attempt to create star at '${path}' requires modification to constellation type at '${parentPath}' which was not found.`);
+    if (!this._isConstellation(parentStar)) this._logger.errorAndThrow(`createNewFile: Attempt to create star at '${path}' requires modification to '${parentPath}' which is not a constellation type.`);
+    if (!parentStar.canModifyData()) this._logger.errorAndThrow(`createNewFile: Attempt to create star at '${path}' requires modification to constellation type at '${parentPath}' which is not permitted.`)
+
+    this._print("before star create");
+
+    this._logger.trace(`createNewFile: At path '${path}' creating a new star of type '${type}' with owners '${owners}'...`);
+    const newStar = await this._core.starFactory.createNewStar(type, owners, this);
+    this._activeStars.push(newStar);
+
+    this._logger.trace("createNewFile: Updating local structure...");
+    const parentEntry = this._findEntryByFullPath(parentPath);
+    parentEntry.entries.push({
+      path: pathHead,
+      starId: newStar.starId,
+      star: newStar,
+      entries: []
+    });
+
+    this._print("after parentEntry update");
+
+    // pack up the parentEntry and set it as data on the parentStar.
+    this._logger.trace("createNewFile: Updating constellation star data...");
+    const parentData = JSON.stringify(this._mapToStarData(parentEntry));
+
+    await parentStar.setData(parentData);
+
+    this._logger.trace("createNewFile: Done");
+
+    // Normally, we would expect the onDataChanged handler to fire
+    // in response so our call to setData, and it would raise the onPathsChanged event.
+    // BUT, we manually updated the local structure. So the handler won't spot any differences
+    // and won't raise the event.
+    // So we do this here:
+    await this._raisePathsChangedEvent(parentStar.starId);
+  }
+
   onDataChanged = async (star) => {
     // If this is one of our constellation type stars, we must fetch the data and update our tree.
     // Otherwise, notify the application of the data change.
@@ -209,6 +256,8 @@ export class Constellation {
     }
 
     await this._updateEntry(entry, star);
+
+    this._print("after onDataChanged");
   };
 
   onPropertiesChanged = async (star) => {
@@ -317,7 +366,7 @@ export class Constellation {
     const entry = this._findEntryByFullPath(fullPath);
     if (!entry) return;
     if (!entry.star) {
-      this._logger.warn(
+      this._logger.trace(
         `_findActiveStarByFullPath: Star at path '${fullPath}' is not active`,
       );
       return;
@@ -364,4 +413,38 @@ export class Constellation {
       entries: entry.entries.map((e) => this._map(e)),
     };
   };
+
+  _mapToStarData = (entry) => {
+    var result = [];
+    for (const e of entry.entries) {
+      result.push({
+        path: e.path,
+        starId: e.starId
+      });
+    }
+    return result;
+  }
+
+  __getIndent = (indent) => {
+    var result = "";
+    for (var i = 0; i < indent; i++) result = result + "  ";
+    return result;
+  }
+
+  _print = (msg) => {
+    // console.log(" ");
+    // console.log("print: " + msg);
+    // this._debugPrintStructure(this._root, 1);
+  }
+
+  _debugPrintStructure = (here, indent) => {
+    const id = this.__getIndent(indent);
+    console.log(`${id} starId: '${here.starId}'`);
+    console.log(`${id} path: '${here.path}'`);
+    console.log(`${id} isActive: '${here.star != null}'`);
+    console.log(`${id} entries: '${here.entries.length}'`);
+    for (const e of here.entries) {
+      this._debugPrintStructure(e, indent + 1);
+    }
+  }
 }
