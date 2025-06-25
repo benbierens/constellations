@@ -187,26 +187,36 @@ export class Constellation {
   };
 
   createNewFile = async (path, type, owners) => {
-    if (path.length < 1) this._logger.errorAndThrow("createNewFile: Invalid path: empty.");
-    if (this._findEntryByFullPath(path)) this._logger.errorAndThrow(`createNewFile: Invalid path '${path}'. Already exists.`);
     if (!type) this._logger.errorAndThrow("createNewFile: Type not provided.");
     if (!isValidUserStringValue(type)) this._logger.errorAndThrow("createNewFile: Invalid input for 'type'.");
-    if (!owners || owners.length < 1) this._logger.errorAndThrow("createNewFile: One or more owners required.");
+    
+    return await this._createNewStar(path, type, owners);
+  }
+
+  createNewFolder = async (path, owners) => {
+    return await this._createNewStar(path, getConstellationStarType(), owners);
+  }
+
+  _createNewStar = async (path, type, owners) => {
+    if (path.length < 1) this._logger.errorAndThrow("_createNewStar: Invalid path: empty.");
+    if (this._findEntryByFullPath(path)) this._logger.errorAndThrow(`_createNewStar: Invalid path '${path}'. Already exists.`);
+    if (!type) this._logger.errorAndThrow("_createNewStar: Type not provided.");
+    if (!owners || owners.length < 1) this._logger.errorAndThrow("_createNewStar: One or more owners required.");
 
     const parentPath = [...path];
     const pathHead = parentPath.pop();
     const parentStar = this._findActiveStarByFullPath(parentPath);
-    if (!parentStar) this._logger.errorAndThrow(`createNewFile: Attempt to create star at '${path}' requires modification to constellation type at '${parentPath}' which was not found.`);
-    if (!this._isConstellation(parentStar)) this._logger.errorAndThrow(`createNewFile: Attempt to create star at '${path}' requires modification to '${parentPath}' which is not a constellation type.`);
-    if (!parentStar.canModifyData()) this._logger.errorAndThrow(`createNewFile: Attempt to create star at '${path}' requires modification to constellation type at '${parentPath}' which is not permitted.`)
+    if (!parentStar) this._logger.errorAndThrow(`_createNewStar: Attempt to create star at '${path}' requires modification to constellation type at '${parentPath}' which was not found.`);
+    if (!this._isConstellation(parentStar)) this._logger.errorAndThrow(`_createNewStar: Attempt to create star at '${path}' requires modification to '${parentPath}' which is not a constellation type.`);
+    if (!parentStar.canModifyData()) this._logger.errorAndThrow(`_createNewStar: Attempt to create star at '${path}' requires modification to constellation type at '${parentPath}' which is not permitted.`)
 
     this._print("before star create");
 
-    this._logger.trace(`createNewFile: At path '${path}' creating a new star of type '${type}' with owners '${owners}'...`);
+    this._logger.trace(`_createNewStar: At path '${path}' creating a new star of type '${type}' with owners '${owners}'...`);
     const newStar = await this._core.starFactory.createNewStar(type, owners, this);
     this._activeStars.push(newStar);
 
-    this._logger.trace("createNewFile: Updating local structure...");
+    this._logger.trace("_createNewStar: Updating local structure...");
     const parentEntry = this._findEntryByFullPath(parentPath);
     parentEntry.entries.push({
       path: pathHead,
@@ -218,12 +228,12 @@ export class Constellation {
     this._print("after parentEntry update");
 
     // pack up the parentEntry and set it as data on the parentStar.
-    this._logger.trace("createNewFile: Updating constellation star data...");
+    this._logger.trace("_createNewStar: Updating constellation star data...");
     const parentData = JSON.stringify(this._mapToStarData(parentEntry));
 
     await parentStar.setData(parentData);
 
-    this._logger.trace("createNewFile: Done");
+    this._logger.trace("_createNewStar: Done");
 
     // Normally, we would expect the onDataChanged handler to fire
     // in response so our call to setData, and it would raise the onPathsChanged event.
@@ -231,6 +241,8 @@ export class Constellation {
     // and won't raise the event.
     // So we do this here:
     await this._raisePathsChangedEvent(parentStar.starId);
+
+    return newStar.starId;
   }
 
   onDataChanged = async (star) => {
