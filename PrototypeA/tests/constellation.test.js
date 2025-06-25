@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { NullLogger } from "../src/services/logger";
+import { Logger, NullLogger } from "../src/services/logger";
 import { ConstellationNode } from "../src/constellations/constellationNode";
 import { Wallet } from "ethers";
 import { CryptoService } from "../src/services/cryptoService";
@@ -25,12 +25,16 @@ describe("ConstellationTest", () => {
 
   var onPathsUpdatedArgs = [];
   var onPropertiesChangedArgs = [];
+  var onDataChangedArgs = [];
   const constellationHandler = {
     onPathsUpdated: async (starId) => {
       onPathsUpdatedArgs.push(starId);
     },
     onPropertiesChanged: async (starId) => {
       onPropertiesChangedArgs.push(starId);
+    },
+    onDataChanged: async (starId) => {
+      onDataChangedArgs.push(starId);
     },
   };
 
@@ -62,6 +66,7 @@ describe("ConstellationTest", () => {
     core2 = createCore("Two");
     onPathsUpdatedArgs = [];
     onPropertiesChangedArgs = [];
+    onDataChangedArgs = [];
   });
 
   async function createStar(core, type, handler) {
@@ -416,5 +421,74 @@ describe("ConstellationTest", () => {
     expect(props.configuration.cidMonitoringMinutes).toEqual(
       newProps.configuration.cidMonitoringMinutes,
     );
+  });
+
+  it("can get the data for both constellation type stars and other types", async () => {
+    const rootStar = await createStar(
+      core1,
+      getConstellationStarType(),
+      doNothingStarHandler,
+    );
+    const leafStar = await createStar(core1, "leaf", doNothingStarHandler);
+    const rootData = JSON.stringify([
+      {
+        starId: leafStar.starId,
+        path: "leaf",
+      },
+    ]);
+    const leafData = "Leafs are nice. Have some plants in your work space.";
+    await rootStar.setData(rootData);
+    await leafStar.setData(leafData);
+
+    const constellation = new Constellation(core2, constellationHandler);
+    await constellation.initialize(rootStar.starId);
+    await constellation.activate(["leaf"]);
+
+    const rootReceived = await constellation.getData([]);
+    const leafReceived = await constellation.getData(["leaf"]);
+
+    expect(rootReceived).toEqual(rootData);
+    expect(leafReceived).toEqual(leafData);
+  });
+
+  it("can set the data for other types but not constellation type stars", async () => {
+    const rootStar = await createStar(
+      core1,
+      getConstellationStarType(),
+      doNothingStarHandler,
+    );
+    const leafStar = await createStar(core1, "leaf", doNothingStarHandler);
+    const originalRootData = JSON.stringify([
+      {
+        starId: leafStar.starId,
+        path: "leaf",
+      },
+    ]);
+    const updatedRootData = "This update should be rejected.";
+    const originalLeafData =
+      "Leafs are nice. Have some plants in your work space.";
+    const updatedLeafData = "Have some plants in your home too.";
+    await rootStar.setData(originalRootData);
+    await leafStar.setData(originalLeafData);
+
+    // Again, same core, else we're not permitted to change anything.
+    const constellation = new Constellation(core1, constellationHandler);
+    await constellation.initialize(rootStar.starId);
+    await constellation.activate(["leaf"]);
+
+    expect(onDataChangedArgs.length).toEqual(1);
+    expect(onDataChangedArgs[0]).toEqual(leafStar.starId);
+
+    await constellation.setData([], updatedRootData);
+    await constellation.setData(["leaf"], updatedLeafData);
+
+    expect(onDataChangedArgs.length).toEqual(2);
+    expect(onDataChangedArgs[1]).toEqual(leafStar.starId);
+
+    const rootReceived = await constellation.getData([]);
+    const leafReceived = await constellation.getData(["leaf"]);
+
+    expect(rootReceived).toEqual(originalRootData);
+    expect(leafReceived).toEqual(updatedLeafData);
   });
 });

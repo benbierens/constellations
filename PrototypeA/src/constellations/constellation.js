@@ -3,6 +3,7 @@ import { getConstellationStarType } from "./protocol";
 const exampleHandler = {
   onPathsUpdated: async (starId) => {},
   onPropertiesChanged: async (starId) => {},
+  onDataChanged: async (starId) => {},
 };
 
 export class Constellation {
@@ -166,15 +167,39 @@ export class Constellation {
     await p.commitChanges();
   };
 
+  getData = async (path) => {
+    const star = this._findActiveStarByFullPath(path);
+    if (!star) return;
+    return await star.getData();
+  };
+
+  setData = async (path, newData) => {
+    const star = this._findActiveStarByFullPath(path);
+    if (!star) return;
+
+    if (this._isConstellation(star)) {
+      this._logger.warn(
+        `setData: Attempt to modify constellation-type star data directly at path '${path}'. Use constellation methods instead.`,
+      );
+      return;
+    }
+    return await star.setData(newData);
+  };
+
   onDataChanged = async (star) => {
     // If this is one of our constellation type stars, we must fetch the data and update our tree.
+    // Otherwise, notify the application of the data change.
     if (!this._isConstellation(star)) {
       this._logger.trace(
         `onDataChanged: star '${star.starId}' is not a constellation type`,
       );
+      await this._handler.onDataChanged(star.starId);
       return;
     }
 
+    this._logger.trace(
+      `onDataChanged: star '${star.starId}' is a constellation type. Updating...`,
+    );
     const entry = this._findEntryByStarId(this._root, star.starId);
     if (!entry) {
       this._logger.trace(
