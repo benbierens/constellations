@@ -1,11 +1,11 @@
 {
-  "name": "lib-constellation",
+  "name": "lib-constellations",
   "version": "0.0.1",
   "description": "Prototype",
   "main": "index.js",
   "type": "module",
   "bin": {
-    "constellation": "./index.js"
+    "constellations": "./index.js"
   },
   "scripts": {
     "start": "node index.js",
