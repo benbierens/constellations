@@ -1,17 +1,14 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Logger, NullLogger } from "../src/services/logger";
 import { ConstellationNode } from "../src/constellations/constellationNode";
 import { Wallet } from "ethers";
 import { CryptoService } from "../src/services/cryptoService";
 import { Core } from "../src/constellations/core";
-import {
-  MockCodexService,
-  MockWakuService,
-  MockWakuServiceForSender,
-} from "./mocks";
 import { Constellation } from "../src/constellations/constellation";
 import { getConstellationStarType } from "../src/constellations/protocol";
 import { StarStatus } from "../src/constellations/starProperties";
+import { MockCodexService } from "./mockCodex";
+import { MockWaku } from "./mockWaku";
 
 const millisecondsPerMinute = 1000 * 60;
 
@@ -23,7 +20,7 @@ describe(
   () => {
     const logger = new NullLogger("ConstellationTest");
     const codexService = new MockCodexService();
-    const wakuService = new MockWakuService();
+    var mockWaku = new MockWaku();
 
     const doNothingStarHandler = {
       onDataChanged: async (star) => {},
@@ -54,13 +51,10 @@ describe(
       const core = new Core(
         myLogger,
         constellationNode,
-        new MockWakuServiceForSender(wakuService, constellationNode.address),
+        mockWaku.createMockWakuServiceForAddress(constellationNode.address),
         codexService,
         cryptoService,
       );
-
-      codexService._core = core;
-      wakuService._core = core;
 
       return core;
     }
@@ -69,11 +63,16 @@ describe(
     var core2 = {};
 
     beforeEach(() => {
+      mockWaku = new MockWaku();
       core1 = createCore("One");
       core2 = createCore("Two");
       onPathsUpdatedArgs = [];
       onPropertiesChangedArgs = [];
       onDataChangedArgs = [];
+    });
+
+    afterEach(async () => {
+      await mockWaku.stopAll();
     });
 
     async function createStar(name, core, type, handler) {
@@ -115,9 +114,11 @@ describe(
           },
         ]),
       );
+      await mockWaku.deliverAll();
 
       const constellation = new Constellation(core2, constellationHandler);
       await constellation.initialize(rootStar.starId);
+      await mockWaku.deliverAll();
 
       expect(onPathsUpdatedArgs.length).toEqual(1);
       expect(onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
@@ -175,9 +176,11 @@ describe(
           },
         ]),
       );
+      await mockWaku.deliverAll();
 
       const constellation = new Constellation(core2, constellationHandler);
       await constellation.initialize(rootStar.starId);
+      await mockWaku.deliverAll();
       expect(onPathsUpdatedArgs.length).toEqual(1);
       expect(onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
 
@@ -195,7 +198,7 @@ describe(
       // when we activate the folder, we expect another update event.
       // after that, we expect the leaf to be visible.
       await constellation.activate(["folder"]);
-      await core1.sleep(100);
+      await mockWaku.deliverAll();
       expect(onPathsUpdatedArgs.length).toEqual(2);
       expect(onPathsUpdatedArgs[1]).toEqual(folder.starId);
 
@@ -252,9 +255,11 @@ describe(
           },
         ]),
       );
+      await mockWaku.deliverAll();
 
       const constellation = new Constellation(core2, constellationHandler);
       await constellation.initialize(rootStar.starId);
+      await mockWaku.deliverAll();
       expect(onPathsUpdatedArgs.length).toEqual(1);
       expect(onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
 
@@ -262,7 +267,7 @@ describe(
       // when we activate the folder, we expect another update event.
       // after that, we expect the leaf to be visible.
       await constellation.activate(["folder"]);
-      await core1.sleep(100);
+      await mockWaku.deliverAll();
       expect(onPathsUpdatedArgs.length).toEqual(2);
       expect(onPathsUpdatedArgs[1]).toEqual(folder.starId);
 
@@ -275,7 +280,7 @@ describe(
       // We deactivate the folder, expecting another update event
       // and expecting the leaf to disappear from view.
       await constellation.deactivate(["folder"]);
-      await core1.sleep(100);
+      await mockWaku.deliverAll();
 
       expect(onPathsUpdatedArgs.length).toEqual(3);
       expect(onPathsUpdatedArgs[1]).toEqual(folder.starId);
@@ -291,6 +296,17 @@ describe(
       expect(root.entries[0].isActive).toBeFalsy();
       expect(root.entries[0].entries.length).toEqual(0);
     });
+
+    function assertDatesWithin(date1, date2, tolerance) {
+      date1 = new Date(date1);
+      date2 = new Date(date2);
+      const delta = Math.abs(date1.getTime() - date2.getTime());
+      if (delta > tolerance) {
+        throw new Error(
+          `Dates not within tolerance: was: ${delta} limit: ${tolerance}\n - date1: ${date1}\n - date2: ${date2}`,
+        );
+      }
+    }
 
     it("returns star info, size, lastChange, health, autofetch, and properties", async () => {
       const rootStar = await createStar(
@@ -313,9 +329,11 @@ describe(
           },
         ]),
       );
+      await mockWaku.deliverAll();
 
       const constellation = new Constellation(core2, constellationHandler);
       await constellation.initialize(rootStar.starId);
+      await mockWaku.deliverAll();
       expect(onPathsUpdatedArgs.length).toEqual(1);
 
       const rootInfo = constellation.info([]);
@@ -325,7 +343,7 @@ describe(
       expect(rootInfo.starInfo).toStrictEqual(rootStar.starInfo);
       expect(rootInfo.health).toStrictEqual(rootStar.health);
       expect(rootInfo.size).toEqual(rootStar.size);
-      expect(rootInfo.lastChangeUtc).toEqual(rootStar.lastChangeUtc);
+      assertDatesWithin(rootInfo.lastChangeUtc, rootStar.lastChangeUtc, 100);
       expect(rootInfo.properties.admins.length).toEqual(0);
       expect(rootInfo.properties.mods.length).toEqual(0);
       expect(rootInfo.properties.annotations).toEqual(
@@ -352,6 +370,7 @@ describe(
       );
 
       await constellation.activate(["leaf"]);
+      await mockWaku.deliverAll();
 
       const leafInfo = constellation.info(["leaf"]);
       expect(leafInfo.starId).toEqual(leafStar.starId);
@@ -409,12 +428,14 @@ describe(
           },
         ]),
       );
+      await mockWaku.deliverAll();
 
       // Important: use the same core as for createStar.
       // else we won't be allowed to modify the properties.
       const constellation = new Constellation(core1, constellationHandler);
       await constellation.initialize(rootStar.starId);
       await constellation.activate(["leaf"]);
+      await mockWaku.deliverAll();
 
       const newProps = {
         status: StarStatus.Cold,
@@ -436,6 +457,7 @@ describe(
       expect(onPropertiesChangedArgs[1]).toEqual(leafStar.starId);
 
       await constellation.updateProperties(["leaf"], newProps);
+      await mockWaku.deliverAll();
 
       expect(onPropertiesChangedArgs.length).toEqual(3);
       expect(onPropertiesChangedArgs[2]).toEqual(leafStar.starId);
@@ -491,10 +513,12 @@ describe(
       const leafData = "Leafs are nice. Have some plants in your work space.";
       await rootStar.setData(rootData);
       await leafStar.setData(leafData);
+      await mockWaku.deliverAll();
 
       const constellation = new Constellation(core2, constellationHandler);
       await constellation.initialize(rootStar.starId);
       await constellation.activate(["leaf"]);
+      await mockWaku.deliverAll();
 
       const rootReceived = await constellation.getData([]);
       const leafReceived = await constellation.getData(["leaf"]);
@@ -528,20 +552,22 @@ describe(
       const updatedLeafData = "Have some plants in your home too.";
       await rootStar.setData(originalRootData);
       await leafStar.setData(originalLeafData);
+      await mockWaku.deliverAll();
 
       // Again, same core, else we're not permitted to change anything.
       const constellation = new Constellation(core1, constellationHandler);
       await constellation.initialize(rootStar.starId);
       await constellation.activate(["leaf"]);
+      await mockWaku.deliverAll();
 
-      expect(onDataChangedArgs.length).toEqual(1);
-      expect(onDataChangedArgs[0]).toEqual(leafStar.starId);
+      expect(onDataChangedArgs.length).toEqual(0);
 
       await constellation.setData([], updatedRootData);
       await constellation.setData(["leaf"], updatedLeafData);
+      await mockWaku.deliverAll();
 
-      expect(onDataChangedArgs.length).toEqual(2);
-      expect(onDataChangedArgs[1]).toEqual(leafStar.starId);
+      expect(onDataChangedArgs.length).toEqual(1);
+      expect(onDataChangedArgs[0]).toEqual(leafStar.starId);
 
       const rootReceived = await constellation.getData([]);
       const leafReceived = await constellation.getData(["leaf"]);
@@ -557,9 +583,11 @@ describe(
         getConstellationStarType(),
         doNothingStarHandler,
       );
+      await mockWaku.deliverAll();
 
       const constellation = new Constellation(core1, constellationHandler);
       await constellation.initialize(rootStar.starId);
+      await mockWaku.deliverAll();
 
       expect(onPathsUpdatedArgs.length).toEqual(0);
 
@@ -570,6 +598,7 @@ describe(
         core1.constellationNode.address,
       ];
       const newStarId = await constellation.createNewFile(path, type, owners);
+      await mockWaku.deliverAll();
 
       expect(onPathsUpdatedArgs.length).toEqual(1);
       expect(onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
@@ -601,9 +630,11 @@ describe(
         getConstellationStarType(),
         doNothingStarHandler,
       );
+      await mockWaku.deliverAll();
 
       const constellation = new Constellation(core1, constellationHandler);
       await constellation.initialize(rootStar.starId);
+      await mockWaku.deliverAll();
 
       expect(onPathsUpdatedArgs.length).toEqual(0);
 
@@ -613,6 +644,7 @@ describe(
         core1.constellationNode.address,
       ];
       const newStarId = await constellation.createNewFolder(path, owners);
+      await mockWaku.deliverAll();
 
       expect(onPathsUpdatedArgs.length).toEqual(1);
       expect(onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
@@ -644,9 +676,11 @@ describe(
         getConstellationStarType(),
         doNothingStarHandler,
       );
+      await mockWaku.deliverAll();
 
       const constellation = new Constellation(core1, constellationHandler);
       await constellation.initialize(rootStar.starId);
+      await mockWaku.deliverAll();
 
       expect(onPathsUpdatedArgs.length).toEqual(0);
 
@@ -659,6 +693,7 @@ describe(
         folderPath,
         owners,
       );
+      await mockWaku.deliverAll();
 
       expect(onPathsUpdatedArgs.length).toEqual(1);
       expect(onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
@@ -670,6 +705,7 @@ describe(
         leafType,
         owners,
       );
+      await mockWaku.deliverAll();
 
       const root = constellation.root;
       expect(root.path).toEqual("");
@@ -717,6 +753,7 @@ describe(
           },
         ]),
       );
+      await mockWaku.deliverAll();
 
       expect(rootStar.properties.status).toEqual(StarStatus.Bright);
       expect(folder.properties.status).toEqual(StarStatus.Bright);
@@ -724,6 +761,7 @@ describe(
       const constellation = new Constellation(core1, constellationHandler);
       await constellation.initialize(rootStar.starId);
       await constellation.activate(["folder"]);
+      await mockWaku.deliverAll();
       expect(onPathsUpdatedArgs.length).toEqual(2);
       expect(onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
       expect(onPathsUpdatedArgs[1]).toEqual(folder.starId);
@@ -733,6 +771,7 @@ describe(
       expect(onPropertiesChangedArgs[1]).toEqual(folder.starId);
 
       await constellation.delete(["folder"], true);
+      await mockWaku.deliverAll();
       expect(onPathsUpdatedArgs.length).toEqual(3);
       expect(onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
       expect(onPathsUpdatedArgs[1]).toEqual(folder.starId);

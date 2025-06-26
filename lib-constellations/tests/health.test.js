@@ -1,15 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { NullLogger } from "../src/services/logger";
 import { ConstellationNode } from "../src/constellations/constellationNode";
 import { Wallet } from "ethers";
 import { CryptoService } from "../src/services/cryptoService";
 import { Core } from "../src/constellations/core";
-import {
-  MockCodexService,
-  MockWakuService,
-  MockWakuServiceForSender,
-} from "./mocks";
 import { StarStatus } from "../src/constellations/starProperties";
+import { MockCodexService } from "./mockCodex";
+import { MockWaku } from "./mockWaku";
 
 const testHealthUpdateInterval = 500;
 const millisecondsPerMinute = 1000 * 60;
@@ -23,12 +20,20 @@ describe(
     // Replace this NullLogger with normal Logger to get output.
     const logger = new NullLogger("HealthTests");
     const codexService = new MockCodexService();
-    const wakuService = new MockWakuService();
+    var mockWaku = new MockWaku();
 
     const doNothingHandler = {
       onDataChanged: async (star) => {},
       onPropertiesChanged: async (star) => {},
     };
+
+    beforeEach(() => {
+      mockWaku = new MockWaku();
+    });
+
+    afterEach(async () => {
+      await mockWaku.stopAll();
+    });
 
     function createCore(name) {
       const myLogger = logger.prefix(name);
@@ -42,13 +47,10 @@ describe(
       const core = new Core(
         myLogger,
         constellationNode,
-        new MockWakuServiceForSender(wakuService, constellationNode.address),
+        mockWaku.createMockWakuServiceForAddress(constellationNode.address),
         codexService,
         cryptoService,
       );
-
-      codexService._core = core;
-      wakuService._core = core;
 
       return core;
     }
@@ -101,6 +103,7 @@ describe(
         stars.push(await connectStar(starName, starter.starId));
       }
       await waitForHealthUpdate();
+      await mockWaku.deliverAll();
       return [starter, ...stars];
     }
 

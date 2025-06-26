@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Logger, NullLogger } from "../src/services/logger";
 import { ConstellationNode } from "../src/constellations/constellationNode";
 import { Wallet } from "ethers";
@@ -12,7 +12,7 @@ import { MockWaku } from "./mockWaku";
 describe("TwoStarTest", () => {
   const logger = new NullLogger("TwoStarTest");
   const codexService = new MockCodexService();
-  const mockWaku = new MockWaku();
+  var mockWaku = new MockWaku();
 
   const doNothingHandler = {
     onDataChanged: async (star) => {},
@@ -33,8 +33,6 @@ describe("TwoStarTest", () => {
       cryptoService,
     );
 
-    codexService._core = core;
-
     return core;
   }
 
@@ -44,10 +42,15 @@ describe("TwoStarTest", () => {
   var id2 = "";
 
   beforeEach(() => {
+    mockWaku = new MockWaku();
     core1 = createCore("One");
     id1 = core1.constellationNode.address;
     core2 = createCore("Two");
     id2 = core2.constellationNode.address;
+  });
+
+  afterEach(async () => {
+    await mockWaku.stopAll();
   });
 
   async function createStar(core, type, handler) {

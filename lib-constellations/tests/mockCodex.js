@@ -1,3 +1,7 @@
+async function __sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export class MockCodexService {
   constructor() {
     this._counter = 0;
@@ -21,9 +25,9 @@ export class MockCodexService {
         d.mimetype == mimetype
       )
         return d.cid;
-      await this._core.sleep(1);
+      await __sleep(1);
     }
-    await this._core.sleep(1);
+    await __sleep(1);
     const cid = this._newCid();
     this._data.push({
       cid: cid,
@@ -43,11 +47,11 @@ export class MockCodexService {
   };
 
   downloadData = async (cid) => {
-    await this._core.sleep(5);
+    await __sleep(5);
     for (var i = 0; i < this._data.length; i++) {
       const d = this._data[i];
       if (d.cid == cid) return d.fileData;
-      await this._core.sleep(3);
+      await __sleep(3);
     }
     throw new Error("mockCodex data not found.");
   };
@@ -58,14 +62,14 @@ export class MockCodexService {
   };
 
   _returnManifest = async (cid) => {
-    await this._core.sleep(1);
+    await __sleep(1);
     for (var i = 0; i < this._data.length; i++) {
       const d = this._data[i];
       if (d.cid == cid)
         return {
           datasetSize: d.fileData.length,
         };
-      await this._core.sleep(3);
+      await __sleep(3);
     }
     throw new Error("mockCodex data not found.");
   };

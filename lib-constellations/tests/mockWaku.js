@@ -20,6 +20,12 @@ export class MockWaku {
     }
   };
 
+  stopAll = async () => {
+    for (const at of this._allChannels) {
+      await at.close();
+    }
+  };
+
   newChannel = (newChn) => {
     this._allChannels.push(newChn);
     for (const at of this._allTopics) {
