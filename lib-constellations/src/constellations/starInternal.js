@@ -103,8 +103,6 @@ export class StarInternal {
   };
 
   sendStarProperties = async (starProperties) => {
-    if (!this._starInfo.isReady)
-      this._logger.errorAndThrow("sendStarProperties: StarInfo not set.");
     if (!starProperties.admins)
       this._logger.errorAndThrow("sendStarProperties: admins not set.");
     if (!starProperties.mods)

@@ -59,11 +59,17 @@ export class StarFactory {
     await internal.sendStarInfo(starInfo);
     await internal.sendStarProperties(properties);
 
-    if (!(await this._waitForInitialized(star)))
+    if (!(await this._waitForInitialized(star))) {
+      await star._channel.close();
       this._logger.assert(
         "createNewStar: New star did not initialize correctly.",
       );
+    }
     this._logger.trace(`createNewStar: Success. starId: '${star.starId}'`);
+    if (!star.isInitialized()) {
+      await star._channel.close();
+      this._logger.assert("createNewStar: Failed to initialize.");
+    }
     return star;
   };
 
@@ -89,6 +95,10 @@ export class StarFactory {
         `connectToStar: Fast-Success. starId: '${star.starId}'`,
       );
       await debouncer.resolve();
+      if (!star.isInitialized()) {
+        await star._channel.close();
+        this._logger.assert("connectToStar: Fail on fast-initialize.");
+      }
       return star;
     }
 
@@ -110,11 +120,15 @@ export class StarFactory {
 
     this._logger.trace(`connectToStar: Slow-Success. starId: '${star.starId}'`);
     await debouncer.resolve();
+    if (!star.isInitialized()) {
+      await star._channel.close();
+      this._logger.assert("connectToStar: Fail on slow-initialize.");
+    }
     return star;
   };
 
   _waitForInitialized = async (star) => {
-    return await this._waitFor(async () => star.isInitialized());
+    return await this._waitFor(() => star.isInitialized());
   };
 
   _waitFor = async (condition) => {

@@ -109,6 +109,7 @@ export class CidTracker {
     // We've just uploaded a new CID and sent the update message to the channel.
     // We obviously have the data and should follow up with the health monitor.
     this._cid = cid;
+    this._utc = new Date();
     this._have = false;
     await this._nowHave();
   };

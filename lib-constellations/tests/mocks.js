@@ -95,11 +95,7 @@ export class MockWakuChannel {
   }
 
   _start = async () => {
-    for (var i = 0; i < this._messages.length; i++) {
-      const m = this._messages[i];
-      await this._sendToAll(m.sender, m.msg);
-      await this._core.sleep(5);
-    }
+    this._pushAll();
   };
 
   _pushMessages = async (newHandler) => {
@@ -111,10 +107,21 @@ export class MockWakuChannel {
       sender: sender,
       msg: msg,
     });
-    await this._sendToAll(sender, msg);
+    // detached sending.
+    this._sendToAll(sender, msg);
+  };
+
+  _pushAll = async () => {
+    await this._core.sleep(1);
+    for (var i = 0; i < this._messages.length; i++) {
+      const m = this._messages[i];
+      await this._sendToAll(m.sender, m.msg);
+      await this._core.sleep(1);
+    }
   };
 
   _sendToAll = async (sender, msg) => {
+    await this._core.sleep(1);
     for (var i = 0; i < this._handlers.length; i++) {
       await this._handlers[i].onMessage(sender, null, msg);
     }
@@ -164,5 +171,10 @@ export class MockWakuService {
     this._channels.push(newChannel);
     await this._core.sleep(1);
     return newChannel.obj;
+  };
+
+  _detachedPush = async (channel, handler) => {
+    await this._core.sleep(1);
+    await channel._pushMessages(handler);
   };
 }
