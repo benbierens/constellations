@@ -1,21 +1,18 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { NullLogger } from "../src/services/logger";
+import { Logger, NullLogger } from "../src/services/logger";
 import { ConstellationNode } from "../src/constellations/constellationNode";
 import { Wallet } from "ethers";
 import { CryptoService } from "../src/services/cryptoService";
 import { Core } from "../src/constellations/core";
-import {
-  MockCodexService,
-  MockWakuService,
-  MockWakuServiceForSender,
-} from "./mocks";
 import { StarStatus } from "../src/constellations/starProperties";
 import { createDefaultNewStarConfiguration } from "../src/constellations/starConfiguration";
+import { MockCodexService } from "./mockCodex.js";
+import { MockWaku } from "./mockWaku";
 
 describe("TwoStarTest", () => {
   const logger = new NullLogger("TwoStarTest");
   const codexService = new MockCodexService();
-  const wakuService = new MockWakuService();
+  const mockWaku = new MockWaku();
 
   const doNothingHandler = {
     onDataChanged: async (star) => {},
@@ -31,13 +28,12 @@ describe("TwoStarTest", () => {
     const core = new Core(
       myLogger,
       constellationNode,
-      new MockWakuServiceForSender(wakuService, constellationNode.address),
+      mockWaku.createMockWakuServiceForAddress(constellationNode.address),
       codexService,
       cryptoService,
     );
 
     codexService._core = core;
-    wakuService._core = core;
 
     return core;
   }
@@ -192,6 +188,7 @@ describe("TwoStarTest", () => {
 
       star1.properties.admins = [id2];
       await star1.properties.commitChanges();
+      await mockWaku.deliverAll();
 
       expect(star1.properties.admins).toEqual([id2]);
       expect(star2.properties.admins).toEqual([id2]);
@@ -204,6 +201,7 @@ describe("TwoStarTest", () => {
 
       star1.properties.mods = [id2];
       await star1.properties.commitChanges();
+      await mockWaku.deliverAll();
 
       expect(star1.properties.mods).toEqual([id2]);
       expect(star2.properties.mods).toEqual([id2]);
@@ -216,6 +214,7 @@ describe("TwoStarTest", () => {
 
       star1.properties.status = StarStatus.Cold;
       await star1.properties.commitChanges();
+      await mockWaku.deliverAll();
 
       expect(star1.properties.status).toBe(StarStatus.Cold);
       expect(star2.properties.status).toBe(StarStatus.Cold);
@@ -231,6 +230,7 @@ describe("TwoStarTest", () => {
 
       star1.properties.annotations = updatedAnnotation;
       await star1.properties.commitChanges();
+      await mockWaku.deliverAll();
 
       expect(star1.properties.annotations).toBe(updatedAnnotation);
       expect(star2.properties.annotations).toBe(updatedAnnotation);
@@ -251,6 +251,7 @@ describe("TwoStarTest", () => {
 
         star1.properties.configuration.maxDiffSize = newValue;
         await star1.properties.commitChanges();
+        await mockWaku.deliverAll();
 
         expect(star1.properties.configuration.maxDiffSize).toBe(newValue);
         expect(star2.properties.configuration.maxDiffSize).toBe(newValue);
@@ -267,6 +268,7 @@ describe("TwoStarTest", () => {
         );
         star1.properties.configuration.softMinSnapshotDuration = newValue;
         await star1.properties.commitChanges();
+        await mockWaku.deliverAll();
         expect(star1.properties.configuration.softMinSnapshotDuration).toBe(
           newValue,
         );
@@ -286,6 +288,7 @@ describe("TwoStarTest", () => {
         );
         star1.properties.configuration.softMaxDiffDuration = newValue;
         await star1.properties.commitChanges();
+        await mockWaku.deliverAll();
         expect(star1.properties.configuration.softMaxDiffDuration).toBe(
           newValue,
         );
@@ -305,6 +308,7 @@ describe("TwoStarTest", () => {
         );
         star1.properties.configuration.softMaxNumDiffs = newValue;
         await star1.properties.commitChanges();
+        await mockWaku.deliverAll();
         expect(star1.properties.configuration.softMaxNumDiffs).toBe(newValue);
         expect(star2.properties.configuration.softMaxNumDiffs).toBe(newValue);
         assertPropertyChangedRaised();
@@ -320,6 +324,7 @@ describe("TwoStarTest", () => {
         );
         star1.properties.configuration.channelMonitoringMinutes = newValue;
         await star1.properties.commitChanges();
+        await mockWaku.deliverAll();
         expect(star1.properties.configuration.channelMonitoringMinutes).toBe(
           newValue,
         );
@@ -339,6 +344,7 @@ describe("TwoStarTest", () => {
         );
         star1.properties.configuration.cidMonitoringMinutes = newValue;
         await star1.properties.commitChanges();
+        await mockWaku.deliverAll();
         expect(star1.properties.configuration.cidMonitoringMinutes).toBe(
           newValue,
         );
@@ -353,8 +359,11 @@ describe("TwoStarTest", () => {
   function assertDatesWithin(date1, date2, tolerance) {
     date1 = new Date(date1);
     date2 = new Date(date2);
-    if (Math.abs(date1.getTime() - date2.getTime()) > tolerance) {
-      throw new Error("Dates not within tolerance");
+    const delta = Math.abs(date1.getTime() - date2.getTime());
+    if (delta > tolerance) {
+      throw new Error(
+        `Dates not within tolerance: was: ${delta} limit: ${tolerance}\n - date1: ${date1}\n - date2: ${date2}`,
+      );
     }
   }
 
@@ -368,15 +377,15 @@ describe("TwoStarTest", () => {
 
     // Set past and present data before second node connects.
     await star1.setData(pastData);
+    await mockWaku.deliverAll();
     expect(star1.size).toEqual(pastData.length);
-    assertDatesWithin(star1.lastChangeUtc, new Date(), 100);
-
-    await core1.sleep(500);
+    assertDatesWithin(star1.lastChangeUtc, new Date(), 101);
 
     await star1.setData(presentData);
+    await mockWaku.deliverAll();
     const presentDataUtc = new Date();
     expect(star1.size).toEqual(presentData.length);
-    assertDatesWithin(star1.lastChangeUtc, presentDataUtc, 100);
+    assertDatesWithin(star1.lastChangeUtc, presentDataUtc, 102);
 
     var receivedData = [];
     var receivedSizes = [];
@@ -390,18 +399,19 @@ describe("TwoStarTest", () => {
       onPropertiesChanged: async (star) => {},
     };
     const star2 = await connectStar(core2, starId, receiveHandler);
+    await mockWaku.deliverAll();
 
     // Set future data.
-    await core1.sleep(500);
     const futureDataUtc = new Date();
     await star1.setData(futureData);
-    assertDatesWithin(star1.lastChangeUtc, futureDataUtc, 100);
+    await mockWaku.deliverAll();
+    assertDatesWithin(star1.lastChangeUtc, futureDataUtc, 103);
 
     // star2 has received present and future data.
     expect(receivedData).toEqual([presentData, futureData]);
     expect(receivedSizes).toEqual([presentData.length, futureData.length]);
     expect(receivedUtcs.length).toEqual(2);
-    assertDatesWithin(presentDataUtc, receivedUtcs[0], 100);
-    assertDatesWithin(futureDataUtc, receivedUtcs[1], 100);
+    assertDatesWithin(presentDataUtc, receivedUtcs[0], 104);
+    assertDatesWithin(futureDataUtc, receivedUtcs[1], 105);
   });
 });

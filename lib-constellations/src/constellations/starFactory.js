@@ -91,14 +91,14 @@ export class StarFactory {
     // These are likely to contain both starInfo and properties.
     // So we wait a moment to receive and process those.
     if (await this._waitForInitialized(star)) {
-      this._logger.trace(
-        `connectToStar: Fast-Success. starId: '${star.starId}'`,
-      );
       await debouncer.resolve();
       if (!star.isInitialized()) {
         await star._channel.close();
         this._logger.assert("connectToStar: Fail on fast-initialize.");
       }
+      this._logger.trace(
+        `connectToStar: Fast-Success. starId: '${star.starId}'`,
+      );
       return star;
     }
 
@@ -118,12 +118,12 @@ export class StarFactory {
       );
     }
 
-    this._logger.trace(`connectToStar: Slow-Success. starId: '${star.starId}'`);
     await debouncer.resolve();
     if (!star.isInitialized()) {
       await star._channel.close();
       this._logger.assert("connectToStar: Fail on slow-initialize.");
     }
+    this._logger.trace(`connectToStar: Slow-Success. starId: '${star.starId}'`);
     return star;
   };
 

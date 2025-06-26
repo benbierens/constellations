@@ -246,6 +246,9 @@ export class StarInternal {
   };
 
   _cdxCid_checkUpdate = async (signer, newValue) => {
+    if (!this._starInfo.isReady) return ColumnUpdateCheckResponse.Delay;
+    if (!this._starProperties.isReady) return ColumnUpdateCheckResponse.Delay;
+
     const permittedModifiers = this.getAllowedDataModifiers();
     if (permittedModifiers.length > 0 && permittedModifiers.includes(signer)) {
       this._logger.trace(
