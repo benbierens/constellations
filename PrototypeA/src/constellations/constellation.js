@@ -1,4 +1,5 @@
 import { getConstellationStarType, isValidUserStringValue } from "./protocol";
+import { StarStatus } from "./starProperties";
 
 const exampleHandler = {
   onPathsUpdated: async (starId) => {},
@@ -198,7 +199,53 @@ export class Constellation {
     return await this._createNewStar(path, getConstellationStarType(), owners);
   };
 
-  delete = async (path) => {};
+  delete = async (path, updateStarStatus) => {
+    if (path.length == 0)
+      this._logger.errorAndThrow(
+        "delete: Attempt to delete root. This is not implemented yet.",
+      );
+
+    const entry = this._findEntryByFullPath(path);
+    if (!entry) return;
+    if (!entry.star)
+      this._logger.errorAndThrow(`delete: '${path}' is not active.`);
+
+    const parentPath = [...path];
+    const pathHead = parentPath.pop();
+    const parentStar = this._findActiveStarByFullPath(parentPath);
+
+    this._print("before star delete");
+
+    this._logger.trace(
+      `delete: At path '${path}' deleting star '${entry.starId}'...`,
+    );
+
+    if (updateStarStatus) {
+      entry.star.properties.status = StarStatus.Cold;
+      await entry.star.properties.commitChanges();
+      this._logger.trace("delete: Star status updated.");
+    }
+
+    await this._deactivateStar(entry.star);
+    entry.star = null;
+
+    this._logger.trace("delete: Updating local structure...");
+    const parentEntry = this._findEntryByFullPath(parentPath);
+
+    var newEntries = [];
+    for (const e of parentEntry.entries) {
+      if (e.starId != entry.starId) {
+        newEntries.push(e);
+      }
+    }
+    parentEntry.entries = newEntries;
+
+    this._print("after parentEntry update");
+
+    await this._packUpEntryToStarData(parentStar, parentEntry);
+
+    this._logger.trace("delete: Done");
+  };
 
   _createNewStar = async (path, type, owners) => {
     if (path.length < 1)
@@ -252,20 +299,9 @@ export class Constellation {
 
     this._print("after parentEntry update");
 
-    // pack up the parentEntry and set it as data on the parentStar.
-    this._logger.trace("_createNewStar: Updating constellation star data...");
-    const parentData = JSON.stringify(this._mapToStarData(parentEntry));
-
-    await parentStar.setData(parentData);
+    await this._packUpEntryToStarData(parentStar, parentEntry);
 
     this._logger.trace("_createNewStar: Done");
-
-    // Normally, we would expect the onDataChanged handler to fire
-    // in response so our call to setData, and it would raise the onPathsChanged event.
-    // BUT, we manually updated the local structure. So the handler won't spot any differences
-    // and won't raise the event.
-    // So we do this here:
-    await this._raisePathsChangedEvent(parentStar.starId);
 
     return newStar.starId;
   };
@@ -433,6 +469,23 @@ export class Constellation {
     this._activeStars = this._activeStars.splice(index, 1);
     await star.disconnect();
     this._logger.trace("_deactivateStar: success");
+  };
+
+  _packUpEntryToStarData = async (parentStar, parentEntry) => {
+    // pack up the parentEntry and set it as data on the parentStar.
+    this._logger.trace(
+      "_packUpEntryToStarData: Updating constellation star data...",
+    );
+    const parentData = JSON.stringify(this._mapToStarData(parentEntry));
+
+    await parentStar.setData(parentData);
+
+    // Normally, we would expect the onDataChanged handler to fire
+    // in response so our call to setData, and it would raise the onPathsChanged event.
+    // BUT, we manually updated the local structure. So the handler won't spot any differences
+    // and won't raise the event.
+    // So we do this here:
+    await this._raisePathsChangedEvent(parentStar.starId);
   };
 
   _raisePathsChangedEvent = async (starId) => {
