@@ -11,10 +11,10 @@ COPY ../package*.json ./
 RUN npm install --production
 
 # Copy the rest of the application code
-COPY ../index.js ./
+COPY ../src ./src
 
 # Expose the port the app runs on
 EXPOSE 3000
 
 # Start the application
-CMD ["node", "index.js"]
+CMD ["node", "src/index.js"]

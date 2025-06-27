@@ -1,12 +1,6 @@
-import express from 'express';
+#!/usr/bin/env node
 
-const app = express();
-const port = process.env.PORT || 3000;
+import { main } from './src/index.js';
 
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to the Constellations API!' });
-});
-
-app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
-});
+// Start the CLI application
+main();

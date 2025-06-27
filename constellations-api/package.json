@@ -11,7 +11,7 @@
     "start": "node index.js",
     "test": "vitest run",
     "watch": "vitest",
-    "format": "prettier --write ./src ./tests"
+    "format": "prettier --write ./src"
   },
   "keywords": [
     "constellations",
