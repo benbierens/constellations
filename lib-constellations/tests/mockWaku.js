@@ -13,10 +13,14 @@ export class MockWaku {
   };
 
   deliverAll = async () => {
-    for (const at of this._allChannels) {
-      while (at._queue.length > 0) {
-        await __sleep(1);
+    var allEmpty = false;
+    while (!allEmpty) {
+      for (const at of this._allChannels) {
+        while (at._queue.length > 0) {
+          await __sleep(1);
+        }
       }
+      allEmpty = this._allQueuesEmpty();
     }
   };
 
@@ -58,6 +62,13 @@ export class MockWaku {
       history: [msgPack],
     });
   };
+
+  _allQueuesEmpty = () =>{
+    for (const at of this._allChannels) {
+      if (at._queue.length > 0) return false;
+    }
+    return true;
+  }
 }
 
 export class MockWakuService {
@@ -91,7 +102,7 @@ export class MockWakuChannel {
 
   start = async () => {
     this._running = true;
-    this.__worker();
+    this._task = this.__worker();
   };
 
   send = async (msg) => {
@@ -110,12 +121,13 @@ export class MockWakuChannel {
   close = async () => {
     this._queue = [];
     this._running = false;
+    await this._task;
   };
 
   __worker = async () => {
     while (this._running) {
       await __sleep(1);
-      if (this._queue.length > 0) {
+      if (this._running && this._queue.length > 0) {
         const msgPack = this._queue.pop();
         const signer = msgPack.signer;
         const timestamp = msgPack.timestamp;

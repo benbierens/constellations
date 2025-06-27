@@ -36,15 +36,11 @@ describe(
   },
   () => {
     const logger = new NullLogger("ConstellationTest");
-    const codexService = new MockCodexService();
-    var mockWaku = new MockWaku();
 
     const doNothingStarHandler = {
       onDataChanged: async (star) => {},
       onPropertiesChanged: async (star) => {},
     };
-
-    var eventHandler = new EventHandler();
 
     function createCore(name) {
       const myLogger = logger.prefix(name);
@@ -63,19 +59,25 @@ describe(
       return core;
     }
 
-    var core1 = {};
-    var core2 = {};
-    var constellation = {};
+    var eventHandler = null;
+    var mockWaku = null;
+    var codexService = null;
+    var core1 = null;
+    var core2 = null;
+    var constellation = null;
 
     beforeEach(() => {
       mockWaku = new MockWaku();
+      codexService = new MockCodexService();
       core1 = createCore("One");
       core2 = createCore("Two");
       eventHandler = new EventHandler();
     });
 
     afterEach(async () => {
-      await constellation.disconnect();
+      if (constellation) {
+        await constellation.disconnect();
+      }
       await mockWaku.stopAll();
     });
 
