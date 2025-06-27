@@ -24,6 +24,12 @@ export class MockWaku {
     }
   };
 
+  clearHistory = () => {
+    for (const at of this._allTopics) {
+      at.history = [];
+    }
+  };
+
   stopAll = async () => {
     for (const at of this._allChannels) {
       await at.close();
@@ -63,12 +69,12 @@ export class MockWaku {
     });
   };
 
-  _allQueuesEmpty = () =>{
+  _allQueuesEmpty = () => {
     for (const at of this._allChannels) {
       if (at._queue.length > 0) return false;
     }
     return true;
-  }
+  };
 }
 
 export class MockWakuService {

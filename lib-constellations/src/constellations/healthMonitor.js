@@ -145,6 +145,19 @@ class HealthMetric {
 
 const millisecondsPerMinute = 1000 * 60;
 
+export class DoNothingHealthMonitor {
+  // The DoNothingHealthMonitor is used by StarInternal to handle
+  // Health related packets before a functional health monitor has
+  // been initialized.
+  onPacket = async (sender, packet) => {
+    if (packet.header == packetHeaders.healthChannel) return true;
+    if (packet.header == packetHeaders.healthCid) return true;
+    return false;
+  };
+
+  stop = async () => {};
+}
+
 export class HealthMonitor {
   constructor(core, channel, cidTracker) {
     this._core = core;

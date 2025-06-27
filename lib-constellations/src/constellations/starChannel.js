@@ -37,6 +37,8 @@ export class StarChannel {
   sendPacket = async (packet) => {
     if (!this._channel)
       this._logger.errorAndThrow("sendPacket: Channel not open");
+    if (!packet.header)
+      this._logger.errorAndThrow("sendPacket: Packet must have a header");
 
     packet.version = constellationsProtocolVersion;
     await this._channel.send(JSON.stringify(packet));

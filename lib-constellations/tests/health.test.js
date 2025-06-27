@@ -19,8 +19,8 @@ describe(
   () => {
     // Replace this NullLogger with normal Logger to get output.
     const logger = new NullLogger("HealthTests");
-    const codexService = new MockCodexService();
-    var mockWaku = new MockWaku();
+    var codexService = null;
+    var mockWaku = null;
 
     const doNothingHandler = {
       onDataChanged: async (star) => {},
@@ -28,6 +28,7 @@ describe(
     };
 
     beforeEach(() => {
+      codexService = new MockCodexService();
       mockWaku = new MockWaku();
     });
 

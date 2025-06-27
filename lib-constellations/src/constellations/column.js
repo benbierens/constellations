@@ -140,7 +140,7 @@ export class Column {
     if (!this._value) this._logger.assert("getAsPacket: value not set.");
 
     return {
-      responseHeader: this._responseHeader,
+      header: this._responseHeader,
       signature: this._signature,
       signedData: {
         utc: this._utc,

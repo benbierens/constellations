@@ -1,6 +1,6 @@
 import { CidTracker } from "./cidTracker.js";
 import { Column, ColumnUpdateCheckResponse } from "./column.js";
-import { HealthMonitor } from "./healthMonitor.js";
+import { DoNothingHealthMonitor, HealthMonitor } from "./healthMonitor.js";
 import { isValidUserStringValue, packetHeaders } from "./protocol.js";
 import { isDefaultConfiguration } from "./starConfiguration.js";
 import { StarStatus } from "./starProperties.js";
@@ -14,6 +14,8 @@ export class StarInternal {
     this._cidTracker = cidTracker;
 
     if (!this._starId) this._logger.errorAndThrow("starId not set.");
+
+    this._healthMonitor = new DoNothingHealthMonitor();
 
     this._starInfo = new Column(
       core,
@@ -70,6 +72,7 @@ export class StarInternal {
 
   disconnect = async () => {
     this._logger.trace("disconnect: Disconnecting...");
+    await this._healthMonitor.stop();
     await this._cidTracker.stop();
     await this._channel.close();
     this._starInfo.close();
@@ -86,6 +89,7 @@ export class StarInternal {
     this._starInfo = null;
     this._starProperties = null;
     this._cdxCid = null;
+    this._healthMonitor = null;
 
     logger.trace("disconnect: Disconnected");
   };
@@ -133,14 +137,14 @@ export class StarInternal {
   };
 
   onPacket = async (sender, packet) => {
-    if (this._healthMonitor) {
-      if (await this._healthMonitor.onPacket(sender, packet)) return;
-    }
+    if (await this._healthMonitor.onPacket(sender, packet)) return;
     if (await this._starInfo.processPacket(packet)) return;
     if (await this._starProperties.processPacket(packet)) return;
     if (await this._cdxCid.processPacket(packet)) return;
 
-    this._logger.warn(`Unknown packet: '${packet.header}'`);
+    this._logger.assert(
+      `Unknown packet: '${packet.header}' = ${JSON.stringify(packet)}`,
+    );
   };
 
   _starInfo_checkUpdate = async (signer, newValue) => {

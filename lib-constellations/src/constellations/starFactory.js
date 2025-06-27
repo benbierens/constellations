@@ -60,14 +60,14 @@ export class StarFactory {
     await internal.sendStarProperties(properties);
 
     if (!(await this._waitForInitialized(star))) {
-      await star._channel.close();
+      await channel.close();
       this._logger.assert(
         "createNewStar: New star did not initialize correctly.",
       );
     }
     this._logger.trace(`createNewStar: Success. starId: '${star.starId}'`);
     if (!star.isInitialized()) {
-      await star._channel.close();
+      await channel.close();
       this._logger.assert("createNewStar: Failed to initialize.");
     }
     return star;
@@ -93,7 +93,7 @@ export class StarFactory {
     if (await this._waitForInitialized(star)) {
       await debouncer.resolve();
       if (!star.isInitialized()) {
-        await star._channel.close();
+        await channel.close();
         this._logger.assert("connectToStar: Fail on fast-initialize.");
       }
       this._logger.trace(
@@ -102,6 +102,9 @@ export class StarFactory {
       return star;
     }
 
+    this._logger.trace(
+      "connectToStar: Didn't receive initialization data. Requesting it...",
+    );
     // If we didn't receive them, we ask for them.
     if (!star.isStarInfoInitialized()) {
       await internal._starInfo.sendRequest();
@@ -112,7 +115,7 @@ export class StarFactory {
 
     // If we didn't receive them still, we're unable to connect.
     if (!(await this._waitForInitialized(star))) {
-      await star._channel.close();
+      await channel.close();
       this._logger.errorAndThrow(
         `connectToStar: Unable to connect. Failed to initialize star. Required data not received. starId: '${starId}'`,
       );
@@ -120,7 +123,7 @@ export class StarFactory {
 
     await debouncer.resolve();
     if (!star.isInitialized()) {
-      await star._channel.close();
+      await channel.close();
       this._logger.assert("connectToStar: Fail on slow-initialize.");
     }
     this._logger.trace(`connectToStar: Slow-Success. starId: '${star.starId}'`);
