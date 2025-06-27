@@ -99,6 +99,30 @@ describe(
       }
     }
 
+    it("can initialize an empty constellation", async () => {
+      const rootStar = await createStar(
+        "root",
+        core1,
+        getConstellationStarType(),
+        doNothingStarHandler,
+      );
+
+      await rootStar.setData(JSON.stringify([]));
+      await mockWaku.deliverAll();
+
+      constellation = new Constellation(core2, eventHandler);
+      await constellation.initialize(rootStar.starId);
+      await mockWaku.deliverAll();
+
+      expect(eventHandler.onPathsUpdatedArgs.length).toEqual(0);
+
+      const root = constellation.root;
+      expect(root.path).toEqual("");
+      expect(root.starId).toEqual(rootStar.starId);
+      expect(root.isActive).toBeTruthy();
+      expect(root.entries.length).toEqual(0);
+    });
+
     it("can initialize a simple constellation", async () => {
       const rootStar = await createStar(
         "root",
