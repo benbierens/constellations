@@ -24,6 +24,8 @@ export class MockWaku {
     for (const at of this._allChannels) {
       await at.close();
     }
+    this._allChannels = [];
+    this._allTopics = [];
   };
 
   newChannel = (newChn) => {
@@ -39,7 +41,7 @@ export class MockWaku {
 
   queueForAll = (topic, msgPack) => {
     for (const chn of this._allChannels) {
-      if (chn._contentTopic == topic) {
+      if (chn._running && chn._contentTopic == topic) {
         chn._queue.push(msgPack);
       }
     }
@@ -93,6 +95,8 @@ export class MockWakuChannel {
   };
 
   send = async (msg) => {
+    if (!this._running) throw new Error("Can't send. Channel not open.");
+
     await __sleep(1);
     const msgPack = {
       signer: this._address,

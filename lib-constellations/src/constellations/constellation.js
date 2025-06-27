@@ -13,7 +13,6 @@ export class Constellation {
     this._handler = handler;
     this._logger = core.logger.prefix("Constellation");
 
-    this._activeStars = [];
     this._root = null;
     // [
     //   {
@@ -66,10 +65,37 @@ export class Constellation {
 
     // after this line, update events will trigger. _root must be set before this.
     // we expect a data callback and we'll process the root entries from there.
-    this._root.star = await this._activateStar(rootStarId);
+    this._root.star = await this._core.starFactory.connectToStar(
+      rootStarId,
+      this,
+    );
 
     if (!this._isConstellation(this._root.star))
       this._logger.errorAndThrow("Root star is not a constellation type");
+  };
+
+  disconnect = async () => {
+    const logger = this._logger;
+    logger.trace("disconnect: Disconnecting...");
+
+    await this._disconnectAll(this._root);
+
+    this._core = null;
+    this._handler = null;
+    this._logger = null;
+    this._root = null;
+
+    logger.trace("disconnect: Disconnected");
+  };
+
+  _disconnectAll = async (entry) => {
+    for (const e of entry.entries) {
+      await this._disconnectAll(e);
+    }
+    if (entry.star) {
+      await entry.star.disconnect();
+      entry.star = null;
+    }
   };
 
   get root() {
@@ -86,7 +112,7 @@ export class Constellation {
     }
 
     this._logger.trace(`activate: activating star '${entry.starId}'...`);
-    entry.star = await this._activateStar(entry.starId);
+    entry.star = await this._core.starFactory.connectToStar(entry.starId, this);
     // the onDataChanged callback will handle the unpacking of a constellation type star.
   };
 
@@ -100,7 +126,7 @@ export class Constellation {
     }
 
     this._logger.trace(`deactivate: deactivating star '${entry.starId}'...`);
-    await this._deactivateStar(entry.star);
+    await entry.star.disconnect();
     entry.star = null;
     entry.entries = [];
 
@@ -226,7 +252,7 @@ export class Constellation {
       this._logger.trace("delete: Star status updated.");
     }
 
-    await this._deactivateStar(entry.star);
+    await entry.star.disconnect();
     entry.star = null;
 
     this._logger.trace("delete: Updating local structure...");
@@ -286,7 +312,6 @@ export class Constellation {
       owners,
       this,
     );
-    this._activeStars.push(newStar);
 
     this._logger.trace("_createNewStar: Updating local structure...");
     const parentEntry = this._findEntryByFullPath(parentPath);
@@ -365,7 +390,7 @@ export class Constellation {
     for (const oldEntry of copy) {
       if (!updateStarIds.includes(oldEntry.starId)) {
         if (oldEntry.star) {
-          await this._deactivateStar(oldEntry.star);
+          await oldEntry.star.disconnect();
           oldEntry.star = null;
         }
         const idx = here.entries.indexOf(oldEntry);
@@ -453,22 +478,6 @@ export class Constellation {
     }
     this._logger.trace(`_findEntryByPath: Unable to find path '${path}'`);
     return null;
-  };
-
-  _activateStar = async (starId) => {
-    const star = await this._core.starFactory.connectToStar(starId, this);
-    this._activeStars.push(star);
-    this._logger.trace("_activateStar: success");
-    return star;
-  };
-
-  _deactivateStar = async (star) => {
-    const index = this._activeStars.indexOf(star);
-    if (index < 0)
-      this._logger.assert("_deactivateStar: active star not found");
-    this._activeStars = this._activeStars.splice(index, 1);
-    await star.disconnect();
-    this._logger.trace("_deactivateStar: success");
   };
 
   _packUpEntryToStarData = async (parentStar, parentEntry) => {
