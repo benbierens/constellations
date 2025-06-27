@@ -1,3 +1,3 @@
-# lib-constellation
+# constellation-api
 Prototype
 
