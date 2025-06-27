@@ -1,3 +1,4 @@
+import { Lock } from "../services/lock.js";
 import { CidTracker } from "./cidTracker.js";
 import { Column, ColumnUpdateCheckResponse } from "./column.js";
 import { DoNothingHealthMonitor, HealthMonitor } from "./healthMonitor.js";
@@ -9,13 +10,14 @@ export class StarInternal {
   constructor(core, starId, channel, cidTracker) {
     this._core = core;
     this._starId = starId;
-    this._logger = core.logger.prefix("StarInternal");
+    this._logger = core.logger.prefix("StarInternal:" + starId);
     this._channel = channel;
     this._cidTracker = cidTracker;
 
     if (!this._starId) this._logger.errorAndThrow("starId not set.");
 
     this._healthMonitor = new DoNothingHealthMonitor();
+    this._healtMonitorLock = new Lock("healthMonitorLock");
 
     this._starInfo = new Column(
       core,
@@ -72,7 +74,10 @@ export class StarInternal {
 
   disconnect = async () => {
     this._logger.trace("disconnect: Disconnecting...");
-    await this._healthMonitor.stop();
+    await this._healtMonitorLock.lock(async () => {
+      await this._healthMonitor.stop();
+      this._healthMonitor = null;
+    });
     await this._cidTracker.stop();
     await this._channel.close();
     this._starInfo.close();
@@ -89,7 +94,6 @@ export class StarInternal {
     this._starInfo = null;
     this._starProperties = null;
     this._cdxCid = null;
-    this._healthMonitor = null;
 
     logger.trace("disconnect: Disconnected");
   };
@@ -238,15 +242,19 @@ export class StarInternal {
     this._logger.trace(
       "_starProperties_onValueChanged: Updating health monitor",
     );
-    if (this._healthMonitor) {
+    await this._healtMonitorLock.lock(async () => {
       await this._healthMonitor.stop();
-    }
-    this._healthMonitor = new HealthMonitor(
-      this._core,
-      this._channel,
-      this._cidTracker,
-    );
-    await this._healthMonitor.start(this._starProperties.value.configuration);
+      this._healthMonitor = new HealthMonitor(
+        this._core,
+        this._logger,
+        this._channel,
+        this._cidTracker,
+      );
+      await this._healthMonitor.start(this._starProperties.value.configuration);
+      this._logger.trace(
+        "_starProperties_onValueChanged: Health monitor updated",
+      );
+    });
   };
 
   _cdxCid_checkUpdate = async (signer, newValue) => {

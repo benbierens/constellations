@@ -156,12 +156,16 @@ export class DoNothingHealthMonitor {
   };
 
   stop = async () => {};
+
+  get health() {
+    return {};
+  }
 }
 
 export class HealthMonitor {
-  constructor(core, channel, cidTracker) {
+  constructor(core, logger, channel, cidTracker) {
     this._core = core;
-    this._logger = core.logger.prefix("Health");
+    this._logger = logger.prefix("Health");
     this._channel = channel;
     this._cidTracker = cidTracker;
     this._cidTracker.setHealthMonitor(this);
