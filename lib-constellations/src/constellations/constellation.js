@@ -213,6 +213,14 @@ export class Constellation {
     return await star.setData(newData);
   };
 
+  fetch = async (path) => {
+
+  }
+
+  setAutoFetch = async (path, autoFetch) => {
+    
+  }
+
   createNewFile = async (path, type, owners) => {
     if (!type) this._logger.errorAndThrow("createNewFile: Type not provided.");
     if (!isValidUserStringValue(type))
