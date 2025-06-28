@@ -2,15 +2,53 @@ import express from "express";
 import http from "http";
 import { WebSocketServer } from "ws";
 import { App } from "./app.js";
+import { appConfig } from "./config.js";
 
 const websockMessages = {
   onConstellationsChanged: "constellationsChanged",
+  onPathsChanged: "pathsChanged",
+  onPropertiesChanged: "propertiesChanged",
+  onDataChanged: "dataChanged",
 };
 
-export function main() {
-  const app = new App();
-  app.init().catch(console.error);
+class WebsocketCallbacks {
+  constructor(wss) {
+    this.clients = new Set();
 
+    wss.on("connection", (ws) => {
+      clients.add(ws);
+      ws.on("close", () => {
+        clients.delete(ws);
+      });
+    });
+  }
+
+  sendConstellationsChanged = () => {
+    this._sendToAll(websockMessages.onConstellationsChanged);
+  };
+
+  sendPathsChanged = (id, starId) => {
+    this._sendToAll(`${websockMessages.onPathsChanged}/${id}/${starId}`);
+  };
+
+  sendPropertiesChanged = (id, starId) => {
+    this._sendToAll(`${websockMessages.onPropertiesChanged}/${id}/${starId}`);
+  };
+
+  sendDataChanged = (id, starId) => {
+    this._sendToAll(`${websockMessages.onDataChanged}/${id}/${starId}`);
+  };
+
+  _sendToAll = (msg) => {
+    for (const ws of clients) {
+      if (ws.readyState === ws.OPEN) {
+        ws.send(msg);
+      }
+    }
+  };
+}
+
+export function main() {
   const web = express();
   const port = process.env.PORT || 3000;
 
@@ -19,24 +57,10 @@ export function main() {
   // Create HTTP server and WebSocket server
   const server = http.createServer(web);
   const wss = new WebSocketServer({ server });
+  const websocket = new WebsocketCallbacks(wss);
 
-  // Store connected clients
-  const clients = new Set();
-
-  wss.on("connection", (ws) => {
-    clients.add(ws);
-    ws.on("close", () => {
-      clients.delete(ws);
-    });
-  });
-
-  function sendToAll(msg) {
-    for (const ws of clients) {
-      if (ws.readyState === ws.OPEN) {
-        ws.send(msg);
-      }
-    }
-  }
+  const app = new App(appConfig, websocket);
+  app.init().catch(console.error);
 
   web.get("/", (req, res) => {
     res.json(app.getConstellationIds());
@@ -53,7 +77,7 @@ export function main() {
   web.post("/connect/:constellationId", async (req, res) => {
     const newId = await app.connectNew(req.params.constellationId);
 
-    sendToAll(websockMessages.onConstellationsChanged);
+    websocket.sendConstellationsChanged();
 
     res.json({ newId: newId });
   });
@@ -68,7 +92,22 @@ export function main() {
 
     const newId = await app.createNew(body.owners);
 
-    sendToAll(websockMessages.onConstellationsChanged);
+    websocket.sendConstellationsChanged();
+
+    res.json({ newId: newId });
+  });
+
+  web.post("/create", async (req, res) => {
+    const body = req.body;
+    if (!body || typeof body !== "object") {
+      return res
+        .status(400)
+        .json({ error: "Request body must be a JSON object" });
+    }
+
+    const newId = await app.createNew(body.owners);
+
+    websocket.sendConstellationsChanged();
 
     res.json({ newId: newId });
   });
@@ -77,7 +116,7 @@ export function main() {
     const id = parseInt(req.params.id, 10);
     await app.disconnect(id);
 
-    sendToAll(websockMessages.onConstellationsChanged);
+    websocket.sendConstellationsChanged();
 
     res.sendStatus(200);
   });

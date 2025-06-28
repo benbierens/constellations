@@ -4,25 +4,22 @@ import { LogsCache } from "./logsCache.js";
 var newId = 1;
 
 export class App {
-  constructor() {
+  constructor(config, websocket) {
+    this._config = config;
+    this._websocket = websocket;
     this._logsCache = new LogsCache();
     this._constellations = {};
 
-    // todo make configurable
-    this._wakuBootstrapNodes = [];
-    this._codexAddress = "";
-    this._privateKey = "";
-
     this._factory = new ConstellationFactory(
       this._logsCache,
-      this._privateKey,
-      this._codexAddress,
+      this._config.privateKey,
+      this._config.codexAddress,
     );
   }
 
   init = async () => {
     await this._factory.initializeWithBootstrapRecords(
-      this._wakuBootstrapNodes,
+      this._config.wakuBootstrapNodes,
     );
   };
 
@@ -40,7 +37,7 @@ export class App {
 
   createNew = async (owners) => {
     newId++;
-    const handler = new ConstellationHandler(newId);
+    const handler = new ConstellationHandler(this._websocket, newId);
     const constellation = await this._factory.createNewConstellation(
       owners,
       handler,
@@ -54,7 +51,7 @@ export class App {
   };
 
   connectNew = async (constellationId) => {
-    const keys = Object.keys(this._constellations)
+    const keys = Object.keys(this._constellations);
     for (const key of keys) {
       const entry = this._constellations[key];
       if (entry.constellation.id == constellationId) {
@@ -63,7 +60,7 @@ export class App {
     }
 
     newId++;
-    const handler = new ConstellationHandler(newId);
+    const handler = new ConstellationHandler(this._websocket, newId);
     const constellation =
       await this._factory.connectToConstellation(constellationId);
     this._constellations[newId] = {
@@ -83,11 +80,20 @@ export class App {
 }
 
 class ConstellationHandler {
-  constructor(id) {
+  constructor(websocket, id) {
+    this._websocket = websocket;
     this._id = id;
   }
 
-  onPathsUpdated = async (starId) => {};
-  onPropertiesChanged = async (starId) => {};
-  onDataChanged = async (starId) => {};
+  onPathsUpdated = async (starId) => {
+    this._websocket.sendPathsChanged(this._id, starId);
+  };
+
+  onPropertiesChanged = async (starId) => {
+    this._websocket.sendPropertiesChanged(this._id, starId);
+  };
+
+  onDataChanged = async (starId) => {
+    this._websocket.sendDataChanged(this._id, starId);
+  };
 }
