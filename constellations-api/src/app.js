@@ -68,6 +68,7 @@ export class App {
 
   disconnect = async (id) => {
     const entry = this._constellations[id];
+    if (!entry) return;
     await entry.constellation.disconnect();
     delete this._constellations[id];
   };
