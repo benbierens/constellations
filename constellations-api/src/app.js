@@ -54,6 +54,14 @@ export class App {
   };
 
   connectNew = async (constellationId) => {
+    const keys = Object.keys(this._constellations)
+    for (const key of keys) {
+      const entry = this._constellations[key];
+      if (entry.constellation.id == constellationId) {
+        return entry.id;
+      }
+    }
+
     newId++;
     const handler = new ConstellationHandler(newId);
     const constellation =
