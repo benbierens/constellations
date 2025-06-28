@@ -7,3 +7,7 @@ services:
       dockerfile: docker/Dockerfile
     ports:
       - "3000:3000"
+    environment:
+      WAKU_BOOTSTRAP_NODES: "a,b,c"
+      CODEX_ADDRESS: "http"
+      PRIVATE_KEY: "0x1111"
