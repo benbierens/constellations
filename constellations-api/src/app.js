@@ -117,19 +117,19 @@ export class App {
   setData = async (id, path, newData) => {
     const entry = this._constellations[id];
     if (!entry) return;
-    return await entry.constellation.setData(path, newData);
+    await entry.constellation.setData(path, newData);
   };
 
   fetch = async (id, path) => {
     const entry = this._constellations[id];
     if (!entry) return;
-    return await entry.constellation.fetch(path);
+    await entry.constellation.fetch(path);
   };
 
   setAutoFetch = async (id, path, autoFetch) => {
     const entry = this._constellations[id];
     if (!entry) return;
-    return await entry.constellation.setAutoFetch(path, autoFetch);
+    await entry.constellation.setAutoFetch(path, autoFetch);
   };
 
   createNewFile = async (id, path, type, owners) => {
@@ -147,7 +147,7 @@ export class App {
   delete = async (id, path, updateStarStatus) => {
     const entry = this._constellations[id];
     if (!entry) return;
-    return await entry.constellation.createNewFolder(path, updateStarStatus);
+    await entry.constellation.delete(path, updateStarStatus);
   };
 }
 

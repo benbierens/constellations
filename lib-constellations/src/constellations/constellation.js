@@ -184,7 +184,7 @@ export class Constellation {
       );
       return;
     }
-    return await star.setData(newData);
+    await star.setData(newData);
   };
 
   fetch = async (path) => {

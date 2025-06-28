@@ -3,50 +3,7 @@ import http from "http";
 import { WebSocketServer } from "ws";
 import { App } from "./app.js";
 import { appConfig } from "./config.js";
-
-const websockMessages = {
-  onConstellationsChanged: "constellationsChanged",
-  onPathsChanged: "pathsChanged",
-  onPropertiesChanged: "propertiesChanged",
-  onDataChanged: "dataChanged",
-};
-
-class WebsocketCallbacks {
-  constructor(wss) {
-    this.clients = new Set();
-
-    wss.on("connection", (ws) => {
-      clients.add(ws);
-      ws.on("close", () => {
-        clients.delete(ws);
-      });
-    });
-  }
-
-  sendConstellationsChanged = () => {
-    this._sendToAll(websockMessages.onConstellationsChanged);
-  };
-
-  sendPathsChanged = (id, starId) => {
-    this._sendToAll(`${websockMessages.onPathsChanged}/${id}/${starId}`);
-  };
-
-  sendPropertiesChanged = (id, starId) => {
-    this._sendToAll(`${websockMessages.onPropertiesChanged}/${id}/${starId}`);
-  };
-
-  sendDataChanged = (id, starId) => {
-    this._sendToAll(`${websockMessages.onDataChanged}/${id}/${starId}`);
-  };
-
-  _sendToAll = (msg) => {
-    for (const ws of clients) {
-      if (ws.readyState === ws.OPEN) {
-        ws.send(msg);
-      }
-    }
-  };
-}
+import { WebsocketCallbacks } from "./websocketCallbacks.js";
 
 function getId(req) {
   return parseInt(req.params.id, 10);
@@ -119,13 +76,6 @@ export function main() {
     res.json(app.getRoot(id));
   });
 
-  web.get("/:id/data", (req, res) => {
-    const { id, body } = getIdBody(req, res);
-    if (!body) return;
-
-    res.json(app.getData(id, body.path));
-  });
-
   web.post("/:id/activate", async (req, res) => {
     const { id, body } = getIdBody(req, res);
     if (!body) return;
@@ -158,46 +108,57 @@ export function main() {
     res.sendStatus(200);
   });
 
-  web.post("/:id/data", (req, res) => {
+  web.post("/:id/getdata", async (req, res) => {
     const { id, body } = getIdBody(req, res);
     if (!body) return;
 
-    res.json(app.setData(id, body.path, body.data));
+    res.send(await app.getData(id, body.path));
   });
 
-  web.post("/:id/fetch", (req, res) => {
+  web.post("/:id/setdata", async (req, res) => {
     const { id, body } = getIdBody(req, res);
     if (!body) return;
 
-    res.json(app.fetch(id, body.path));
+    await app.setData(id, body.path, body.data);
+    res.sendStatus(200);
   });
 
-  web.post("/:id/autofetch", (req, res) => {
+  web.post("/:id/fetch", async (req, res) => {
     const { id, body } = getIdBody(req, res);
     if (!body) return;
 
-    res.json(app.setAutoFetch(id, body.path, body.autofetch));
+    await app.fetch(id, body.path);
+    res.sendStatus(200);
   });
 
-  web.post("/:id/newfile", (req, res) => {
+  web.post("/:id/autofetch", async (req, res) => {
     const { id, body } = getIdBody(req, res);
     if (!body) return;
 
-    res.json(app.createNewFile(id, body.path, body.type, body.owners));
+    await app.setAutoFetch(id, body.path, body.autofetch);
+    res.sendStatus(200);
   });
 
-  web.post("/:id/newfolder", (req, res) => {
+  web.post("/:id/newfile", async (req, res) => {
     const { id, body } = getIdBody(req, res);
     if (!body) return;
 
-    res.json(app.createNewFolder(id, body.path, body.owners));
+    res.json(await app.createNewFile(id, body.path, body.type, body.owners));
   });
 
-  web.post("/:id/delete", (req, res) => {
+  web.post("/:id/newfolder", async (req, res) => {
     const { id, body } = getIdBody(req, res);
     if (!body) return;
 
-    res.json(app.delete(id, body.path, body.updateStarStatus));
+    res.json(await app.createNewFolder(id, body.path, body.owners));
+  });
+
+  web.post("/:id/delete", async (req, res) => {
+    const { id, body } = getIdBody(req, res);
+    if (!body) return;
+
+    await app.delete(id, body.path, body.updateStarStatus);
+    res.sendStatus(200);
   });
 
   web.post("/close/:id", async (req, res) => {

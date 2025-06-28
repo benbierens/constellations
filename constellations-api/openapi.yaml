@@ -1,0 +1,441 @@
+openapi: 3.0.3
+info:
+  title: Constellations API
+  version: "0.0.1"
+  description: API for creating/connection and modifying constellations.
+
+components:
+  schemas:
+    StructureNode:
+      type: object
+      properties:
+        path:
+          type: string
+        starId:
+          type: string
+        isActive:
+          type: boolean
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/StructureNode"
+
+paths:
+  /:
+    get:
+      summary: Get all constellation IDs
+      responses:
+        '200':
+          description: List of constellation IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+
+  /logs:
+    get:
+      summary: Get logs
+      responses:
+        '200':
+          description: Logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /address:
+    get:
+      summary: Get server Ethereum address
+      responses:
+        '200':
+          description: Server Ethereum address
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /connect/{constellationId}:
+    post:
+      summary: Connect to an existing constellation
+      parameters:
+        - in: path
+          name: constellationId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: New connection ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  newId:
+                    type: integer
+
+  /create:
+    post:
+      summary: Create a new constellation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                owners:
+                  type: array
+                  description: Ethereum addresses of the owners of the new constellation
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: New connection ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  newId:
+                    type: integer
+
+  /{id}:
+    get:
+      summary: Get root structure for a constellation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Root structure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StructureNode"
+
+  /{id}/getdata:
+    post:
+      summary: Get data for a path
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Data for the path
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /{id}/setdata:
+    post:
+      summary: Set data for a path
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: array
+                  items:
+                    type: string
+                data:
+                  type: string
+      responses:
+        '200':
+          description: Data set
+
+  /{id}/activate:
+    post:
+      summary: Activate a path
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Activated
+
+  /{id}/deactivate:
+    post:
+      summary: Deactivate a path
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Deactivated
+
+  /{id}/info:
+    post:
+      summary: Get info for a path
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Info retrieved
+
+  /{id}/properties:
+    post:
+      summary: Update properties for a path
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: array
+                  items:
+                    type: string
+                properties:
+                  type: object
+      responses:
+        '200':
+          description: Properties updated
+
+  /{id}/fetch:
+    post:
+      summary: Fetch data for a path
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Fetch result
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /{id}/autofetch:
+    post:
+      summary: Set autofetch for a path
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: array
+                  items:
+                    type: string
+                autofetch:
+                  type: boolean
+      responses:
+        '200':
+          description: Autofetch set
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /{id}/newfile:
+    post:
+      summary: Create a new file at a path
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: array
+                  items:
+                    type: string
+                type:
+                  type: string
+                owners:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: New file created
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /{id}/newfolder:
+    post:
+      summary: Create a new folder at a path
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: array
+                  items:
+                    type: string
+                owners:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: New folder created
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /{id}/delete:
+    post:
+      summary: Delete a path
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: array
+                  items:
+                    type: string
+                updateStarStatus:
+                  type: boolean
+      responses:
+        '200':
+          description: Path deleted
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /close/{id}:
+    post:
+      summary: Disconnect a constellation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Disconnected
