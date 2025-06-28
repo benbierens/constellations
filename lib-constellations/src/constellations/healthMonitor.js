@@ -1,4 +1,4 @@
-import { packetHeaders } from "./protocol";
+import { packetHeaders } from "./protocol.js";
 
 const healthCountMax = 99;
 

@@ -1,6 +1,5 @@
 import { CidTracker } from "./cidTracker.js";
 import { HandlerDebouncer } from "./handlerDebouncer.js";
-import { isValidUserStringValue } from "./protocol.js";
 import { Star } from "./star.js";
 import { createDefaultNewStarConfiguration } from "./starConfiguration.js";
 import { StarInternal } from "./starInternal.js";

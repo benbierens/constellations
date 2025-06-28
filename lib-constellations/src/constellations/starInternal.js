@@ -1,5 +1,4 @@
 import { Lock } from "../services/lock.js";
-import { CidTracker } from "./cidTracker.js";
 import { Column, ColumnUpdateCheckResponse } from "./column.js";
 import { DoNothingHealthMonitor, HealthMonitor } from "./healthMonitor.js";
 import { isValidUserStringValue, packetHeaders } from "./protocol.js";

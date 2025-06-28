@@ -1,5 +1,5 @@
-import { getConstellationStarType, isValidUserStringValue } from "./protocol";
-import { StarStatus } from "./starProperties";
+import { getConstellationStarType, isValidUserStringValue } from "./protocol.js";
+import { StarStatus } from "./starProperties.js";
 
 const exampleHandler = {
   onPathsUpdated: async (starId) => {},
@@ -14,40 +14,6 @@ export class Constellation {
     this._logger = core.logger.prefix("Constellation");
 
     this._root = null;
-    // [
-    //   {
-    //     path: "",
-    //     starId: "aaa",
-    //     star: rootStar,
-    //     entries: [
-    //       {
-    //         path: "folderName",
-    //         starId: "bbb",
-    //         star: null, // inactive
-    //         entries: [], // not known because not active
-    //       },
-    //       {
-    //         path: "fileName",
-    //         starId: "ccc",
-    //         star: star,
-    //         entries: [], // leaf node
-    //       },
-    //       {
-    //         path: "folderActive",
-    //         starId: "ddd",
-    //         star: star,
-    //         entries: [
-    //           {
-    //             path: "nestedFile",
-    //             starId: "eee",
-    //             star: null,
-    //             entries: [],
-    //           },
-    //         ],
-    //       },
-    //     ],
-    //   },
-    // ];
   }
 
   initialize = async (rootStarId) => {
@@ -97,6 +63,11 @@ export class Constellation {
       entry.star = null;
     }
   };
+
+  get id() {
+    if (!this._root) this._logger.errorAndThrow("id: Not initialized yet");
+    return this._root.starId;
+  }
 
   get root() {
     return this._map(this._root);
