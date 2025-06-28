@@ -10,9 +10,9 @@ export class WebsocketCallbacks {
     this.clients = new Set();
 
     wss.on("connection", (ws) => {
-      clients.add(ws);
+      this.clients.add(ws);
       ws.on("close", () => {
-        clients.delete(ws);
+        this.clients.delete(ws);
       });
     });
   }
@@ -34,7 +34,7 @@ export class WebsocketCallbacks {
   };
 
   _sendToAll = (msg) => {
-    for (const ws of clients) {
+    for (const ws of this.clients) {
       if (ws.readyState === ws.OPEN) {
         ws.send(msg);
       }
