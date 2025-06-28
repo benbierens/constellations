@@ -1,34 +1,37 @@
-import { Wallet } from "ethers";
-
+import { ConstellationFactory } from "lib-constellations";
+import { LogsCache } from "./logsCache.js";
 
 var newId = 1;
 
 export class App {
   constructor() {
+    this._logsCache = new LogsCache();
     this._constellations = {};
 
     // todo make configurable
-    const wakuBootstrapNodes = [];
-    const codexAddress = "";
-    const wallet = Wallet.createRandom();
+    this._wakuBootstrapNodes = [];
+    this._codexAddress = "";
+    this._privateKey = "";
 
-    this._wakuNode = new WakuNode
-
-    const logger = new Logger();
-    const constellationNode = new ConstellationNode(wallet);
-    const cryptoService = new CryptoService(constellationNode);
-
-    this._core = new Core(
-      logger,
-      constellationNode,
-      new WakuService(logger, wallet, wakuNode),
-      new CodexService(logger, codexAddress),
-      cryptoService,
+    this._factory = new ConstellationFactory(
+      this._logsCache,
+      this._privateKey,
+      this._codexAddress,
     );
   }
 
+  init = async () => {
+    await this._factory.initializeWithBootstrapRecords(
+      this._wakuBootstrapNodes,
+    );
+  };
+
+  getLogs = () => {
+    return this._logsCache.getLogs();
+  };
+
   get address() {
-    return this._core.constellationNode.address;
+    return this._factory.walletAddress;
   }
 
   getConstellationIds = () => {
@@ -36,29 +39,25 @@ export class App {
   };
 
   createNew = async (owners) => {
-    const doNothingStarHandler = {
-      onDataChanged: async (star) => {},
-      onPropertiesChanged: async (star) => {},
-    };
-
-    const type = getConstellationStarType();
-    const star = await this._core.starFactory.createNewStar(
-      type,
+    newId++;
+    const handler = new ConstellationHandler(newId);
+    const constellation = await this._factory.createNewConstellation(
       owners,
-      doNothingStarHandler,
+      handler,
     );
-    await star.setData(JSON.stringify([]));
-
-    const result = await this.connectNew(star.starId);
-    await star.disconnect();
-    return result;
+    this._constellations[newId] = {
+      id: newId,
+      constellation: constellation,
+      handler: handler,
+    };
+    return newId;
   };
 
   connectNew = async (constellationId) => {
     newId++;
     const handler = new ConstellationHandler(newId);
-    const constellation = new Constellation(this._core, handler);
-    await constellation.initialize(constellationId);
+    const constellation =
+      await this._factory.connectToConstellation(constellationId);
     this._constellations[newId] = {
       id: newId,
       constellation: constellation,
@@ -68,9 +67,9 @@ export class App {
   };
 
   disconnect = async (id) => {
-    const constellation = this._constellations[id];
+    const entry = this._constellations[id];
+    await entry.constellation.disconnect();
     delete this._constellations[id];
-    await constellation.disconnect();
   };
 }
 

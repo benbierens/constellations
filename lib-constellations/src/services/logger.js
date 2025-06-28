@@ -109,6 +109,7 @@ export class SinkLogger {
       if (this.tag.includes(i)) return;
     }
     msg = this._applyReplacements(msg);
+    msg = `[${new Date().toISOString()}]${this.tag} ${msg}`;
     this._sink.std(msg);
   };
 
@@ -117,7 +118,7 @@ export class SinkLogger {
   };
 
   error = (msg) => {
-    this._sink.err("ERROR: " + msg);
+    this._sink.err(`[${new Date().toISOString()}]${this.tag} ERROR: ${msg}`);
   };
 
   errorAndThrow = (msg) => {

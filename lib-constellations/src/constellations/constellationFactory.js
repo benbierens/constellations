@@ -51,6 +51,10 @@ export class ConstellationFactory {
     );
   };
 
+  get walletAddress() {
+    return this._core.constellationNode.address;
+  }
+
   createNewConstellation = async (owners, eventHandler) => {
     const type = getConstellationStarType();
     const rootStar = await this._core.starFactory.createNewStar(
@@ -73,5 +77,3 @@ export class ConstellationFactory {
     return constellation;
   };
 }
-
-export { ConstellationFactory };

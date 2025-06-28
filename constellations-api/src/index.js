@@ -9,6 +9,7 @@ const websockMessages = {
 
 export function main() {
   const app = new App();
+  app.init().catch(console.error);
 
   const web = express();
   const port = process.env.PORT || 3000;
@@ -41,6 +42,10 @@ export function main() {
     res.json(app.getConstellationIds());
   });
 
+  web.get("/logs", (req, res) => {
+    res.json(app.getLogs());
+  });
+
   web.get("/address", (req, res) => {
     res.json(app.address);
   });
@@ -54,7 +59,14 @@ export function main() {
   });
 
   web.post("/create", async (req, res) => {
-    const newId = await app.createNew(req.params.owners);
+    const body = req.body;
+    if (!body || typeof body !== "object") {
+      return res
+        .status(400)
+        .json({ error: "Request body must be a JSON object" });
+    }
+
+    const newId = await app.createNew(body.owners);
 
     sendToAll(websockMessages.onConstellationsChanged);
 
@@ -67,7 +79,7 @@ export function main() {
 
     sendToAll(websockMessages.onConstellationsChanged);
 
-    res.json({ newId: newId });
+    res.sendStatus(200);
   });
 
   web.get("/api/:number", (req, res) => {

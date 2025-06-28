@@ -31,7 +31,10 @@ export class StarFactory {
     if (!type)
       // todo: validate user string input at api level: !isValidUserStringValue(type)
       this._logger.errorAndThrow("createNewStar: type invalid.");
-    if (!owners) owners = []; // todo: change requirement: always 1 or more owners?
+    if (!owners || owners.length < 1)
+      this._logger.errorAndThrow(
+        "createNewStar: At least 1 owner address required.",
+      );
     if (!creationUtc)
       this._logger.errorAndThrow("createNewStar: creationUtc invalid.");
     if (!handler) this._logger.errorAndThrow("createNewStar: handler invalid.");
