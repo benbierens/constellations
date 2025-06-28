@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   frontend:
     build:
@@ -8,3 +6,11 @@ services:
     ports:
       - "80:80"
     container_name: telescope-frontend
+  constellations-api:
+    image: constellations-api
+    build:
+      context: ../../constellations-api
+      dockerfile: docker/Dockerfile
+    ports:
+      - "3000:3000"
+    container_name: constellations-api
