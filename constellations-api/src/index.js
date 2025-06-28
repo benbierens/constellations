@@ -48,6 +48,26 @@ class WebsocketCallbacks {
   };
 }
 
+function getId(req) {
+  return parseInt(req.params.id, 10);
+}
+
+function getBody(req, res) {
+  const body = req.body;
+  if (!body || typeof body !== "object") {
+    res.status(400).json({ error: "Request body must be a JSON object" });
+    return null;
+  }
+  return body;
+}
+
+function getIdBody(req, res) {
+  return {
+    id: getId(req),
+    body: getBody(req, res),
+  };
+}
+
 export function main() {
   const web = express();
   const port = process.env.PORT || 3000;
@@ -75,7 +95,8 @@ export function main() {
   });
 
   web.post("/connect/:constellationId", async (req, res) => {
-    const newId = await app.connectNew(req.params.constellationId);
+    const constellationId = parseInt(req.params.constellationId, 10);
+    const newId = await app.connectNew(constellationId);
 
     websocket.sendConstellationsChanged();
 
@@ -83,12 +104,8 @@ export function main() {
   });
 
   web.post("/create", async (req, res) => {
-    const body = req.body;
-    if (!body || typeof body !== "object") {
-      return res
-        .status(400)
-        .json({ error: "Request body must be a JSON object" });
-    }
+    const body = getBody(req, res);
+    if (!body) return;
 
     const newId = await app.createNew(body.owners);
 
@@ -97,50 +114,99 @@ export function main() {
     res.json({ newId: newId });
   });
 
-  web.post("/create", async (req, res) => {
-    const body = req.body;
-    if (!body || typeof body !== "object") {
-      return res
-        .status(400)
-        .json({ error: "Request body must be a JSON object" });
-    }
+  web.get("/:id", (req, res) => {
+    const id = getId(req);
+    res.json(app.getRoot(id));
+  });
 
-    const newId = await app.createNew(body.owners);
+  web.get("/:id/data", (req, res) => {
+    const { id, body } = getIdBody(req, res);
+    if (!body) return;
 
-    websocket.sendConstellationsChanged();
+    res.json(app.getData(id, body.path));
+  });
 
-    res.json({ newId: newId });
+  web.post("/:id/activate", async (req, res) => {
+    const { id, body } = getIdBody(req, res);
+    if (!body) return;
+
+    await app.activate(id, body.path);
+    res.sendStatus(200);
+  });
+
+  web.post("/:id/deactivate", async (req, res) => {
+    const { id, body } = getIdBody(req, res);
+    if (!body) return;
+
+    await app.deactivate(id, body.path);
+    res.sendStatus(200);
+  });
+
+  web.post("/:id/info", async (req, res) => {
+    const { id, body } = getIdBody(req, res);
+    if (!body) return;
+
+    await app.getInfo(id, body.path);
+    res.sendStatus(200);
+  });
+
+  web.post("/:id/properties", async (req, res) => {
+    const { id, body } = getIdBody(req, res);
+    if (!body) return;
+
+    await app.updateProperties(id, body.path, body.properties);
+    res.sendStatus(200);
+  });
+
+  web.post("/:id/data", (req, res) => {
+    const { id, body } = getIdBody(req, res);
+    if (!body) return;
+
+    res.json(app.setData(id, body.path, body.data));
+  });
+
+  web.post("/:id/fetch", (req, res) => {
+    const { id, body } = getIdBody(req, res);
+    if (!body) return;
+
+    res.json(app.fetch(id, body.path));
+  });
+
+  web.post("/:id/autofetch", (req, res) => {
+    const { id, body } = getIdBody(req, res);
+    if (!body) return;
+
+    res.json(app.setAutoFetch(id, body.path, body.autofetch));
+  });
+
+  web.post("/:id/newfile", (req, res) => {
+    const { id, body } = getIdBody(req, res);
+    if (!body) return;
+
+    res.json(app.createNewFile(id, body.path, body.type, body.owners));
+  });
+
+  web.post("/:id/newfolder", (req, res) => {
+    const { id, body } = getIdBody(req, res);
+    if (!body) return;
+
+    res.json(app.createNewFolder(id, body.path, body.owners));
+  });
+
+  web.post("/:id/delete", (req, res) => {
+    const { id, body } = getIdBody(req, res);
+    if (!body) return;
+
+    res.json(app.delete(id, body.path, body.updateStarStatus));
   });
 
   web.post("/close/:id", async (req, res) => {
-    const id = parseInt(req.params.id, 10);
+    const id = getId(req);
     await app.disconnect(id);
 
     websocket.sendConstellationsChanged();
 
     res.sendStatus(200);
-  });
-
-  web.get("/api/:number", (req, res) => {
-    const num = parseInt(req.params.number, 10);
-    if (isNaN(num)) {
-      return res.status(400).json({ error: "Parameter must be an integer" });
-    }
-    res.json({ number: num, message: `You sent the integer ${num}` });
-  });
-
-  web.post("/api/:number", (req, res) => {
-    const num = parseInt(req.params.number, 10);
-    if (isNaN(num)) {
-      return res.status(400).json({ error: "Parameter must be an integer" });
-    }
-    const body = req.body;
-    if (!body || typeof body !== "object") {
-      return res
-        .status(400)
-        .json({ error: "Request body must be a JSON object" });
-    }
-    res.json({ number: num, body });
   });
 
   server.listen(port, () => {
