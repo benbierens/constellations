@@ -6,7 +6,7 @@ export class CidTracker {
     this._core = core;
     this._logger = core.logger.prefix("CidTracker");
 
-    this.shouldFetch = false;
+    this._shouldFetch = false;
 
     this._cid = null;
     this._utc = new Date(0);
@@ -43,6 +43,17 @@ export class CidTracker {
     return this._size;
   }
 
+  get shouldFetch() {
+    return this._shouldFetch;
+  }
+
+  setShouldFetch = async (f) => {
+    if (!this._shouldFetch && f) {
+      await this.doFetch();
+    }
+    this._shouldFetch = f;
+  };
+
   onNewCid = async (newCid, utc) => {
     if (this._cid == newCid) return;
 
@@ -52,7 +63,7 @@ export class CidTracker {
     this._lastFetch = null;
     this._have = false;
 
-    if (this.shouldFetch) {
+    if (this._shouldFetch) {
       await this.doFetch();
     } else {
       await this._updateSize();
@@ -119,7 +130,7 @@ export class CidTracker {
   };
 
   _onTimer = async () => {
-    if (this.shouldFetch) {
+    if (this._shouldFetch) {
       await this.doFetch();
     }
 

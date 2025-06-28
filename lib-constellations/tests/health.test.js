@@ -127,10 +127,10 @@ describe(
         const stars = await startStars(numStars);
         expect(stars.length).toEqual(numStars);
 
-        stars.forEach((star) => {
+        for (const star of stars) {
           expect(star.isInitialized()).toBeTruthy();
-          star.setAutoFetch(true);
-        });
+          await star.setAutoFetch(true);
+        }
 
         await stars[0].setData("ThisIsTheData");
         // We need two update cycles here, because

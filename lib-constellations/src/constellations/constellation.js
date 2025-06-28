@@ -1,4 +1,7 @@
-import { getConstellationStarType, isValidUserStringValue } from "./protocol.js";
+import {
+  getConstellationStarType,
+  isValidUserStringValue,
+} from "./protocol.js";
 import { StarStatus } from "./starProperties.js";
 
 const exampleHandler = {
@@ -185,12 +188,16 @@ export class Constellation {
   };
 
   fetch = async (path) => {
-
-  }
+    const star = this._findActiveStarByFullPath(path);
+    if (!star) return;
+    await star.fetchData();
+  };
 
   setAutoFetch = async (path, autoFetch) => {
-    
-  }
+    const star = this._findActiveStarByFullPath(path);
+    if (!star) return;
+    await star.setAutoFetch(autoFetch);
+  };
 
   createNewFile = async (path, type, owners) => {
     if (!type) this._logger.errorAndThrow("createNewFile: Type not provided.");

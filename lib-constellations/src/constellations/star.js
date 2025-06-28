@@ -76,8 +76,12 @@ export class Star {
     return await this._cidTracker.doDownload();
   };
 
-  setAutoFetch = (autoFetch) => {
-    this._cidTracker.shouldFetch = autoFetch;
+  fetchData = async () => {
+    await this._cidTracker.doFetch();
+  };
+
+  setAutoFetch = async (autoFetch) => {
+    await this._cidTracker.setShouldFetch(autoFetch);
   };
 
   isInitialized = () => {
