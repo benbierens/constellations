@@ -1,12 +1,5 @@
 import { Wallet } from "ethers";
-import { Constellation } from "lib-constellations/src/constellations/constellation.js";
-import { ConstellationNode } from "lib-constellations/src/constellations/constellationNode.js";
-import { Core } from "lib-constellations/src/constellations/core.js";
-import { getConstellationStarType } from "lib-constellations/src/constellations/protocol.js";
-import { CodexService } from "lib-constellations/src/services/codexService.js";
-import { CryptoService } from "lib-constellations/src/services/cryptoService.js";
-import { Logger } from "lib-constellations/src/services/logger.js";
-import { WakuService } from "lib-constellations/src/services/wakuService.js";
+
 
 var newId = 1;
 
@@ -15,9 +8,11 @@ export class App {
     this._constellations = {};
 
     // todo make configurable
-    const wakuNode = "";
+    const wakuBootstrapNodes = [];
     const codexAddress = "";
     const wallet = Wallet.createRandom();
+
+    this._wakuNode = new WakuNode
 
     const logger = new Logger();
     const constellationNode = new ConstellationNode(wallet);

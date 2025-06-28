@@ -4,16 +4,20 @@ import { Protocols, createLightNode } from "@waku/sdk";
 const networkConfig = { clusterId: 42, shards: [0] };
 
 export class WakuNode {
-  constructor(logger, bootstrapNodes) {
+  constructor(logger) {
     this.logger = logger.prefix("WakuNode");
-    this.bootstrapNodes = bootstrapNodes;
   }
 
-  start = async () => {
+  startFromNode = async (wakuLightNode) => {
+    this.node = wakuLightNode;
+    this.logger.trace("Started from waku node.");
+  };
+
+  startFromBootstrapNodes = async (bootstrapNodes) => {
     this.node = await createLightNode({
       networkConfig: networkConfig,
       defaultBootstrap: false,
-      bootstrapPeers: this.bootstrapNodes,
+      bootstrapPeers: bootstrapNodes,
       numPeersToUse: 3,
     });
     await this.node.start();
@@ -23,7 +27,7 @@ export class WakuNode {
       Protocols.Filter,
       Protocols.LightPush,
     ]);
-    this.logger.trace("Ready.");
+    this.logger.trace("Started from bootstrap nodes.");
   };
 
   stop = async () => {
