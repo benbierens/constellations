@@ -1,22 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { withWebSocket } from '../components/withWebSocket';
 
 const api = 'http://localhost:3000';
 
-export default function HomePage() {
+function HomePageBase({ wsMessage }: { wsMessage: any }) {
   const [owners, setOwners] = useState('');
   const [connectId, setConnectId] = useState('');
   const [error, setError] = useState('');
   const [constellationIds, setConstellationIds] = useState<number[]>([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Only fetch constellation IDs here
+  const fetchConstellations = useCallback(() => {
     fetch(`${api}/`)
       .then(res => res.json())
       .then(data => setConstellationIds(Array.isArray(data) ? data : []))
       .catch(() => setConstellationIds([]));
   }, []);
+
+  useEffect(() => {
+    fetchConstellations();
+  }, [fetchConstellations]);
+
+  useEffect(() => {
+    if (wsMessage === 'constellationsChanged') {
+      fetchConstellations();
+    }
+  }, [wsMessage, fetchConstellations]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,4 +103,6 @@ export default function HomePage() {
     </div>
   );
 }
+
+export default withWebSocket(HomePageBase);
 
