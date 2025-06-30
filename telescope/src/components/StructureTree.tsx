@@ -81,9 +81,37 @@ function StructureTree({ constellationId, node, path }: Props) {
     setCurrentNode(node);
   }, [node, refreshKey]);
 
+  // Activation checkbox state
+  const [activation, setActivation] = useState(currentNode.isActive);
+
+  React.useEffect(() => {
+    setActivation(currentNode.isActive);
+  }, [currentNode]);
+
+  const handleActivationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
+    setActivation(checked);
+    try {
+      await fetch(`${api}/${constellationId}/${checked ? 'activate' : 'deactivate'}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path }),
+      });
+      refresh();
+    } catch {
+      // Optionally handle error
+    }
+  };
+
   return (
     <div style={{ marginLeft: path.length ? 24 : 0, marginTop: 8 }}>
       <div>
+        <input
+          type="checkbox"
+          checked={activation}
+          onChange={handleActivationChange}
+          style={{ marginRight: 8 }}
+        />
         <span
           style={{ cursor: 'pointer', fontWeight: path.length === 0 ? 'bold' : undefined }}
           onClick={() => setExpanded(e => !e)}
@@ -93,7 +121,9 @@ function StructureTree({ constellationId, node, path }: Props) {
             : '•'}{' '}
           {currentNode.path || '/'}
         </span>
-        <NodeActions constellationId={constellationId} path={path} refresh={refresh} />
+        {activation && (
+          <NodeActions constellationId={constellationId} path={path} refresh={refresh} />
+        )}
       </div>
       {expanded && currentNode.entries && currentNode.entries.length > 0 && (
         <div>
