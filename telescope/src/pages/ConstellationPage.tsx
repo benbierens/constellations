@@ -1,20 +1,36 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import StructureTree from '../components/StructureTree';
+import { withWebSocket } from '../components/withWebSocket';
 
 const api = 'http://localhost:3000';
 
-export default function ConstellationPage() {
+function ConstellationPageBase({ wsMessage }: { wsMessage: any }) {
   const { id } = useParams<{ id: string }>();
   const [info, setInfo] = useState<any>(null);
   const [error, setError] = useState('');
 
-  useEffect(() => {
+  const fetchStructure = useCallback(() => {
     fetch(`${api}/${id}`)
       .then(res => res.json())
       .then(setInfo)
       .catch(() => setError('Failed to load structure'));
   }, [id]);
+
+  useEffect(() => {
+    fetchStructure();
+  }, [fetchStructure]);
+
+  useEffect(() => {
+    if (
+      typeof wsMessage === 'string' &&
+      wsMessage.startsWith('pathsChanged/') &&
+      id &&
+      wsMessage.split("/")[1] === id
+    ) {
+      fetchStructure();
+    }
+  }, [wsMessage, id, fetchStructure]);
 
   return (
     <div style={{ maxWidth: 900, margin: '2rem auto' }}>
@@ -28,3 +44,5 @@ export default function ConstellationPage() {
     </div>
   );
 }
+
+export default withWebSocket(ConstellationPageBase);
