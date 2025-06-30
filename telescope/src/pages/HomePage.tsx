@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const api = '/api';
+const api = 'http://localhost:3000';
 
 export default function HomePage() {
   const [owners, setOwners] = useState('');
   const [connectId, setConnectId] = useState('');
   const [error, setError] = useState('');
+  const [constellationIds, setConstellationIds] = useState<number[]>([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Only fetch constellation IDs here
+    fetch(`${api}/`)
+      .then(res => res.json())
+      .then(data => setConstellationIds(Array.isArray(data) ? data : []))
+      .catch(() => setConstellationIds([]));
+  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +50,23 @@ export default function HomePage() {
 
   return (
     <div style={{ maxWidth: 400, margin: '2rem auto' }}>
+      {constellationIds.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <h3>Existing Constellations</h3>
+          <ul style={{ paddingLeft: 20 }}>
+            {constellationIds.map(id => (
+              <li key={id} style={{ marginBottom: 4 }}>
+                <button
+                  style={{ cursor: 'pointer', textDecoration: 'underline', background: 'none', border: 'none', color: '#1976d2', padding: 0 }}
+                  onClick={() => navigate(`/constellation/${id}`)}
+                >
+                  Constellation #{id}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <h2>Create Constellation</h2>
       <form onSubmit={handleCreate}>
         <input
@@ -67,3 +93,4 @@ export default function HomePage() {
     </div>
   );
 }
+

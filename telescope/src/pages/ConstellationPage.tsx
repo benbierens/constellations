@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import StructureTree from '../components/StructureTree';
 
-const api = '/api';
+const api = 'http://localhost:3000';
 
 export default function ConstellationPage() {
   const { id } = useParams<{ id: string }>();

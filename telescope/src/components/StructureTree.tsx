@@ -13,7 +13,7 @@ type Props = {
   path: string[];
 };
 
-const api = '/api';
+const api = 'http://localhost:3000';
 
 function NodeActions({
   constellationId,
