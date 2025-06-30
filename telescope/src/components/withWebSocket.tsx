@@ -20,9 +20,9 @@ export function withWebSocket<P>(
 
       // Optionally handle open/close/error events here
 
-      return () => {
-        ws.close();
-      };
+    //   return () => {
+    //     ws.close();
+    //   };
     }, [wsUrl]);
 
     return <WrappedComponent {...props} wsMessage={wsMessage} />;
