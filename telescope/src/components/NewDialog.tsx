@@ -39,9 +39,21 @@ function NewDialog({ constellationId, path, refresh }: NewDialogProps) {
     }
   };
 
+  const handleOpen = async () => {
+    // Fetch node address and set as default owners
+    try {
+      const res = await fetch(`${api}/address`);
+      const data = await res.json();
+      setOwners(typeof data === 'string' ? data : (data.address || ''));
+    } catch {
+      setOwners('');
+    }
+    setShowCreate(true);
+  };
+
   return (
     <span style={{ display: 'inline-block', marginLeft: 0 }}>
-      <button onClick={() => setShowCreate((v) => !v)}>+ New</button>
+      <button onClick={handleOpen}>+ New</button>
       {showCreate && (
         <div
           style={{

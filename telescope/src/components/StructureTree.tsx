@@ -27,6 +27,20 @@ function NodeActions({
   refresh: () => void;
 }) {
   const [error, setError] = useState('');
+  const [starType, setStarType] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    // Fetch star info to get the type
+    fetch(`${api}/${constellationId}/info`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path }),
+    })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => setStarType(data && data.starInfo  && data.starInfo.type ? data.starInfo.type : null))
+      .catch(() => setStarType(null));
+    // eslint-disable-next-line
+  }, [constellationId, JSON.stringify(path)]);
 
   const handleDelete = async () => {
     setError('');
@@ -45,7 +59,9 @@ function NodeActions({
 
   return (
     <div style={{ display: 'inline-block', marginLeft: 8 }}>
-      <NewDialog constellationId={constellationId} path={path} refresh={refresh} />
+      {starType === '_constellation' && (
+        <NewDialog constellationId={constellationId} path={path} refresh={refresh} />
+      )}
       <StarInfo constellationId={constellationId} path={path} />
       <button onClick={handleDelete} style={{ color: 'red' }}>Delete</button>
       {error && <span style={{ color: 'red', marginLeft: 8 }}>{error}</span>}
