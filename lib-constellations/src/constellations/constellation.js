@@ -119,6 +119,7 @@ export class Constellation {
       health: star.health,
       size: star.size,
       lastChangeUtc: star.lastChangeUtc,
+      autoFetch: star.autoFetch,
       properties: {
         status: props.status,
         configuration: {

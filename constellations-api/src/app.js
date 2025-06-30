@@ -89,10 +89,10 @@ export class App {
     await entry.constellation.deactivate(path);
   };
 
-  getInfo = async (id, path) => {
+  getInfo = (id, path) => {
     const entry = this._constellations[id];
     if (!entry) return;
-    await entry.constellation.info(path);
+    return entry.constellation.info(path);
   };
 
   updateProperties = async (id, path, properties) => {

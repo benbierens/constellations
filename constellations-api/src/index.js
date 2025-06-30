@@ -92,12 +92,11 @@ export function main() {
     res.sendStatus(200);
   });
 
-  web.post("/:id/info", async (req, res) => {
+  web.post("/:id/info", (req, res) => {
     const { id, body } = getIdBody(req, res);
     if (!body) return;
 
-    await app.getInfo(id, body.path);
-    res.sendStatus(200);
+    res.json(app.getInfo(id, body.path));
   });
 
   web.post("/:id/properties", async (req, res) => {
