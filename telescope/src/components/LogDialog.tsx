@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 const api = 'http://localhost:3000';
 
@@ -13,6 +13,7 @@ function LogDialog(props: LogDialogProps = {}) {
   const open = props.open !== undefined ? props.open : undefined;
   const setOpen = props.setOpen !== undefined ? props.setOpen : undefined;
   const [internalOpen, setInternalOpen] = useState(false);
+  const logsContainerRef = useRef<HTMLDivElement>(null);
 
   const isOpen = open !== undefined ? open : internalOpen;
   const setIsOpen = setOpen !== undefined ? setOpen : setInternalOpen;
@@ -52,6 +53,12 @@ function LogDialog(props: LogDialogProps = {}) {
       setError(e.message || 'Failed to fetch logs');
     }
   };
+
+  useEffect(() => {
+    if (logsContainerRef.current) {
+      logsContainerRef.current.scrollTop = logsContainerRef.current.scrollHeight;
+    }
+  }, [logsHistory, isOpen]);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -99,7 +106,10 @@ function LogDialog(props: LogDialogProps = {}) {
             <h3 style={{ marginTop: 0, marginBottom: 24 }}>Logs</h3>
             {error && <div style={{ color: 'red', marginBottom: 12 }}>{error}</div>}
             {logsHistory.length > 0 ? (
-              <div style={{ flex: 1, overflow: 'auto', background: '#eee', padding: 8 }}>
+              <div
+                ref={logsContainerRef}
+                style={{ flex: 1, overflow: 'auto', background: '#eee', padding: 8 }}
+              >
                 {logsHistory.map((logs, idx) => (
                   <div key={idx} style={{ marginBottom: 16 }}>
                     <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>
