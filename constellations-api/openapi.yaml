@@ -246,6 +246,78 @@ paths:
       responses:
         '200':
           description: Info retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  starId:
+                    type: string
+                  path:
+                    type: array
+                    items:
+                      type: string
+                    starInfo:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                        owners:
+                          type: array
+                          items:
+                            type: string
+                        creationUtc:
+                          type: string
+                    health:
+                      type: object
+                      properties:
+                      channel:
+                        type: object
+                        properties:
+                          count:
+                            type: number
+                          lastUpdate:
+                            type: string
+                      cid:
+                        properties:
+                          count:
+                            type: number
+                          lastUpdate:
+                            type: string
+                    size:
+                      type: number
+                    lastChangeUtc:
+                      type: string
+                    properties:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                        configuration:
+                          type: object
+                          properties:
+                            maxDiffSize:
+                              type: number
+                            softMinSnapshotDuration:
+                              type: number
+                            softMaxDiffDuration:
+                              type: number
+                            softMaxNumDiffs:
+                              type: number
+                            channelMonitoringMinutes:
+                              type: number
+                            cidMonitoringMinutes:
+                              type: number
+                        admins:
+                          type: array
+                          items:
+                            type: string
+                        mods:
+                          type: array
+                          items:
+                            type: string
+                        annotations:
+                          type: string
 
   /{id}/properties:
     post:
