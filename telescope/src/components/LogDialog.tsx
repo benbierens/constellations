@@ -24,7 +24,10 @@ function LogDialog(props: LogDialogProps = {}) {
       const res = await fetch(`${api}/logs`);
       if (!res.ok) throw new Error('Failed to fetch logs');
       const data = await res.json();
-      setLogsHistory(prev => [...prev, Array.isArray(data) ? data : []]);
+      // Only add to history if there is at least one non-empty line
+      if (Array.isArray(data) && data.some((line) => typeof line === 'string' && line.trim() !== '')) {
+        setLogsHistory(prev => [...prev, data]);
+      }
     } catch (e: any) {
       setError(e.message || 'Failed to fetch logs');
     }
@@ -33,6 +36,21 @@ function LogDialog(props: LogDialogProps = {}) {
   const handleClose = () => {
     setIsOpen(false);
     setError('');
+  };
+
+  const handleFetch = async () => {
+    setError('');
+    try {
+      const res = await fetch(`${api}/logs`);
+      if (!res.ok) throw new Error('Failed to fetch logs');
+      const data = await res.json();
+      // Only add to history if there is at least one non-empty line
+      if (Array.isArray(data) && data.some((line) => typeof line === 'string' && line.trim() !== '')) {
+        setLogsHistory(prev => [...prev, data]);
+      }
+    } catch (e: any) {
+      setError(e.message || 'Failed to fetch logs');
+    }
   };
 
   React.useEffect(() => {
@@ -94,7 +112,10 @@ function LogDialog(props: LogDialogProps = {}) {
             ) : !error ? (
               <div>Loading...</div>
             ) : null}
-            <button onClick={handleClose} style={{ marginTop: 16, alignSelf: 'flex-end' }}>Close</button>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
+              <button onClick={handleFetch}>Fetch</button>
+              <button onClick={handleClose}>Close</button>
+            </div>
           </div>
         </div>
       )}
