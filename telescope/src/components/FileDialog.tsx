@@ -38,10 +38,10 @@ function FileDialog({ constellationId, path, buttonLabel = "File" }: FileDialogP
           : null
       );
       setLastChange(
-        info && typeof info.LastChangeUtc === 'string'
-          ? info.LastChangeUtc
-          : info && info.starInfo && typeof info.starInfo.LastChangeUtc === 'string'
-          ? info.starInfo.LastChangeUtc
+        info && typeof info.lastChangeUtc === 'string'
+          ? info.lastChangeUtc
+          : info && info.starInfo && typeof info.starInfo.lastChangeUtc === 'string'
+          ? info.starInfo.lastChangeUtc
           : null
       );
     } catch {
