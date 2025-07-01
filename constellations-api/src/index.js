@@ -1,5 +1,6 @@
 import express from "express";
 import http from "http";
+import bodyParser from "body-parser";
 import { WebSocketServer } from "ws";
 import { App } from "./app.js";
 import { appConfig } from "./config.js";
@@ -29,7 +30,7 @@ export function main() {
   const web = express();
   const port = process.env.PORT || 3000;
 
-  web.use(express.json());
+  web.use(bodyParser.json({ limit: "10mb" }))
 
   // Create HTTP server and WebSocket server
   const server = http.createServer(web);
