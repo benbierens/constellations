@@ -63,15 +63,15 @@ function HomePageBase({ wsMessage }: { wsMessage: any }) {
   return (
     <>
       <PrototypeWarningDialog open={showWarning} onClose={() => setShowWarning(false)} />
-      <div style={{ maxWidth: 400, margin: '2rem auto' }}>
+      <div className="win95-window" style={{ maxWidth: 400, margin: '2rem auto' }}>
         {constellationIds.length > 0 && (
           <div style={{ marginBottom: 24 }}>
             <h3>Existing Constellations</h3>
-            <ul style={{ paddingLeft: 20 }}>
+            <ul className="win95-list" style={{ paddingLeft: 20 }}>
               {constellationIds.map(id => (
                 <li key={id} style={{ marginBottom: 4 }}>
                   <button
-                    style={{ cursor: 'pointer', textDecoration: 'underline', background: 'none', border: 'none', color: '#1976d2', padding: 0 }}
+                    style={{ cursor: 'pointer', textDecoration: 'underline', background: 'none', border: 'none', color: '#000080', padding: 0 }}
                     onClick={() => navigate(`/constellation/${id}`)}
                   >
                     Constellation #{id}
@@ -84,6 +84,7 @@ function HomePageBase({ wsMessage }: { wsMessage: any }) {
         <h2>Create Constellation</h2>
         <form onSubmit={handleCreate}>
           <input
+            className="win95-input"
             type="text"
             placeholder="Owner addresses (comma separated)"
             value={owners}
@@ -95,6 +96,7 @@ function HomePageBase({ wsMessage }: { wsMessage: any }) {
         <h2 style={{ marginTop: 32 }}>Connect to Constellation</h2>
         <form onSubmit={handleConnect}>
           <input
+            className="win95-input"
             type="number"
             placeholder="Constellation ID"
             value={connectId}

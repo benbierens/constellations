@@ -145,6 +145,7 @@ function FileDialog({ constellationId, path, buttonLabel = "File" }: FileDialogP
           onClick={handleClose}
         >
           <div
+            className="win95-modal"
             style={{
               background: '#fff',
               padding: 24,
@@ -160,7 +161,7 @@ function FileDialog({ constellationId, path, buttonLabel = "File" }: FileDialogP
             }}
             onClick={e => e.stopPropagation()}
           >
-            <h3 style={{ marginTop: 0 }}>File Info</h3>
+            <div className="win95-title" style={{ marginBottom: 16 }}>File Info</div>
             {loading ? (
               <div>Loading...</div>
             ) : error ? (

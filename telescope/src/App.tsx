@@ -18,6 +18,7 @@ function App() {
   return (
     <Router>
       <nav
+        className="win95-bar"
         style={{
           padding: 8,
           borderBottom: '1px solid #ccc',
@@ -41,10 +42,12 @@ function App() {
           <PrototypeWarningDialog open={showPrototype} onClose={() => setShowPrototype(false)} />
         )}
       </nav>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/constellation/:id" element={<ConstellationPage />} />
-      </Routes>
+      <div className="win95-window">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/constellation/:id" element={<ConstellationPage />} />
+        </Routes>
+      </div>
     </Router>
   );
 }

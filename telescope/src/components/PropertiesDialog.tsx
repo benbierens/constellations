@@ -100,6 +100,7 @@ function PropertiesDialog({ constellationId, path }: PropertiesDialogProps) {
           onClick={handleToggle}
         >
           <div
+            className="win95-modal"
             style={{
               background: '#fff',
               padding: 24,
@@ -111,7 +112,7 @@ function PropertiesDialog({ constellationId, path }: PropertiesDialogProps) {
             }}
             onClick={e => e.stopPropagation()}
           >
-            <h3 style={{ marginTop: 0 }}>Properties</h3>
+            <div className="win95-title" style={{ marginBottom: 16 }}>Properties</div>
             {editProps ? (
               <form
                 onSubmit={e => {

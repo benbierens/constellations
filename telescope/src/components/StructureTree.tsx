@@ -60,7 +60,7 @@ function NodeActions({
   };
 
   return (
-    <div style={{ display: 'inline-block', marginLeft: 8 }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginLeft: 8, gap: 0 }}>
       {starType === '_constellation' && (
         <NewDialog constellationId={constellationId} path={path} refresh={refresh} />
       )}
@@ -113,6 +113,7 @@ function StructureTree({ constellationId, node, path }: Props) {
     <div style={{ marginLeft: path.length ? 24 : 0, marginTop: 8 }}>
       <div>
         <input
+          className="win95-input"
           type="checkbox"
           checked={activation}
           onChange={handleActivationChange}

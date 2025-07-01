@@ -40,6 +40,7 @@ function PrototypeWarningDialog({ open, onClose }: Props) {
       }}
     >
       <div
+        className="win95-modal"
         style={{
           background: '#fff',
           padding: 48,
@@ -51,7 +52,9 @@ function PrototypeWarningDialog({ open, onClose }: Props) {
         }}
         onClick={e => e.stopPropagation()}
       >
-        <h1 style={{ color: '#b71c1c', marginBottom: 24 }}>⚠️ Prototype Warning</h1>
+        <div className="win95-title" style={{ marginBottom: 24 }}>
+          ⚠️ Prototype Warning
+        </div>
         <p style={{ fontSize: 20, marginBottom: 32 }}>
           This is a prototype. Do not trust it with important or sensitve data. Data may be lost, corrupted, or become publicly accessible.<br />
           <b>Do not use for important or production data. Use at your own risk.</b>

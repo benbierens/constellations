@@ -51,6 +51,7 @@ function StarInfo({ constellationId, path }: StarInfoProps) {
           onClick={handleToggle}
         >
           <div
+            className="win95-modal"
             style={{
               background: '#fff',
               padding: 24,
@@ -62,7 +63,7 @@ function StarInfo({ constellationId, path }: StarInfoProps) {
             }}
             onClick={e => e.stopPropagation()}
           >
-            <h3 style={{ marginTop: 0 }}>Star Info</h3>
+            <div className="win95-title" style={{ marginBottom: 16 }}>Star Info</div>
             {info && (
               <pre style={{ background: '#eee', padding: 8, maxHeight: 400, overflow: 'auto' }}>
                 {JSON.stringify(info, null, 2)}
