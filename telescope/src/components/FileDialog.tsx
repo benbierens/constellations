@@ -153,7 +153,7 @@ function FileDialog({ constellationId, path, buttonLabel = "File" }: FileDialogP
               maxWidth: 600,
               boxShadow: '0 2px 16px rgba(0,0,0,0.2)',
               position: 'relative',
-              height: '90vh',
+              height: 'auto',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center'

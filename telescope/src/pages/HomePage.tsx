@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { withWebSocket } from '../components/withWebSocket';
+import PrototypeWarningDialog from '../components/PrototypeWarningDialog';
 
 const api = 'http://localhost:3000';
 
@@ -9,6 +10,7 @@ function HomePageBase({ wsMessage }: { wsMessage: any }) {
   const [connectId, setConnectId] = useState('');
   const [error, setError] = useState('');
   const [constellationIds, setConstellationIds] = useState<number[]>([]);
+  const [showWarning, setShowWarning] = useState(true);
   const navigate = useNavigate();
 
   const fetchConstellations = useCallback(() => {
@@ -59,50 +61,52 @@ function HomePageBase({ wsMessage }: { wsMessage: any }) {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: '2rem auto' }}>
-      {constellationIds.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <h3>Existing Constellations</h3>
-          <ul style={{ paddingLeft: 20 }}>
-            {constellationIds.map(id => (
-              <li key={id} style={{ marginBottom: 4 }}>
-                <button
-                  style={{ cursor: 'pointer', textDecoration: 'underline', background: 'none', border: 'none', color: '#1976d2', padding: 0 }}
-                  onClick={() => navigate(`/constellation/${id}`)}
-                >
-                  Constellation #{id}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      <h2>Create Constellation</h2>
-      <form onSubmit={handleCreate}>
-        <input
-          type="text"
-          placeholder="Owner addresses (comma separated)"
-          value={owners}
-          onChange={e => setOwners(e.target.value)}
-          style={{ width: '100%' }}
-        />
-        <button type="submit" style={{ marginTop: 8 }}>Create</button>
-      </form>
-      <h2 style={{ marginTop: 32 }}>Connect to Constellation</h2>
-      <form onSubmit={handleConnect}>
-        <input
-          type="number"
-          placeholder="Constellation ID"
-          value={connectId}
-          onChange={e => setConnectId(e.target.value)}
-          style={{ width: '100%' }}
-        />
-        <button type="submit" style={{ marginTop: 8 }}>Connect</button>
-      </form>
-      {error && <div style={{ color: 'red', marginTop: 16 }}>{error}</div>}
-    </div>
+    <>
+      <PrototypeWarningDialog open={showWarning} onClose={() => setShowWarning(false)} />
+      <div style={{ maxWidth: 400, margin: '2rem auto' }}>
+        {constellationIds.length > 0 && (
+          <div style={{ marginBottom: 24 }}>
+            <h3>Existing Constellations</h3>
+            <ul style={{ paddingLeft: 20 }}>
+              {constellationIds.map(id => (
+                <li key={id} style={{ marginBottom: 4 }}>
+                  <button
+                    style={{ cursor: 'pointer', textDecoration: 'underline', background: 'none', border: 'none', color: '#1976d2', padding: 0 }}
+                    onClick={() => navigate(`/constellation/${id}`)}
+                  >
+                    Constellation #{id}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        <h2>Create Constellation</h2>
+        <form onSubmit={handleCreate}>
+          <input
+            type="text"
+            placeholder="Owner addresses (comma separated)"
+            value={owners}
+            onChange={e => setOwners(e.target.value)}
+            style={{ width: '100%' }}
+          />
+          <button type="submit" style={{ marginTop: 8 }}>Create</button>
+        </form>
+        <h2 style={{ marginTop: 32 }}>Connect to Constellation</h2>
+        <form onSubmit={handleConnect}>
+          <input
+            type="number"
+            placeholder="Constellation ID"
+            value={connectId}
+            onChange={e => setConnectId(e.target.value)}
+            style={{ width: '100%' }}
+          />
+          <button type="submit" style={{ marginTop: 8 }}>Connect</button>
+        </form>
+        {error && <div style={{ color: 'red', marginTop: 16 }}>{error}</div>}
+      </div>
+    </>
   );
 }
 
 export default withWebSocket(HomePageBase);
-

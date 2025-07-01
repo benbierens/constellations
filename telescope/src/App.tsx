@@ -4,9 +4,16 @@ import HomePage from './pages/HomePage';
 import ConstellationPage from './pages/ConstellationPage';
 import NodeAddress from './components/NodeAddress';
 import LogDialog from './components/LogDialog';
+import PrototypeWarningDialog from './components/PrototypeWarningDialog';
 
 function App() {
   const [showLogs, setShowLogs] = React.useState(false);
+  const [showPrototype, setShowPrototype] = React.useState(false);
+
+  const handlePrototypeClick = () => {
+    localStorage.removeItem('prototypeWarningAccepted');
+    setShowPrototype(true);
+  };
 
   return (
     <Router>
@@ -23,9 +30,15 @@ function App() {
           <Link to="/" style={{ marginRight: 16 }}>Home</Link>
           <NodeAddress />
         </div>
-        <button onClick={() => setShowLogs(true)} style={{ marginLeft: 'auto' }}>Logs</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button onClick={handlePrototypeClick}>Prototype</button>
+          <button onClick={() => setShowLogs(true)} style={{ marginLeft: 'auto' }}>Logs</button>
+        </div>
         {showLogs && (
           <LogDialogWrapper onClose={() => setShowLogs(false)} />
+        )}
+        {showPrototype && (
+          <PrototypeWarningDialog open={showPrototype} onClose={() => setShowPrototype(false)} />
         )}
       </nav>
       <Routes>
