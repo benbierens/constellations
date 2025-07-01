@@ -25,7 +25,7 @@ function getIdBody(req, res) {
   };
 }
 
-export function main() {
+export async function main() {
   const web = express();
   const port = process.env.PORT || 3000;
 
@@ -37,7 +37,7 @@ export function main() {
   const websocket = new WebsocketCallbacks(wss);
 
   const app = new App(appConfig, websocket);
-  app.init().catch(console.error);
+  await app.init();
 
   web.get("/", (req, res) => {
     res.json(app.getConstellationIds());
@@ -174,3 +174,5 @@ export function main() {
     console.log(`WebSocket server listening at ws://localhost:${port}`);
   });
 }
+
+main().catch(console.error); 
