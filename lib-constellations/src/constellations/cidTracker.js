@@ -101,7 +101,7 @@ export class CidTracker {
 
   doDownload = async () => {
     if (!this._cid) {
-      this._logger.errorAndThrow("doDownload: No CID known for star.");
+      this._logger.warn("doDownload: No CID known for star.");
     }
 
     // Same idea as doFetch except actually return the data.
