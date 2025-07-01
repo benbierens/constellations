@@ -66,7 +66,15 @@ function FileDialog({ constellationId, path, buttonLabel = "File" }: FileDialogP
         body: JSON.stringify({ path }),
       });
       if (!res.ok) throw new Error();
-      const blob = await res.blob();
+      const base64 = await res.text();
+      // Decode base64 to binary
+      const binaryString = atob(base64);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; ++i) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const blob = new Blob([bytes]);
       // Use the last path segment as filename, fallback to "file"
       const filename = path.length > 0 ? path[path.length - 1] : 'file';
       const url = window.URL.createObjectURL(blob);
@@ -93,18 +101,30 @@ function FileDialog({ constellationId, path, buttonLabel = "File" }: FileDialogP
       return;
     }
     try {
-      const text = await file.text();
+      // Read file as binary and base64 encode (safe for large files)
+      const arrayBuffer = await file.arrayBuffer();
+      let binary = '';
+      const bytes = new Uint8Array(arrayBuffer);
+      const chunkSize = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode.apply(
+          null,
+          bytes.subarray(i, i + chunkSize) as any
+        );
+      }
+      const base64String = btoa(binary);
       const res = await fetch(`${api}/${constellationId}/setdata`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path, data: text }),
+        body: JSON.stringify({ path, data: base64String }),
       });
+     console.log("c"); 
       if (!res.ok) throw new Error();
       // Optionally refresh info after upload
       setSize(file.size);
       setError('');
-    } catch {
-      setError('Failed to upload file');
+    } catch (error) {
+      setError('Failed to upload file: ' + error);
     }
   };
 
