@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import StarInfo from './StarInfo';
 import NewDialog from './NewDialog';
+import FileDialog from './FileDialog';
 
 type StructureNode = {
   path: string;
@@ -61,6 +62,9 @@ function NodeActions({
     <div style={{ display: 'inline-block', marginLeft: 8 }}>
       {starType === '_constellation' && (
         <NewDialog constellationId={constellationId} path={path} refresh={refresh} />
+      )}
+      {starType !== '_constellation' && (
+        <FileDialog constellationId={constellationId} path={path} />
       )}
       <StarInfo constellationId={constellationId} path={path} />
       <button onClick={handleDelete} style={{ color: 'red' }}>Delete</button>
