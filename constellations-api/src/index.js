@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import http from "http";
 import { WebSocketServer } from "ws";
 import { App } from "./app.js";
@@ -30,6 +31,7 @@ export async function main() {
   const port = process.env.PORT || 3000;
 
   web.use(express.json());
+  web.use(cors());
 
   // Create HTTP server and WebSocket server
   const server = http.createServer(web);

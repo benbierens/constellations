@@ -24,6 +24,7 @@
   "author": "Logos contributors",
   "license": "MIT",
   "dependencies": {
+    "cors": "^2.8.5",
     "ethers": "^6.14.4",
     "express": "^4.19.2",
     "lib-constellations": "^0.0.3"
