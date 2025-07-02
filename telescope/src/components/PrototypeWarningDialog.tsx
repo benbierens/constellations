@@ -65,6 +65,7 @@ function PrototypeWarningDialog({ open, onClose }: Props) {
         </div>
         <p style={{ fontSize: 20, marginBottom: 32 }}>
           This is a prototype. Do not trust it with important or sensitve data. Data may be lost, corrupted, or become publicly accessible.<br />
+          This prototype will definitely break when you use files larger than a few MB.<br />
           <b>Do not use for important or production data. Use at your own risk.</b>
         </p>
         <div style={{ textAlign: 'left', margin: '0 auto', maxWidth: 400, marginBottom: 32 }}>
@@ -93,7 +94,7 @@ function PrototypeWarningDialog({ open, onClose }: Props) {
               onChange={e => setChecks([checks[0], checks[1], e.target.checked])}
               style={{ marginRight: 8 }}
             />
-            I will not use this prototype to store important, or sensitive data.
+            I will not use this prototype to store important, sensitive, or personal data. I understand the data I use with this prototype may become publicly visible.
           </label>
         </div>
         <button
