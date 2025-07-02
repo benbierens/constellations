@@ -25,7 +25,9 @@ function ConstellationPageBase({ wsMessage }: { wsMessage: any }) {
   useEffect(() => {
     if (
       typeof wsMessage === 'string' &&
-      wsMessage.startsWith('pathsChanged/') &&
+      // hacky: should use "pathsChanged" instead,
+      //and use propertiesChanged to update individual nodes.
+      wsMessage.startsWith('propertiesChanged/') &&
       id &&
       wsMessage.split("/")[1] === id
     ) {

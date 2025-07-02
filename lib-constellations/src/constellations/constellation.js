@@ -99,6 +99,8 @@ export class Constellation {
       return;
     }
 
+    todo: recursively deactivate all activate entries.
+
     this._logger.trace(`deactivate: deactivating star '${entry.starId}'...`);
     await entry.star.disconnect();
     entry.star = null;
