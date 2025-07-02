@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+// Add import for the icon
+import telescopeIcon from '../assets/icon_telescope.png';
 
 type Props = {
   open: boolean;
@@ -52,6 +54,12 @@ function PrototypeWarningDialog({ open, onClose }: Props) {
         }}
         onClick={e => e.stopPropagation()}
       >
+        <div style={{ fontWeight: 'bold', fontSize: 28, marginBottom: 16 }}>
+          Telescope
+        </div>
+        <div style={{ marginBottom: 24 }}>
+          <img src={telescopeIcon} alt="Telescope" style={{ height: 108, verticalAlign: 'middle' }} />
+        </div>
         <div className="win95-title" style={{ marginBottom: 24 }}>
           ⚠️ Prototype Warning
         </div>

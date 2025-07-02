@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import StructureTree from '../components/StructureTree';
 import { withWebSocket } from '../components/withWebSocket';
+import constellationIcon from '../assets/icon_constellation.png';
 
 const api = 'http://localhost:3000';
 
@@ -33,7 +34,19 @@ function ConstellationPageBase({ wsMessage }: { wsMessage: any }) {
   }, [wsMessage, id, fetchStructure]);
 
   return (
-    <div style={{ maxWidth: 900, margin: '2rem auto' }}>
+    <div style={{ maxWidth: 900, margin: '2rem auto', position: 'relative' }}>
+      <img
+        src={constellationIcon}
+        alt="Constellation"
+        style={{
+          position: 'absolute',
+          top: -35,
+          right: -10,
+          height: 64,
+          margin: 8,
+          zIndex: 1
+        }}
+      />
       <h2>Constellation #{id}</h2>
       {error && <div style={{ color: 'red' }}>{error}</div>}
       {info ? (

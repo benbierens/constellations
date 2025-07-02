@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { withWebSocket } from '../components/withWebSocket';
 import PrototypeWarningDialog from '../components/PrototypeWarningDialog';
 
+import constellationIcon from '../assets/icon_constellation.png';
+
 const api = 'http://localhost:3000';
 
 function HomePageBase({ wsMessage }: { wsMessage: any }) {
@@ -63,10 +65,17 @@ function HomePageBase({ wsMessage }: { wsMessage: any }) {
   return (
     <>
       <PrototypeWarningDialog open={showWarning} onClose={() => setShowWarning(false)} />
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <img
+          src={constellationIcon}
+          alt="Constellation"
+          style={{ height: 108, verticalAlign: 'center', marginBottom: 16 }}
+        />
+      </div>
       <div className="win95-window" style={{ maxWidth: 400, margin: '2rem auto' }}>
         {constellationIds.length > 0 && (
           <div style={{ marginBottom: 24 }}>
-            <h3>Existing Constellations</h3>
+            <h3>Connected Constellations</h3>
             <ul className="win95-list" style={{ paddingLeft: 20 }}>
               {constellationIds.map(id => (
                 <li key={id} style={{ marginBottom: 4 }}>
@@ -81,19 +90,7 @@ function HomePageBase({ wsMessage }: { wsMessage: any }) {
             </ul>
           </div>
         )}
-        <h2>Create Constellation</h2>
-        <form onSubmit={handleCreate}>
-          <input
-            className="win95-input"
-            type="text"
-            placeholder="Owner addresses (comma separated)"
-            value={owners}
-            onChange={e => setOwners(e.target.value)}
-            style={{ width: '100%' }}
-          />
-          <button type="submit" style={{ marginTop: 8 }}>Create</button>
-        </form>
-        <h2 style={{ marginTop: 32 }}>Connect to Constellation</h2>
+        <h2 style={{ marginTop: 32 }}>Connect to a Constellation</h2>
         <form onSubmit={handleConnect}>
           <input
             className="win95-input"
@@ -104,6 +101,18 @@ function HomePageBase({ wsMessage }: { wsMessage: any }) {
             style={{ width: '100%' }}
           />
           <button type="submit" style={{ marginTop: 8 }}>Connect</button>
+        </form>
+        <h2>Create a new Constellation</h2>
+        <form onSubmit={handleCreate}>
+          <input
+            className="win95-input"
+            type="text"
+            placeholder="Owner addresses (comma separated)"
+            value={owners}
+            onChange={e => setOwners(e.target.value)}
+            style={{ width: '100%' }}
+          />
+          <button type="submit" style={{ marginTop: 8 }}>Create</button>
         </form>
         {error && <div style={{ color: 'red', marginTop: 16 }}>{error}</div>}
       </div>
