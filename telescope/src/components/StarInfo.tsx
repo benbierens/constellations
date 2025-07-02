@@ -35,7 +35,7 @@ function StarInfo({ constellationId, path }: StarInfoProps) {
   };
 
   return (
-    <span style={{ display: 'inline-block', marginLeft: 8 }}>
+    <span style={{ display: 'inline-block', marginLeft: 0 }}>
       <button onClick={handleToggle}>{open ? 'Close Info' : 'Info'}</button>
       {open && (
         <div

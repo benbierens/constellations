@@ -84,7 +84,7 @@ function PropertiesDialog({ constellationId, path }: PropertiesDialogProps) {
   };
 
   return (
-    <span style={{ display: 'inline-block', marginLeft: 8 }}>
+    <span style={{ display: 'inline-block', marginLeft: 0 }}>
       <button onClick={handleToggle}>{open ? 'Close Properties' : 'Properties'}</button>
       {open && (
         <div
