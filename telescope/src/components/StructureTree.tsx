@@ -54,9 +54,12 @@ function StructureTree({ constellationId, node, path }: Props) {
     }
   };
 
+  // Compute row background color based on depth
+  const rowBg = path.length % 2 === 0 ? '#D4D4D4' : '#C0C0C0';
+
   return (
-    <div style={{ marginLeft: path.length ? 24 : 0, marginTop: 8 }}>
-      <div>
+    <div style={{ marginLeft: path.length ? 34 : 0, marginTop: 0, background: rowBg }}>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
         <input
           className="win95-input"
           type="checkbox"
@@ -73,6 +76,7 @@ function StructureTree({ constellationId, node, path }: Props) {
             : '•'}{' '}
           {currentNode.path || '/'}
         </span>
+        <div style={{ flex: 1 }} />
         {activation && (
           <NodeActions constellationId={constellationId} path={path} refresh={refresh} />
         )}
