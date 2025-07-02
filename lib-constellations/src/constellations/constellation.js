@@ -94,17 +94,7 @@ export class Constellation {
     var entry = this._findEntryByFullPath(path);
     if (!entry) return;
 
-    if (!entry.star) {
-      this._logger.warn(`deactivate: star '${entry.starId}' not active`);
-      return;
-    }
-
-    this._logger.trace(`deactivate: deactivating star '${entry.starId}'...`);
-    await entry.star.disconnect();
-    entry.star = null;
-    entry.entries = [];
-
-    await this._raisePathsChangedEvent(entry.starId);
+    await this._deactivateEntry(entry);
   };
 
   info = (path) => {
@@ -347,6 +337,26 @@ export class Constellation {
 
   onPropertiesChanged = async (star) => {
     await this._handler.onPropertiesChanged(star.starId);
+  };
+
+  _deactivateEntry = async (entry) => {
+    if (!entry.star) {
+      this._logger.warn(`_deactivateEntry: star '${entry.starId}' not active`);
+      return;
+    }
+
+    for (const e of entry.entries) {
+      await this._deactivateEntry(e);
+    }
+
+    this._logger.trace(
+      `_deactivateEntry: deactivating star '${entry.starId}'...`,
+    );
+    await entry.star.disconnect();
+    entry.star = null;
+    entry.entries = [];
+
+    await this._raisePathsChangedEvent(entry.starId);
   };
 
   _updateEntry = async (here, star) => {

@@ -338,6 +338,84 @@ describe(
       expect(root.entries[0].entries.length).toEqual(0);
     });
 
+    it("can recursively deactivate multiple stars", async () => {
+      const rootStar = await createStar(
+        "root",
+        core1,
+        getConstellationStarType(),
+        doNothingStarHandler,
+      );
+      const folder = await createStar(
+        "folder",
+        core1,
+        getConstellationStarType(),
+        doNothingStarHandler,
+      );
+      const leaf = await createStar(
+        "leaf",
+        core1,
+        "leaf",
+        doNothingStarHandler,
+      );
+
+      await rootStar.setData(
+        JSON.stringify([
+          {
+            starId: folder.starId,
+            path: "folder",
+          },
+        ]),
+      );
+      await folder.setData(
+        JSON.stringify([
+          {
+            starId: leaf.starId,
+            path: "leaf",
+          },
+        ]),
+      );
+      await mockWaku.deliverAll();
+
+      constellation = new Constellation(core2, eventHandler);
+      await constellation.initialize(rootStar.starId);
+      await mockWaku.deliverAll();
+      expect(eventHandler.onPathsUpdatedArgs.length).toEqual(1);
+      expect(eventHandler.onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
+
+      var root = constellation.root;
+      // when we activate the folder, we expect another update event.
+      // after that, we expect the leaf to be visible.
+      await constellation.activate(["folder"]);
+      await mockWaku.deliverAll();
+      await constellation.activate(["folder", "leaf"]);
+      await mockWaku.deliverAll();
+
+      root = constellation.root;
+      expect(root.entries.length).toEqual(1); // root
+      expect(root.entries[0].isActive).toBeTruthy();
+      expect(root.entries[0].entries.length).toEqual(1); // folder
+      expect(root.entries[0].entries[0].isActive).toBeTruthy();
+      expect(root.entries[0].entries[0].entries.length).toEqual(0); // leaf
+
+      expect(eventHandler.onPathsUpdatedArgs.length).toEqual(2);
+
+      // We deactivate the root, expecting update events for every star
+      await constellation.deactivate([]);
+      await mockWaku.deliverAll();
+
+      expect(eventHandler.onPathsUpdatedArgs.length).toEqual(5);
+      // They are deactivated in bottom-up order.
+      expect(eventHandler.onPathsUpdatedArgs[2]).toEqual(leaf.starId);
+      expect(eventHandler.onPathsUpdatedArgs[3]).toEqual(folder.starId);
+      expect(eventHandler.onPathsUpdatedArgs[4]).toEqual(rootStar.starId);
+
+      root = constellation.root;
+      expect(root.path).toEqual("");
+      expect(root.starId).toEqual(rootStar.starId);
+      expect(root.isActive).toBeFalsy();
+      expect(root.entries.length).toEqual(0);
+    });
+
     it("returns star info, size, lastChange, health, autofetch, and properties", async () => {
       const rootStar = await createStar(
         "root",
