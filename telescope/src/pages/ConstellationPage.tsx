@@ -29,6 +29,7 @@ function ConstellationPageBase({ wsMessage }: { wsMessage: any }) {
       id &&
       wsMessage.split("/")[1] === id
     ) {
+      console.log("websocket message causes fetchStructure");
       fetchStructure();
     }
   }, [wsMessage, id, fetchStructure]);

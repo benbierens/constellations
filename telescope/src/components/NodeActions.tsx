@@ -46,10 +46,10 @@ function NodeActions({ constellationId, path, refresh }: NodeActionsProps) {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginLeft: 8, gap: 0 }}>
-      {starType === '_constellation' && (
+      {starType && starType === '_constellation' && (
         <NewDialog constellationId={constellationId} path={path} refresh={refresh} />
       )}
-      {starType !== '_constellation' && (
+      {starType && starType !== '_constellation' && (
         <FileDialog constellationId={constellationId} path={path} />
       )}
       <StarInfo constellationId={constellationId} path={path} />

@@ -41,7 +41,6 @@ function StructureTree({ constellationId, node, path }: Props) {
 
   const handleActivationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
-    setActivation(checked);
     try {
       await fetch(`${api}/${constellationId}/${checked ? 'activate' : 'deactivate'}`, {
         method: 'POST',
