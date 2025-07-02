@@ -51,6 +51,18 @@ function ConstellationPageBase({ wsMessage }: { wsMessage: any }) {
         }}
       />
       <h2>Constellation #{id}</h2>
+      {info && (
+        <div style={{ fontSize: 13, color: '#555', marginBottom: 8 }}>
+          <span style={{
+            background: '#f0f0f0',
+            borderRadius: 4,
+            padding: '2px 8px',
+            fontFamily: 'monospace'
+          }}>
+            id: {info.starId}
+          </span>
+        </div>
+      )}
       {error && <div style={{ color: 'red' }}>{error}</div>}
       {info ? (
         <StructureTree constellationId={id!} node={info} path={[]} />
