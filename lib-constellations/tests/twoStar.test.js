@@ -192,11 +192,12 @@ describe(
 
       const star1 = await createStar(core1, type, doNothingHandler);
       await star1.setData(data);
-      
-      mockWaku.deliverAll();
+
+      await mockWaku.deliverAll();
       mockWaku.clearHistory();
 
       const star2 = await connectStar(core2, star1.starId, doNothingHandler);
+      await mockWaku.deliverAll();
 
       expect(await star1.getData()).toEqual(data);
       expect(await star2.getData()).toEqual(data);
