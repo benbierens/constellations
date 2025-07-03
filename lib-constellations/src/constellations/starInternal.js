@@ -232,10 +232,15 @@ export class StarInternal {
     return ColumnUpdateCheckResponse.Discard;
   };
 
-  _starProperties_onValueChanged = async () => {
+  _starProperties_onValueChanged = async (wasReady) => {
     await this._handler.onStarProperties(this._starProperties.value);
-    if (!this._cdxCid.isReady) {
-      await this._cdxCid.applyDelayedUpdate();
+    if (!this._cdxCid.isReady && !wasReady) {
+      // StarProperties are ready for the first time, and the cdxCid is not ready yet.
+      // Apply delayed update if there was one. Otherwise, request the update.
+      const didUpdate = await this._cdxCid.applyDelayedUpdate();
+      if (!didUpdate) {
+        await this._cdxCid.sendRequest();
+      }
     }
 
     this._logger.trace(
