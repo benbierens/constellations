@@ -114,7 +114,8 @@ describe(
       await constellation.initialize(rootStar.starId);
       await mockWaku.deliverAll();
 
-      expect(eventHandler.onPathsUpdatedArgs.length).toEqual(0);
+      expect(eventHandler.onPathsUpdatedArgs.length).toEqual(1);
+      expect(eventHandler.onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
 
       const root = constellation.root;
       expect(root.path).toEqual("");

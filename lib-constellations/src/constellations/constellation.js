@@ -374,8 +374,6 @@ export class Constellation {
     //    ...
     //  ]
 
-    var changed = false;
-
     const updateStarIds = update.map((e) => e.starId);
     // for each entry that already exists but doesn't exist in the update
     // we must deactivate the star if it is active.
@@ -395,7 +393,6 @@ export class Constellation {
         this._logger.trace(
           `_updateEntry: removed old entry for star '${oldEntry.starId}'`,
         );
-        changed = true;
       }
     }
 
@@ -410,7 +407,6 @@ export class Constellation {
             `_updateEntry: name '${existingEntry.path}' changed to '${newEntry.path}'`,
           );
           existingEntry.path = newEntry.path;
-          changed = true;
         }
       } else {
         here.entries.push({
@@ -419,14 +415,12 @@ export class Constellation {
           star: null,
           entries: [],
         });
-        changed = true;
       }
     }
 
-    // entry was updated. If there were changes, raise the event.
-    if (changed) {
-      await this._raisePathsChangedEvent(here.starId);
-    }
+    // _updateEntry results from a data-changed event for a
+    // constellation type star. Always raise the pathsChanged event.
+    await this._raisePathsChangedEvent(here.starId);
   };
 
   _isConstellation = (star) => {
@@ -486,12 +480,7 @@ export class Constellation {
 
     await parentStar.setData(parentData);
 
-    // Normally, we would expect the onDataChanged handler to fire
-    // in response so our call to setData, and it would raise the onPathsChanged event.
-    // BUT, we manually updated the local structure. So the handler won't spot any differences
-    // and won't raise the event.
-    // So we do this here:
-    await this._raisePathsChangedEvent(parentStar.starId);
+    // We expect the onDataChanged handler to fire the pathsChanged event.
   };
 
   _raisePathsChangedEvent = async (starId) => {
