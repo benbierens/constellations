@@ -27,6 +27,24 @@ function getIdBody(req, res) {
   };
 }
 
+function safe(res, action) {
+  try {
+    action();
+  } catch (error) {
+    res.status(500);
+    res.send("Server error: " + error);
+  }
+}
+
+async function safeAsync(res, action) {
+  try {
+    await action();
+  } catch (error) {
+    res.status(500);
+    res.send("Server error: " + error);
+  }
+}
+
 export async function main() {
   const web = express();
   const port = process.env.PORT || 3000;
@@ -43,7 +61,9 @@ export async function main() {
   await app.init();
 
   web.get("/", (req, res) => {
-    res.json(app.getConstellationIds());
+    safe(res, () => {
+      res.json(app.getConstellationIds());
+    });
   });
 
   web.get("/logs", (req, res) => {
@@ -55,121 +75,150 @@ export async function main() {
   });
 
   web.post("/connect/:constellationId", async (req, res) => {
-    const constellationId = parseInt(req.params.constellationId, 10);
-    const newId = await app.connectNew(constellationId);
+    await safeAsync(res, async () => {
+      const constellationId = parseInt(req.params.constellationId, 10);
+      const newId = await app.connectNew(constellationId);
 
-    websocket.sendConstellationsChanged();
+      websocket.sendConstellationsChanged();
 
-    res.json({ newId: newId });
+      res.json({ newId: newId });
+    });
   });
 
   web.post("/create", async (req, res) => {
-    const body = getBody(req, res);
-    if (!body) return;
+    await safeAsync(res, async () => {
+      const body = getBody(req, res);
+      if (!body) return;
 
-    const newId = await app.createNew(body.owners);
+      const newId = await app.createNew(body.owners);
 
-    websocket.sendConstellationsChanged();
+      websocket.sendConstellationsChanged();
 
-    res.json({ newId: newId });
+      res.json({ newId: newId });
+    });
   });
 
   web.get("/:id", (req, res) => {
-    const id = getId(req);
-    res.json(app.getRoot(id));
+    safe(req, () => {
+      const id = getId(req);
+      res.json(app.getRoot(id));
+    });
   });
 
   web.post("/:id/activate", async (req, res) => {
-    const { id, body } = getIdBody(req, res);
-    if (!body) return;
+    await safeAsync(res, async () => {
+      const { id, body } = getIdBody(req, res);
+      if (!body) return;
 
-    await app.activate(id, body.path);
-    res.sendStatus(200);
+      await app.activate(id, body.path);
+      res.sendStatus(200);
+    });
   });
 
   web.post("/:id/deactivate", async (req, res) => {
-    const { id, body } = getIdBody(req, res);
-    if (!body) return;
+    await safeAsync(res, async () => {
+      const { id, body } = getIdBody(req, res);
+      if (!body) return;
 
-    await app.deactivate(id, body.path);
-    res.sendStatus(200);
+      await app.deactivate(id, body.path);
+      res.sendStatus(200);
+    });
   });
 
   web.post("/:id/info", (req, res) => {
-    const { id, body } = getIdBody(req, res);
-    if (!body) return;
+    safe(req, () => {
+      const { id, body } = getIdBody(req, res);
+      if (!body) return;
 
-    res.json(app.getInfo(id, body.path));
+      res.json(app.getInfo(id, body.path));
+    });
   });
 
   web.post("/:id/properties", async (req, res) => {
-    const { id, body } = getIdBody(req, res);
-    if (!body) return;
+    await safeAsync(res, async () => {
+      const { id, body } = getIdBody(req, res);
+      if (!body) return;
 
-    await app.updateProperties(id, body.path, body.properties);
-    res.sendStatus(200);
+      await app.updateProperties(id, body.path, body.properties);
+      res.sendStatus(200);
+    });
   });
 
   web.post("/:id/getdata", async (req, res) => {
-    const { id, body } = getIdBody(req, res);
-    if (!body) return;
+    await safeAsync(res, async () => {
+      const { id, body } = getIdBody(req, res);
+      if (!body) return;
 
-    res.send(await app.getData(id, body.path));
+      res.send(await app.getData(id, body.path));
+    });
   });
 
   web.post("/:id/setdata", async (req, res) => {
-    const { id, body } = getIdBody(req, res);
-    if (!body) return;
+    await safeAsync(res, async () => {
+      const { id, body } = getIdBody(req, res);
+      if (!body) return;
 
-    await app.setData(id, body.path, body.data);
-    res.sendStatus(200);
+      await app.setData(id, body.path, body.data);
+      res.sendStatus(200);
+    });
   });
 
   web.post("/:id/fetch", async (req, res) => {
-    const { id, body } = getIdBody(req, res);
-    if (!body) return;
+    await safeAsync(res, async () => {
+      const { id, body } = getIdBody(req, res);
+      if (!body) return;
 
-    await app.fetch(id, body.path);
-    res.sendStatus(200);
+      await app.fetch(id, body.path);
+      res.sendStatus(200);
+    });
   });
 
   web.post("/:id/autofetch", async (req, res) => {
-    const { id, body } = getIdBody(req, res);
-    if (!body) return;
+    await safeAsync(res, async () => {
+      const { id, body } = getIdBody(req, res);
+      if (!body) return;
 
-    await app.setAutoFetch(id, body.path, body.autofetch);
-    res.sendStatus(200);
+      await app.setAutoFetch(id, body.path, body.autofetch);
+      res.sendStatus(200);
+    });
   });
 
   web.post("/:id/newfile", async (req, res) => {
-    const { id, body } = getIdBody(req, res);
-    if (!body) return;
+    await safeAsync(res, async () => {
+      const { id, body } = getIdBody(req, res);
+      if (!body) return;
 
-    res.json(await app.createNewFile(id, body.path, body.type, body.owners));
+      res.json(await app.createNewFile(id, body.path, body.type, body.owners));
+    });
   });
 
   web.post("/:id/newfolder", async (req, res) => {
-    const { id, body } = getIdBody(req, res);
-    if (!body) return;
+    await safeAsync(res, async () => {
+      const { id, body } = getIdBody(req, res);
+      if (!body) return;
 
-    res.json(await app.createNewFolder(id, body.path, body.owners));
+      res.json(await app.createNewFolder(id, body.path, body.owners));
+    });
   });
 
   web.post("/:id/delete", async (req, res) => {
-    const { id, body } = getIdBody(req, res);
-    if (!body) return;
+    await safeAsync(res, async () => {
+      const { id, body } = getIdBody(req, res);
+      if (!body) return;
 
-    await app.delete(id, body.path, body.updateStarStatus);
-    res.sendStatus(200);
+      await app.delete(id, body.path, body.updateStarStatus);
+      res.sendStatus(200);
+    });
   });
 
   web.post("/close/:id", async (req, res) => {
-    const id = getId(req);
-    await app.disconnect(id);
+    await safeAsync(res, async () => {
+      const id = getId(req);
+      await app.disconnect(id);
 
-    websocket.sendConstellationsChanged();
-
-    res.sendStatus(200);
+      websocket.sendConstellationsChanged();
+      res.sendStatus(200);
+    });
   });
 
   server.listen(port, () => {
