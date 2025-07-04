@@ -113,7 +113,7 @@ function HomePageBase({ wsMessage }: { wsMessage: any }) {
             onChange={e => setConnectId(e.target.value)}
             style={{ width: '100%' }}
           />
-          <button type="submit" style={{ marginTop: 8 }}>Connect</button>
+          <button type="submit" style={{ marginTop: 8 }}>Connect and Mount</button>
         </form>
         <h2>Create a new Constellation</h2>
         <form onSubmit={handleCreate}>
@@ -137,7 +137,7 @@ function HomePageBase({ wsMessage }: { wsMessage: any }) {
               Populate with demo content
             </label>
           </div>
-          <button type="submit" style={{ marginTop: 8 }}>Create</button>
+          <button type="submit" style={{ marginTop: 8 }}>Create and Mount</button>
         </form>
         {error && <div style={{ color: 'red', marginTop: 16 }}>{error}</div>}
       </div>

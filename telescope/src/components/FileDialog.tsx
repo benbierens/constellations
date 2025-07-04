@@ -118,7 +118,6 @@ function FileDialog({ constellationId, path, buttonLabel = "File" }: FileDialogP
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ path, data: base64String }),
       });
-     console.log("c"); 
       if (!res.ok) throw new Error();
       // Optionally refresh info after upload
       setSize(file.size);

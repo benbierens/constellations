@@ -71,13 +71,33 @@ export class DemoContent {
       path: path,
       type: type,
       owners: this._owners
-    }))
+    }));
+
+    let byteArray = new Uint8Array(content.length);
+    for (let i = 0; i < content.length; i++) {
+      byteArray[i] = content.codePointAt(i);
+    }
+    const arrayBuffer = byteArray.buffer;
+    let binary = '';
+    const bytes = new Uint8Array(arrayBuffer);
+    const chunkSize = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      binary += String.fromCharCode.apply(
+        null,
+        bytes.subarray(i, i + chunkSize) as any
+      );
+    }
+    const base64String = btoa(binary);
+    await this.doPost(`${this._id}/setdata`, JSON.stringify({
+      path: path,
+      data: base64String
+    }));
   }
 
   createFolder = async (path: any) => {
     await this.doPost(`${this._id}/newfolder`, JSON.stringify({
       path: path,
       owners: this._owners
-    }))
+    }));
   }
 }
