@@ -199,7 +199,13 @@ export class Constellation {
   };
 
   createNewFolder = async (path, owners) => {
-    return await this._createNewStar(path, getConstellationStarType(), owners);
+    const starId = await this._createNewStar(path, getConstellationStarType(), owners);
+
+    const newStar = this._findActiveStarByFullPath(path);
+    if (!newStar) this._logger.assert("createNewFolder: Couldn't find new star after it was created.");
+    await newStar.setData(JSON.stringify([]));
+    
+    return starId;
   };
 
   delete = async (path, updateStarStatus) => {

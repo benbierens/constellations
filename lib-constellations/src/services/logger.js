@@ -114,7 +114,8 @@ export class SinkLogger {
   }
 
   trace = (msg) => {
-    for (const i of ignore) {
+    const ign = getIgnore();
+    for (const i of ign) {
       if (this.tag.includes(i)) return;
     }
     msg = this._applyReplacements(msg);

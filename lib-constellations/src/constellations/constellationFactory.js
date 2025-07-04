@@ -27,7 +27,7 @@ export class ConstellationFactory {
 
   initializeWithNode = async (wakuLightNode) => {
     this._codexService = new CodexService(this._logger, codexAddress);
-    
+
     const wakuNode = new WakuNode(this._logger);
     await wakuNode.startFromNode(wakuLightNode);
 
@@ -61,7 +61,9 @@ export class ConstellationFactory {
     this._codexService = new MockCodexService();
     var mockWaku = new MockWaku();
 
-    const wakuService = mockWaku.createMockWakuServiceForAddress(this._constellationNode.address);
+    const wakuService = mockWaku.createMockWakuServiceForAddress(
+      this._constellationNode.address,
+    );
     this._core = new Core(
       this._logger,
       this._constellationNode,
@@ -69,7 +71,7 @@ export class ConstellationFactory {
       this._codexService,
       this._cryptoService,
     );
-  }
+  };
 
   get walletAddress() {
     return this._core.constellationNode.address;

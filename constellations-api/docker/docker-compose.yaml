@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   constellations-api:
     build:
@@ -11,3 +9,4 @@ services:
       WAKU_BOOTSTRAP_NODES: "/dns4/waku.bloxy.one/tcp/8000/wss/p2p/16Uiu2HAmMJy3oXGzRjt2iKmYoCnaEkj55rE55YperMpemtGs9Da2,/dns4/waku-test.bloxy.one/tcp/8095/wss/p2p/16Uiu2HAmSZbDB7CusdRhgkD81VssRjQV5ZH13FbzCGcdnbbh6VwZ,/dns4/node-01.do-ams3.waku.sandbox.status.im/tcp/8000/wss/p2p/16Uiu2HAmNaeL4p3WEYzC9mgXBmBWSgWjPHRvatZTXnp8Jgv3iKsb"
       CODEX_ADDRESS: "http://192.168.178.171:8080"
       PRIVATE_KEY: "0x821f73df2d38ac506e9735306766be701afcec7def45f7bfa184b6fd4e96185d"
+      IGNORE: "Timer,TimerService,Health,Column,CidTracker,StarChannel,StarInternal"
