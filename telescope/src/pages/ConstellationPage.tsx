@@ -26,7 +26,6 @@ function ConstellationPageBase({ wsMessage }: { wsMessage: any }) {
   useEffect(() => {
     if (
       typeof wsMessage === 'string' &&
-      wsMessage.startsWith('pathsChanged') &&
       id &&
       wsMessage.split("/")[1] === id
     ) {
