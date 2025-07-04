@@ -4,8 +4,14 @@ import { withWebSocket } from '../components/withWebSocket';
 import PrototypeWarningDialog from '../components/PrototypeWarningDialog';
 
 import constellationIcon from '../assets/icon_constellation.png';
+import { DemoContent } from '../demoContent';
 
 const api = 'http://localhost:3000';
+
+async function CreateDemoContent(id: any, owners: any) {
+  const demoContent = new DemoContent(id, owners);
+  await demoContent.create();  
+}
 
 function HomePageBase({ wsMessage }: { wsMessage: any }) {
   const [owners, setOwners] = useState('');
@@ -13,6 +19,7 @@ function HomePageBase({ wsMessage }: { wsMessage: any }) {
   const [error, setError] = useState('');
   const [constellationIds, setConstellationIds] = useState<number[]>([]);
   const [showWarning, setShowWarning] = useState(true);
+  const [populateDemo, setPopulateDemo] = useState(false);
   const navigate = useNavigate();
 
   const fetchConstellations = useCallback(() => {
@@ -36,13 +43,19 @@ function HomePageBase({ wsMessage }: { wsMessage: any }) {
     e.preventDefault();
     setError('');
     try {
+      const ow = owners.split(',').map(s => s.trim()).filter(Boolean);
       const res = await fetch(`${api}/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ owners: owners.split(',').map(s => s.trim()).filter(Boolean) }),
+        body: JSON.stringify({ owners: ow }),
       });
       if (!res.ok) throw new Error('Failed to create constellation');
       const data = await res.json();
+
+      if (populateDemo) {
+        await CreateDemoContent(data.newId, ow);
+      }
+
       navigate(`/constellation/${data.newId}`);
     } catch (err: any) {
       setError(err.message);
@@ -112,6 +125,18 @@ function HomePageBase({ wsMessage }: { wsMessage: any }) {
             onChange={e => setOwners(e.target.value)}
             style={{ width: '100%' }}
           />
+          <div style={{ margin: '8px 0', display: 'flex', alignItems: 'center' }}>
+            <input
+              type="checkbox"
+              id="populate-demo"
+              checked={populateDemo}
+              onChange={e => setPopulateDemo(e.target.checked)}
+              style={{ marginRight: 6 }}
+            />
+            <label htmlFor="populate-demo" style={{ userSelect: 'none', cursor: 'pointer' }}>
+              Populate with demo content
+            </label>
+          </div>
           <button type="submit" style={{ marginTop: 8 }}>Create</button>
         </form>
         {error && <div style={{ color: 'red', marginTop: 16 }}>{error}</div>}
