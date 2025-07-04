@@ -10,24 +10,11 @@ type NodeActionsProps = {
   constellationId: string;
   path: string[];
   refresh: () => void;
+  starType: string | null;
 };
 
-function NodeActions({ constellationId, path, refresh }: NodeActionsProps) {
+function NodeActions({ constellationId, path, refresh, starType }: NodeActionsProps) {
   const [error, setError] = useState('');
-  const [starType, setStarType] = useState<string | null>(null);
-
-  React.useEffect(() => {
-    // Fetch star info to get the type
-    fetch(`${api}/${constellationId}/info`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path }),
-    })
-      .then(res => res.ok ? res.json() : null)
-      .then(data => setStarType(data && data.starInfo && data.starInfo.type ? data.starInfo.type : null))
-      .catch(() => setStarType(null));
-    // eslint-disable-next-line
-  }, [constellationId, JSON.stringify(path)]);
 
   const handleDelete = async () => {
     setError('');

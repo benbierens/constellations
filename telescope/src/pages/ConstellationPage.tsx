@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import StructureTree from '../components/StructureTree';
 import { withWebSocket } from '../components/withWebSocket';
 import constellationIcon from '../assets/icon_constellation.png';
+import driveIcon from '../assets/icon_drive.png';
 
 const api = 'http://localhost:3000';
 
@@ -48,7 +49,14 @@ function ConstellationPageBase({ wsMessage }: { wsMessage: any }) {
           zIndex: 1
         }}
       />
-      <h2>Constellation #{id}</h2>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <img
+          src={driveIcon}
+          alt="Drive"
+          style={{ width: 22, height: 22, marginRight: 4, verticalAlign: 'middle' }}
+        />
+        <h2 style={{ display: 'inline', margin: 0 }}>Constellation #{id}</h2>
+      </div>
       {info && (
         <div style={{ fontSize: 13, color: '#555', marginBottom: 8 }}>
           <span style={{
