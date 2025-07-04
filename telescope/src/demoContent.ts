@@ -37,10 +37,12 @@ export class DemoContent {
 
   create = async () => {
     await this.doCreate(this._content, []);
+    await this.doPost(`${this._id}/deactivate`, JSON.stringify({
+      path: []
+    }));
   }
 
-  doCreate = async (here: any, basePath: any) =>
-  {
+  doCreate = async (here: any, basePath: any) => {
     const keys = Object.keys(here);
     for (const key of keys) {
       const value = here[key];
