@@ -779,6 +779,33 @@ describe(
       expect(folderInfo.properties.status).toEqual(StarStatus.Bright);
     });
 
+    it("creates a new folder star with empty array as data", async () => {
+      const rootStar = await createStar(
+        "root",
+        core1,
+        getConstellationStarType(),
+        doNothingStarHandler,
+      );
+      await mockWaku.deliverAll();
+
+      constellation = new Constellation(core1, eventHandler);
+      await constellation.initialize(rootStar.starId);
+      await mockWaku.deliverAll();
+
+      expect(eventHandler.onPathsUpdatedArgs.length).toEqual(0);
+
+      const path = ["folder"];
+      const owners = [
+        core2.constellationNode.address,
+        core1.constellationNode.address,
+      ];
+      const newStarId = await constellation.createNewFolder(path, owners);
+      await mockWaku.deliverAll();
+
+      const emptyConstellationStarData = await constellation.getData(path);
+      expect(emptyConstellationStarData).toEqual(JSON.stringify([]));
+    });
+
     it("can create a new folder star and nest a new data star", async () => {
       const rootStar = await createStar(
         "root",

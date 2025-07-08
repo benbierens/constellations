@@ -13,9 +13,20 @@ function NodeAddress() {
   }, []);
 
   return (
-    <div style={{ marginBottom: 16, color: '#555', fontSize: 14 }}>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: 0,
+        color: '#555',
+        fontSize: 14,
+        height: '100%'
+      }}
+    >
       <strong>nodeAddress: </strong>
-      {nodeAddress !== '' ? nodeAddress : <span style={{ color: '#aaa' }}>Loading...</span>}
+      <span style={{ marginLeft: 4 }}>
+        {nodeAddress !== '' ? nodeAddress : <span style={{ color: '#aaa' }}>Loading...</span>}
+      </span>
     </div>
   );
 }

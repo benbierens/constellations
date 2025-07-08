@@ -14,6 +14,14 @@ const ignore = [
   // "StarInternal"
 ];
 
+function getIgnore() {
+  const value = process.env["IGNORE"];
+  if (value) {
+    return value.split(",");
+  }
+  return ignore;
+}
+
 export class NullLogger {
   trace = (msg) => {};
 
@@ -43,7 +51,8 @@ export class Logger {
   }
 
   trace = (msg) => {
-    for (const i of ignore) {
+    const ign = getIgnore();
+    for (const i of ign) {
       if (this.tag.includes(i)) return;
     }
     msg = this._applyReplacements(msg);
@@ -105,7 +114,8 @@ export class SinkLogger {
   }
 
   trace = (msg) => {
-    for (const i of ignore) {
+    const ign = getIgnore();
+    for (const i of ign) {
       if (this.tag.includes(i)) return;
     }
     msg = this._applyReplacements(msg);

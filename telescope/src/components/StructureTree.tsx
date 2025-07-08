@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import StarInfo from './StarInfo';
-import NewDialog from './NewDialog';
+import NodeActions from './NodeActions';
+import folderClosedIcon from '../assets/icon_folder_closed.png';
+import folderOpenIcon from '../assets/icon_folder_open.png';
+import fileOpenIcon from '../assets/icon_file_open.png';
 
 type StructureNode = {
   path: string;
@@ -16,58 +18,6 @@ type Props = {
 };
 
 const api = 'http://localhost:3000';
-
-function NodeActions({
-  constellationId,
-  path,
-  refresh,
-}: {
-  constellationId: string;
-  path: string[];
-  refresh: () => void;
-}) {
-  const [error, setError] = useState('');
-  const [starType, setStarType] = useState<string | null>(null);
-
-  React.useEffect(() => {
-    // Fetch star info to get the type
-    fetch(`${api}/${constellationId}/info`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path }),
-    })
-      .then(res => res.ok ? res.json() : null)
-      .then(data => setStarType(data && data.starInfo  && data.starInfo.type ? data.starInfo.type : null))
-      .catch(() => setStarType(null));
-    // eslint-disable-next-line
-  }, [constellationId, JSON.stringify(path)]);
-
-  const handleDelete = async () => {
-    setError('');
-    if (!window.confirm('Delete this node and its children?')) return;
-    try {
-      await fetch(`${api}/${constellationId}/delete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path, updateStarStatus: true }),
-      });
-      refresh();
-    } catch {
-      setError('Delete failed');
-    }
-  };
-
-  return (
-    <div style={{ display: 'inline-block', marginLeft: 8 }}>
-      {starType === '_constellation' && (
-        <NewDialog constellationId={constellationId} path={path} refresh={refresh} />
-      )}
-      <StarInfo constellationId={constellationId} path={path} />
-      <button onClick={handleDelete} style={{ color: 'red' }}>Delete</button>
-      {error && <span style={{ color: 'red', marginLeft: 8 }}>{error}</span>}
-    </div>
-  );
-}
 
 function StructureTree({ constellationId, node, path }: Props) {
   const [expanded, setExpanded] = useState(true);
@@ -90,7 +40,6 @@ function StructureTree({ constellationId, node, path }: Props) {
 
   const handleActivationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
-    setActivation(checked);
     try {
       await fetch(`${api}/${constellationId}/${checked ? 'activate' : 'deactivate'}`, {
         method: 'POST',
@@ -103,10 +52,49 @@ function StructureTree({ constellationId, node, path }: Props) {
     }
   };
 
+  // Compute row background color based on depth
+  const rowBg = path.length % 2 === 0 ? '#D4D4D4' : '#C0C0C0';
+
+  const [starType, setStarType] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    fetch(`${api}/${constellationId}/info`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path }),
+    })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => setStarType(data && data.starInfo && data.starInfo.type ? data.starInfo.type : null))
+      .catch(() => setStarType(null));
+    // eslint-disable-next-line
+  }, [activation, constellationId, JSON.stringify(path)]);
+
   return (
-    <div style={{ marginLeft: path.length ? 24 : 0, marginTop: 8 }}>
-      <div>
+    <div style={{ marginLeft: path.length ? 34 : 0, marginTop: 0, background: rowBg }}>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        {!activation && (
+          <img
+            src={folderClosedIcon}
+            alt="Inactive"
+            style={{ width: 18, height: 18, marginRight: 6, verticalAlign: 'middle' }}
+          />
+        )}
+        {activation && starType && starType === '_constellation' && (
+          <img
+            src={folderOpenIcon}
+            alt="Open"
+            style={{ width: 18, height: 18, marginRight: 6, verticalAlign: 'middle' }}
+          />
+        )}
+        {activation && starType && starType !== '_constellation' && (
+          <img
+            src={fileOpenIcon}
+            alt="Open"
+            style={{ width: 18, height: 18, marginRight: 6, verticalAlign: 'middle' }}
+          />
+        )}
         <input
+          className="win95-input"
           type="checkbox"
           checked={activation}
           onChange={handleActivationChange}
@@ -121,8 +109,14 @@ function StructureTree({ constellationId, node, path }: Props) {
             : '•'}{' '}
           {currentNode.path || '/'}
         </span>
+        <div style={{ flex: 1 }} />
         {activation && (
-          <NodeActions constellationId={constellationId} path={path} refresh={refresh} />
+          <NodeActions
+            constellationId={constellationId}
+            path={path}
+            refresh={refresh}
+            starType={starType}
+          />
         )}
       </div>
       {expanded && currentNode.entries && currentNode.entries.length > 0 && (

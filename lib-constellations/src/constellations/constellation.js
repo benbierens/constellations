@@ -199,7 +199,13 @@ export class Constellation {
   };
 
   createNewFolder = async (path, owners) => {
-    return await this._createNewStar(path, getConstellationStarType(), owners);
+    const starId = await this._createNewStar(path, getConstellationStarType(), owners);
+
+    const newStar = this._findActiveStarByFullPath(path);
+    if (!newStar) this._logger.assert("createNewFolder: Couldn't find new star after it was created.");
+    await newStar.setData(JSON.stringify([]));
+    
+    return starId;
   };
 
   delete = async (path, updateStarStatus) => {
@@ -315,6 +321,7 @@ export class Constellation {
       this._logger.trace(
         `onDataChanged: star '${star.starId}' is not a constellation type`,
       );
+      this._logger.trace(`raising DataChanged for star ${star.starId}`);
       await this._handler.onDataChanged(star.starId);
       return;
     }
@@ -336,6 +343,7 @@ export class Constellation {
   };
 
   onPropertiesChanged = async (star) => {
+    this._logger.trace(`raising PropertiesChanged for star ${star.starId}`);
     await this._handler.onPropertiesChanged(star.starId);
   };
 
@@ -484,6 +492,7 @@ export class Constellation {
   };
 
   _raisePathsChangedEvent = async (starId) => {
+    this._logger.trace(`raising PathsChanged for star ${starId}`);
     await this._handler.onPathsUpdated(starId);
   };
 

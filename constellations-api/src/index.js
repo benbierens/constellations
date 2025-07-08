@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import http from "http";
 import bodyParser from "body-parser";
 import { WebSocketServer } from "ws";
@@ -44,11 +45,12 @@ async function safeAsync(res, action) {
   }
 }
 
-export function main() {
+export async function main() {
   const web = express();
   const port = process.env.PORT || 3000;
 
-  web.use(bodyParser.json({ limit: "10mb" }));
+  web.use(cors());
+  web.use(bodyParser.json({ limit: "10mb" }))
 
   // Create HTTP server and WebSocket server
   const server = http.createServer(web);
@@ -56,7 +58,7 @@ export function main() {
   const websocket = new WebsocketCallbacks(wss);
 
   const app = new App(appConfig, websocket);
-  app.init().catch(console.error);
+  await app.init();
 
   web.get("/", (req, res) => {
     safe(res, () => {
@@ -224,3 +226,5 @@ export function main() {
     console.log(`WebSocket server listening at ws://localhost:${port}`);
   });
 }
+
+main().catch(console.error); 
