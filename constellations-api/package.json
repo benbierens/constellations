@@ -1,0 +1,38 @@
+{
+  "name": "constellations-api",
+  "version": "0.0.1",
+  "description": "Prototype",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "constellations": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "vitest run",
+    "watch": "vitest",
+    "format": "prettier --write ./src"
+  },
+  "keywords": [
+    "constellations",
+    "storage",
+    "api"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "author": "Logos contributors",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "body-parser": "^2.2.0",
+    "ethers": "^6.14.4",
+    "express": "^4.19.2",
+    "lib-constellations": "^0.0.8"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "^6.0.1",
+    "prettier": "^3.4.2",
+    "vitest": "^3.0.5"
+  }
+}

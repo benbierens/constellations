@@ -1,0 +1,41 @@
+{
+  "name": "lib-constellations",
+  "version": "0.0.8",
+  "description": "Prototype",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "constellations": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "vitest run",
+    "watch": "vitest",
+    "format": "prettier --write ./src ./tests"
+  },
+  "keywords": [
+    "constellations",
+    "storage",
+    "cli"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "author": "Logos contributors",
+  "license": "MIT",
+  "dependencies": {
+    "@codex-storage/sdk-js": "^0.1.2",
+    "async-lock": "^1.4.1",
+    "crypto-js": "^4.2.0",
+    "ethers": "^6.14.3",
+    "waku-dispatcher": "^0.0.24"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "^6.0.1",
+    "prettier": "^3.4.2",
+    "vitest": "^3.0.5"
+  },
+  "exports": {
+    ".": "./src/constellations/constellationFactory.js"
+  }
+}

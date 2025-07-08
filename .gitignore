@@ -1,3 +1,7 @@
 ﻿Prototyping/.vs
 Prototyping/obj
 Prototyping/bin
+lib-constellations/node_modules
+telescope/node_modules
+constellations-api/docker/codex-data
+telescope/docker/codex-data

@@ -1,0 +1,71 @@
+services:
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "80:80"
+    container_name: telescope-frontend
+
+  constellations-api:
+    build:
+      context: ../../constellations-api
+      dockerfile: docker/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      USE_MOCKS: 1
+
+      WAKU_BOOTSTRAP_NODES: "/dns4/waku.bloxy.one/tcp/8000/wss/p2p/16Uiu2HAmMJy3oXGzRjt2iKmYoCnaEkj55rE55YperMpemtGs9Da2,/dns4/waku-test.bloxy.one/tcp/8095/wss/p2p/16Uiu2HAmSZbDB7CusdRhgkD81VssRjQV5ZH13FbzCGcdnbbh6VwZ,/dns4/node-01.do-ams3.waku.sandbox.status.im/tcp/8000/wss/p2p/16Uiu2HAmNaeL4p3WEYzC9mgXBmBWSgWjPHRvatZTXnp8Jgv3iKsb"
+      # CODEX_ADDRESS: "http://192.168.178.171:8080"
+      # WAKU_ADDRESS: waku
+      CODEX_ADDRESS: codex
+      PRIVATE_KEY: "0x821f73df2d38ac506e9735306766be701afcec7def45f7bfa184b6fd4e96185d"
+      IGNORE: "Timer,TimerService,Health,Column,CidTracker,StarChannel,StarInternal"
+      
+  waku:
+    image: wakuorg/nwaku:v0.32.0
+    ports:
+      - "8645:8645"
+    command: --dns-discovery=true --dns-discovery-url=enrtree://AIRVQ5DDA4FFWLRBCHJWUWOO6X6S4ZTZ5B667LQ6AJU6PEYDLRD5O@sandbox.waku.nodes.status.im --discv5-discovery=true --nat=any --rest-address=0.0.0.0
+
+  codex:
+      image: codexstorage/nim-codex:0.2.5-dist-tests
+      command:
+        - codex
+        -  --bootstrap-node=spr:CiUIAhIhAiJvIcA_ZwPZ9ugVKDbmqwhJZaig5zKyLiuaicRcCGqLEgIDARo8CicAJQgCEiECIm8hwD9nA9n26BUoNuarCEllqKDnMrIuK5qJxFwIaosQ3d6esAYaCwoJBJ_f8zKRAnU6KkYwRAIgM0MvWNJL296kJ9gWvfatfmVvT-A7O2s8Mxp8l9c8EW0CIC-h-H-jBVSgFjg3Eny2u33qF7BDnWFzo7fGfZ7_qc9P
+      environment:
+        - CODEX_DATA_DIR=/data
+        - CODEX_CIRCUIT_DIR=/circuit
+        - CODEX_LOG_LEVEL=debug
+        - CODEX_API_PORT=8081
+        - CODEX_API_BINDADDR=0.0.0.0
+        - CODEX_LISTEN_ADDRS=/ip4/0.0.0.0/tcp/8070
+        - CODEX_API_CORS_ORIGIN="*"
+        - CODEX_DISC_PORT=8090
+        - NAT_PUBLIC_IP_AUTO=https://ip.codex.storage
+        - CODEX_ETH_PROVIDER=https://rpc.testnet.codex.storage
+        - ETH_PRIVATE_KEY=0xfa049bffb3b61cb90a65b9bdf137ff266ac8264369a058b4215c70082ffbb44c
+        - CODEX_BLOCK_TTL=7200
+        - CODEX_BLOCK_MI=3600
+        - CODEX_BLOCK_MN=10000
+      ports:
+        - "8081:8081/tcp"
+        - "8070:8070/tcp"
+        - "8090:8090/udp"
+      volumes:
+        - ./codex-data:/data
+        - ./codex-circuit:/circuit
+      network_mode: host
+
+  
+#     environment:
+#       WAKU_DNS_DISCOVERY: true
+#       WAKU_DISCV5_DISCOVERY: true
+#       WAKU_NAT: any
+      
+
+
+# --dns-discovery=true   --dns-discovery-url=enrtree://AIRVQ5DDA4FFWLRBCHJWUWOO6X6S4ZTZ5B667LQ6AJU6PEYDLRD5O@sandbox.waku.nodes.status.im   --discv5-discovery=true   --nat=any
+  
+  #extip:[YOUR PUBLIC IP] # or, if you are behind a nat: --nat=any
