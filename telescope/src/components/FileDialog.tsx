@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-
-const api = 'http://localhost:3000';
+import { api } from '../api';
 
 type FileDialogProps = {
   constellationId: string;

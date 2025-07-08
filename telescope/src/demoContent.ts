@@ -1,4 +1,4 @@
-const api = 'http://localhost:3000';
+import { api } from './api';
 
 export class DemoContent {
   private _owners: any;

@@ -18,6 +18,11 @@ export class App {
   }
 
   init = async () => {
+    if (this._config.useMocks) {
+      await this._factory.initializeWithMocks();
+      return;
+    }
+
     await this._factory.initializeWithBootstrapRecords(
       this._config.wakuBootstrapNodes,
     );

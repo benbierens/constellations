@@ -4,7 +4,7 @@ type WebSocketMessageHandler = (msg: MessageEvent) => void;
 
 export function withWebSocket<P>(
   WrappedComponent: React.ComponentType<P & { wsMessage: any }>,
-  wsUrl: string = 'ws://localhost:3000/'
+  wsUrl: string = (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws/'
 ) {
   return function WebSocketHOC(props: P) {
     const [wsMessage, setWsMessage] = React.useState<any>(null);

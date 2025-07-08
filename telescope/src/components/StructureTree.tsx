@@ -3,6 +3,7 @@ import NodeActions from './NodeActions';
 import folderClosedIcon from '../assets/icon_folder_closed.png';
 import folderOpenIcon from '../assets/icon_folder_open.png';
 import fileOpenIcon from '../assets/icon_file_open.png';
+import { api } from '../api';
 
 type StructureNode = {
   path: string;
@@ -16,8 +17,6 @@ type Props = {
   node: StructureNode;
   path: string[];
 };
-
-const api = 'http://localhost:3000';
 
 function StructureTree({ constellationId, node, path }: Props) {
   const [expanded, setExpanded] = useState(true);

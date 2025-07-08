@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-
-const api = 'http://localhost:3000';
+import { api } from '../api';
 
 type LogDialogProps = {
   open?: boolean;

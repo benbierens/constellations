@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
+import { api } from '../api';
 import StarInfo from './StarInfo';
 import NewDialog from './NewDialog';
 import FileDialog from './FileDialog';
 import PropertiesDialog from './PropertiesDialog';
-
-const api = 'http://localhost:3000';
 
 type NodeActionsProps = {
   constellationId: string;

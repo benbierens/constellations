@@ -4,8 +4,7 @@ import StructureTree from '../components/StructureTree';
 import { withWebSocket } from '../components/withWebSocket';
 import constellationIcon from '../assets/icon_constellation.png';
 import driveIcon from '../assets/icon_drive.png';
-
-const api = 'http://localhost:3000';
+import { api } from '../api';
 
 function ConstellationPageBase({ wsMessage }: { wsMessage: any }) {
   const { id } = useParams<{ id: string }>();

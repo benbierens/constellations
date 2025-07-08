@@ -5,8 +5,7 @@ import PrototypeWarningDialog from '../components/PrototypeWarningDialog';
 
 import constellationIcon from '../assets/icon_constellation.png';
 import { DemoContent } from '../demoContent';
-
-const api = 'http://localhost:3000';
+import { api } from '../api';
 
 async function CreateDemoContent(id: any, owners: any) {
   const demoContent = new DemoContent(id, owners);

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
-const api = 'http://localhost:3000';
+import { api } from '../api';
 
 function NodeAddress() {
   const [nodeAddress, setNodeAddress] = useState<string>('initial');

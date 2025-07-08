@@ -57,6 +57,8 @@ export async function main() {
   const wss = new WebSocketServer({ server });
   const websocket = new WebsocketCallbacks(wss);
 
+  console.log("Initializing with configuration: " + JSON.stringify(appConfig));
+
   const app = new App(appConfig, websocket);
   await app.init();
 
