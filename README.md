@@ -1,16 +1,41 @@
-# Constellations
-Because screw clouds.
+# Constellations Prototype
+- Decentralized
+- Community owned
+- Community supported
+- Practical
+- Virtual drives
 
 ## What?
-It's a kind of decentralized filesystem. It makes it easy for users/apps to read and write data by organizing them into "constellations". Very importantly: It makes it easy for those who want to support a certain constellation to devote some hardware to its maintenance.
+It's a kind of decentralized filesystem. It makes it easy for users/apps to read and write data by organizing them into "constellations". Very importantly: It makes it easy for those who want to support a certain constellation to devote some hardware to it. It's really for the data of communities. It's ready to be built on top of by either use-facing applications directly, OR by other automated systems to manage their data.
 
-## How? (kinda)
-We're using Codex and Waku.
+## How?
+Constellations is a protocol that rides on top of Codex and Waku. It figures out the structure of files and folders, who is allowed to make which changes, and how participating nodes can best apply their resources to support the content they most care about.
 
-## Interface prototype
-A constellation-node will expose an interface that other apps can use to interact with stars and constellations. Some apps will be reading/writing data, and following updates. Other apps will be only following and caching updates. The interface covers all use cases. In general, the Constellation type will be the entry-point for most interactions.
+## API
+[Open-API Specification](./constellations-api/openapi.yaml)
+The API allows users to create and interact with files and folders in a virtual "Constellations drive".
 
-## How to read?!
-- Read the example files from top to bottom. They tell a little story.
-- Read them in this order: ContentStarExample, ConstellationExample, then SupportExample.
-- Consult the files in `/Interface` for clarification when you need it.
+## Telescope
+It's a tool you can use to look at Constellations.
+This quick-and-dirty UI project is intended to showcase the capabilities of Constellations would bring to any project using its API.
+
+### Try it yourself
+You can run the mocked version of a Constellations node + Telescope yourself pretty easily using docker.
+- Clone this repository.
+- Open a terminal.
+- Go into: `./telescope/docker`
+- Run: `docker-compose build`
+- Then: `docker-compose up -d`
+- Open your browser to: `http://localhost`
+
+Because this demo uses mocked instances of Waku and Codex, it isn't actually able to interact with Constellations not present on your local node. Making this possible and easy is work-in-progress.
+
+## Support This!
+Constellations as a project and protocol is looking for support!
+Do you think this is a good idea? Please express your support any way you're comfortable with.
+Some places where you can do this include:
+
+Discord Servers:
+- Logos: https://discord.com/invite/logosnetwork
+- Waku: https://discord.gg/85SrA3a6
+- Codex: https://discord.gg/codex-storage
