@@ -18,7 +18,9 @@ export class App {
   }
 
   init = async () => {
-    await this._factory.initializeWithMocks();
+    await this._factory.initializeWithBootstrapRecords(
+      this._config.wakuBootstrapNodes,
+    );
   };
 
   getLogs = () => {
