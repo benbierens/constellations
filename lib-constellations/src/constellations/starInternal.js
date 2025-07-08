@@ -178,57 +178,19 @@ export class StarInternal {
     if (!this._starInfo.isReady) return ColumnUpdateCheckResponse.Delay;
 
     const permittedModifiers = this.getAllowedPropertyModifiers();
-    if (permittedModifiers.length > 0 && permittedModifiers.includes(signer)) {
+    if (permittedModifiers.length == 0) {
+      this._logger.assert(
+        "_starProperties_checkUpdate: Inconsistent configuration. No owners or admins known.",
+      );
+    }
+
+    if (permittedModifiers.includes(signer)) {
       this._logger.trace(
         "_starProperties_checkUpdate: Update signed by owner or admin.",
       );
       return ColumnUpdateCheckResponse.Accept;
     }
 
-    if (this._starProperties.isReady) {
-      // properties are already known:
-      if (permittedModifiers.length == 0) {
-        // no owners no admins: only the annotations can be updated.
-        // status is always bright, admins/mods always empty, config is always default.
-        if (
-          newValue.admins.length == 0 &&
-          newValue.mods.length == 0 &&
-          newValue.status == StarStatus.Bright &&
-          isDefaultConfiguration(newValue.configuration) &&
-          isValidUserStringValue(newValue.annotations)
-        ) {
-          this._logger.trace(
-            "_starProperties_checkUpdate: No-owners-no-admins value restrictions check passed.",
-          );
-          return ColumnUpdateCheckResponse.Accept;
-        }
-        this._logger.trace(
-          "_starProperties_checkUpdate: Update rejected: No-owners-no-admins value restriction no met.",
-        );
-        return ColumnUpdateCheckResponse.Discard;
-      }
-    } else {
-      // properties are not known yet:
-      if (permittedModifiers.length == 0) {
-        // big todo:
-        // modifications are only permitted by the owners.
-        // There are no owners, TODO: who can set the properties?
-        // the person who created the star... who was that?
-        // - no owners/no admins = we want the dataset to be openly modifiable (think: forum-thread)
-        // but we want to protect it from malicious modifications: someone coming in to setting the data
-        // to null or status to cold.
-        // if we enforce the same no-owners-no-admins restriction as above, then it's impossible
-        // to create a star without owner but with admin.
-        // should we disallow no-owners? what use-cases are served by no-owners stars?
-        this._logger.assert(
-          "big todo: no owners, how to receive first star properties?",
-        );
-      }
-    }
-
-    this._logger.trace(
-      "_starProperties_checkUpdate: Update rejected: Signer not permitted.",
-    );
     return ColumnUpdateCheckResponse.Discard;
   };
 
