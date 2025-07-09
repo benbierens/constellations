@@ -28,6 +28,9 @@ You can run the mocked version of a Constellations node + Telescope yourself pre
 - Then: `docker-compose up -d`
 - Open your browser to: `http://localhost`
 
+**Important:**
+When you create a new constellation, the address of *your* constellation node must be one of the owners. You can include other owners (it's a comma-separated text field) but if your node is not an owner, then it will not be able to create and sign valid update messages for the constellation and creation will fail. So: When creating a constellation, always copy-paste your nodeAddress into the owners textbox.
+
 Because this demo uses mocked instances of Waku and Codex, it isn't actually able to interact with Constellations not present on your local node. Making this possible and easy is work-in-progress.
 
 ## Support This!
