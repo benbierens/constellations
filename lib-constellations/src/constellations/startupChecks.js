@@ -34,6 +34,7 @@ export class StartupChecks {
 
     const contentTopic = "/constellations/0/startupchecks/json";
     const channel = await this._core.wakuService.openChannel(contentTopic, handler);
+    await channel.start();
 
     const msg = `Check:${Math.random() * 9999999}:${new Date().toISOString()}`;
     await channel.send(msg);
