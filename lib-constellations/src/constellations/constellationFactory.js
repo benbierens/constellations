@@ -10,7 +10,7 @@ import { CryptoService } from "../services/cryptoService.js";
 import { WakuNode } from "../services/wakuNode.js";
 import { MockWaku } from "../../tests/mockWaku.js";
 import { MockCodexService } from "../../tests/mockCodex.js";
-import { StartupChecks } from "../../../../../lib-constellations/src/constellations/startupChecks.js";
+import { StartupChecks } from "./startupChecks.js";
 
 const doNothingStarHandler = {
   onDataChanged: async (star) => {},
