@@ -27,7 +27,7 @@ export class ConstellationFactory {
   }
 
   initializeWithNode = async (wakuLightNode) => {
-    this._codexService = new CodexService(this._logger, codexAddress);
+    this._codexService = new CodexService(this._logger, this._codexAddress);
 
     const wakuNode = new WakuNode(this._logger);
     await wakuNode.startFromNode(wakuLightNode);
@@ -45,7 +45,7 @@ export class ConstellationFactory {
   };
 
   initializeWithBootstrapRecords = async (wakuBootstrapNodes) => {
-    this._codexService = new CodexService(this._logger, codexAddress);
+    this._codexService = new CodexService(this._logger, this._codexAddress);
 
     const wakuNode = new WakuNode(this._logger);
     await wakuNode.startFromBootstrapNodes(wakuBootstrapNodes);
