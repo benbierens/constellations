@@ -10,6 +10,7 @@ import { CryptoService } from "../services/cryptoService.js";
 import { WakuNode } from "../services/wakuNode.js";
 import { MockWaku } from "../../tests/mockWaku.js";
 import { MockCodexService } from "../../tests/mockCodex.js";
+import { StartupChecks } from "../../../../../lib-constellations/src/constellations/startupChecks.js";
 
 const doNothingStarHandler = {
   onDataChanged: async (star) => {},
@@ -39,6 +40,8 @@ export class ConstellationFactory {
       this._codexService,
       this._cryptoService,
     );
+    
+    await this._startupChecks();
   };
 
   initializeWithBootstrapRecords = async (wakuBootstrapNodes) => {
@@ -55,6 +58,8 @@ export class ConstellationFactory {
       this._codexService,
       this._cryptoService,
     );
+
+    await this._startupChecks();
   };
 
   initializeWithMocks = async () => {
@@ -98,4 +103,9 @@ export class ConstellationFactory {
     await constellation.initialize(constellationId);
     return constellation;
   };
+
+  _startupChecks = async () => {
+    const checker = new StartupChecks(this._core);
+    await checker.performChecks();
+  }
 }

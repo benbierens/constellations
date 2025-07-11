@@ -7,7 +7,7 @@ function requireEnv(name) {
 }
 
 export const appConfig = {
-  useMocks: process.env["USE_MOCKS"],
+  useMocks: process.env["USE_MOCKS"] == "1",
   wakuBootstrapNodes: requireEnv("WAKU_BOOTSTRAP_NODES").split(","),
   codexAddress: requireEnv("CODEX_ADDRESS"),
   privateKey: requireEnv("PRIVATE_KEY"),
