@@ -101,7 +101,7 @@ export async function main() {
   });
 
   web.get("/:id", (req, res) => {
-    safe(req, () => {
+    safe(res, () => {
       const id = getId(req);
       res.json(app.getRoot(id));
     });
@@ -128,7 +128,7 @@ export async function main() {
   });
 
   web.post("/:id/info", (req, res) => {
-    safe(req, () => {
+    safe(res, () => {
       const { id, body } = getIdBody(req, res);
       if (!body) return;
 
@@ -224,7 +224,7 @@ export async function main() {
   });
 
   web.post("/:id/support/true", async (req, res) => {
-    await safeAsync(req, async () => {
+    await safeAsync(res, async () => {
       const id = getId(req);
       await app.beginSupport(id);
       res.sendStatus(200);
@@ -232,7 +232,7 @@ export async function main() {
   });
 
   web.post("/:id/support/false", async (req, res) => {
-    await safeAsync(req, async () => {
+    await safeAsync(res, async () => {
       const id = getId(req);
       await app.endSupport(id);
       res.sendStatus(200);

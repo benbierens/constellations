@@ -30,8 +30,7 @@ export class DemoContent {
           mar: "march"
         }
       },
-      music: {
-      }
+      // random: this._generateRandom(0)
     }
   }
 
@@ -99,5 +98,31 @@ export class DemoContent {
       path: path,
       owners: this._owners
     }));
+  }
+
+  _generateRandom = (depth: number) => {
+    if (depth > 3) return this._randomStr();
+    var n = 1 + this._random(6 - depth);
+    var newObj: any = {};
+    for (var i = 0; i < n; i++) {
+      const name = this._randomStr();
+      newObj[name] = this._generateRandom(depth + 1);
+    }
+    return newObj;
+  }
+
+  _random = (exclMax: number): number => {
+    return Math.floor(Math.random() * exclMax);
+  }
+
+  _randomStr = (): string => {
+    const length = 3 + this._random(20);
+    var result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
   }
 }
