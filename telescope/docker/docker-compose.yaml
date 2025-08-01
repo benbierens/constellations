@@ -21,7 +21,7 @@ services:
       # WAKU_ADDRESS: waku
       CODEX_ADDRESS: codex
       PRIVATE_KEY: "0x821f73df2d38ac506e9735306766be701afcec7def45f7bfa184b6fd4e96185d"
-      IGNORE: "Timer,TimerService,Health,Column,CidTracker,StarChannel,StarInternal"
+      # IGNORE: "Timer,TimerService,Health,Column,CidTracker,StarChannel,StarInternal"
       
   waku:
     image: wakuorg/nwaku:v0.32.0

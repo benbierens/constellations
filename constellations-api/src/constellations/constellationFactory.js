@@ -8,9 +8,9 @@ import { WakuService } from "../services/wakuService.js";
 import { CodexService } from "../services/codexService.js";
 import { CryptoService } from "../services/cryptoService.js";
 import { WakuNode } from "../services/wakuNode.js";
-import { MockWaku } from "../../tests/mockWaku.js";
-import { MockCodexService } from "../../tests/mockCodex.js";
 import { StartupChecks } from "./startupChecks.js";
+import { MockCodexService } from "./mockCodex.js";
+import { MockWaku } from "./mockWaku.js";
 
 const doNothingStarHandler = {
   onDataChanged: async (star) => {},

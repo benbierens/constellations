@@ -1,4 +1,4 @@
-import { ConstellationFactory } from "lib-constellations";
+import { ConstellationFactory } from "./constellations/constellationFactory.js";
 import { LogsCache } from "./logsCache.js";
 import { Supporter } from "./supporter.js";
 
