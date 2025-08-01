@@ -121,60 +121,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/StructureNode"
 
-  /{id}/getdata:
-    post:
-      summary: Get data for a path
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                path:
-                  type: array
-                  items:
-                    type: string
-      responses:
-        '200':
-          description: Data for the path
-          content:
-            text/plain:
-              schema:
-                type: string
-
-  /{id}/setdata:
-    post:
-      summary: Set data for a path
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                path:
-                  type: array
-                  items:
-                    type: string
-                data:
-                  type: string
-      responses:
-        '200':
-          description: Data set
-
   /{id}/activate:
     post:
       summary: Activate a path
@@ -345,6 +291,60 @@ paths:
         '200':
           description: Properties updated
 
+  /{id}/getdata:
+    post:
+      summary: Get data for a path
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Data for the path
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /{id}/setdata:
+    post:
+      summary: Set data for a path
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: array
+                  items:
+                    type: string
+                data:
+                  type: string
+      responses:
+        '200':
+          description: Data set
+
   /{id}/fetch:
     post:
       summary: Fetch data for a path
@@ -367,11 +367,7 @@ paths:
                     type: string
       responses:
         '200':
-          description: Fetch result
-          content:
-            application/json:
-              schema:
-                type: object
+          description: Fetch was initiated
 
   /{id}/autofetch:
     post:
@@ -398,10 +394,6 @@ paths:
       responses:
         '200':
           description: Autofetch set
-          content:
-            application/json:
-              schema:
-                type: object
 
   /{id}/newfile:
     post:
@@ -511,3 +503,29 @@ paths:
       responses:
         '200':
           description: Disconnected
+
+  /{id}/support/true:
+    post:
+      summary: Enable support for constellation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Support enabled
+          
+  /{id}/support/false:
+    post:
+      summary: Disable support for constellation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Support disabled

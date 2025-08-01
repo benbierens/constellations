@@ -223,6 +223,23 @@ export async function main() {
     });
   });
 
+  web.post("/:id/support/true", async (req, res) => {
+    await safeAsync(req, async () => {
+      const id = getId(req);
+      await app.beginSupport(id);
+      res.sendStatus(200);
+    });
+  });
+
+  web.post("/:id/support/false", async (req, res) => {
+    await safeAsync(req, async () => {
+      const id = getId(req);
+      await app.endSupport(id);
+      res.sendStatus(200);
+    });
+  });
+
+  
   server.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
     console.log(`WebSocket server listening at ws://localhost:${port}`);

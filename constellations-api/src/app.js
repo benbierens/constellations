@@ -154,6 +154,14 @@ export class App {
     if (!entry) return;
     await entry.constellation.delete(path, updateStarStatus);
   };
+
+  beginSupport = async (id) => {
+
+  }
+
+  endSupport = async (id) => {
+    
+  }
 }
 
 class ConstellationHandler {
