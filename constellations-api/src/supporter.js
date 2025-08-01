@@ -69,20 +69,66 @@ export class Supporter {
     this._logger.trace("Worker started...");
 
     try {
-      await this._workerLoop();
+      var count = 0;
+      var activations = 1;
+      // As long as the worker loop finds stuff to activate, we keep running.
+      while (activations > 0) {
+        await this._sleep();
+        activations = await this._workerLoop();
+        count += activations;
+      }
+
+      await this._workerLock.acquire("SupportWorkerLock", async (done) => {
+        this._logger.trace(`Worker finished. ${count} new activations.`);
+        this._worker = null;
+        done();
+      });
     }
     catch (error) {
       this._logger.error(`Error in worker loop: ${error}`);
     }
+  }
 
-    await this._workerLock.acquire("SupportWorkerLock", async (done) => {
-      this._logger.trace("Worker finished");
-      this._worker = null;
-      done();
-    });
+  _sleep = async () => {
+    return new Promise((resolve) => setTimeout(resolve, 500));
   }
 
   _workerLoop = async () => {
-    
+    // Loop through the localId constellations:
+    // Activate paths that are not active.
+    // set AutoFetch for everything.
+    var count = 0;
+    for (const localId of this._localIds) {
+      const root = this._app.getRoot(localId);
+      //   {
+      //   path: "entryName",
+      //   starId: "1234"
+      //   isActive: true/false,
+      //   entries: [ {...}, {...} ]
+      // }
+      count += await this._workerTraverse(localId, root, []);
+    }
+    return count;
+  }
+  
+  _workerTraverse = async (localId, here, currentPath) => {
+    var count = 0;
+    for (const entry of here.entries) {
+      const newPath = [...currentPath, entry.path];
+      count += await this._workerTraverse(localId, entry, newPath);
+    }
+    count += await this._workerCheckNode(localId, here, currentPath);
+    return count;
+  }
+
+  _workerCheckNode = async (localId, here, currentPath) => {
+    var count = 0;
+    if (!here.isActive) {
+      await this._app.activate(localId, currentPath);
+      count = 1;
+    }
+    await this._app.setAutoFetch(localId, currentPath, true);
+    await this._sleep();
+    return count;
   }
 }
