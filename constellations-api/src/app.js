@@ -1,5 +1,6 @@
 import { ConstellationFactory } from "lib-constellations";
 import { LogsCache } from "./logsCache.js";
+import { Supporter } from "./supporter.js";
 
 var newId = 1;
 
@@ -15,17 +16,19 @@ export class App {
       this._config.privateKey,
       this._config.codexAddress,
     );
+
+    this._supporter = new Supporter(this._factory._logger, this, this._config);
   }
 
   init = async () => {
     if (this._config.useMocks) {
       await this._factory.initializeWithMocks();
-      return;
+    }
+    else {
+      await this._factory.initializeWithBootstrapRecords(this._config.wakuBootstrapNodes);
     }
 
-    await this._factory.initializeWithBootstrapRecords(
-      this._config.wakuBootstrapNodes,
-    );
+    await this._supporter.initialize();
   };
 
   getLogs = () => {
@@ -156,11 +159,11 @@ export class App {
   };
 
   beginSupport = async (id) => {
-
+    await this._supporter.addSupport();
   }
 
   endSupport = async (id) => {
-    
+    await this._supporter.removeSupport();
   }
 }
 
