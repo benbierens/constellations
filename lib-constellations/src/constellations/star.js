@@ -25,6 +25,7 @@ export class Star {
     this._logger = null;
     this._internal = null;
     this._handler = null;
+    this._cidTracker = null;
     this._starInfo = null;
     this._starProperties = null;
 

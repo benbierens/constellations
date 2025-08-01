@@ -45,7 +45,7 @@ export class App {
 
   createNew = async (owners) => {
     newId++;
-    const handler = new ConstellationHandler(this._websocket, newId);
+    const handler = new ConstellationHandler(this._websocket, this._supporter, newId);
     const constellation = await this._factory.createNewConstellation(
       owners,
       handler,
@@ -68,7 +68,7 @@ export class App {
     }
 
     newId++;
-    const handler = new ConstellationHandler(this._websocket, newId);
+    const handler = new ConstellationHandler(this._websocket, this._supporter, newId);
     const constellation =
       await this._factory.connectToConstellation(constellationId);
     this._constellations[newId] = {
@@ -159,22 +159,24 @@ export class App {
   };
 
   beginSupport = async (id) => {
-    await this._supporter.addSupport();
+    await this._supporter.addSupport(id);
   }
 
   endSupport = async (id) => {
-    await this._supporter.removeSupport();
+    await this._supporter.removeSupport(id);
   }
 }
 
 class ConstellationHandler {
-  constructor(websocket, id) {
+  constructor(websocket, supporter, id) {
     this._websocket = websocket;
+    this._supporter = supporter;
     this._id = id;
   }
 
   onPathsUpdated = async (starId) => {
     this._websocket.sendPathsChanged(this._id, starId);
+    await this._supporter.onPathsUpdated();
   };
 
   onPropertiesChanged = async (starId) => {
