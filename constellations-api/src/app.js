@@ -162,6 +162,10 @@ export class App {
     await this._supporter.addSupport(id);
   }
 
+  isSupporting = (id) => {
+    return this._supporter.isSupporting(id);
+  }
+
   endSupport = async (id) => {
     await this._supporter.removeSupport(id);
   }
