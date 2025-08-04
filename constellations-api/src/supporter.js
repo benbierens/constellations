@@ -59,8 +59,7 @@ export class Supporter {
 
   _startWorker = async () => {
     await this._workerLock.acquire("SupportWorkerLock", async (done) => {
-      if (this._worker) return;
-      this._worker = this._run();
+      if (!this._worker) this._worker = this._run();
       done();
     });
   }

@@ -66,8 +66,6 @@ export class TimerService {
 
     await Promise.race([promise, timeout]);
     
-    console.log("resolved? " + isResolved);
-    
     if (isResolved) return;
     throw new Error("Timeout exceeded for " + name);
   }
