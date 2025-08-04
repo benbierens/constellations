@@ -756,8 +756,9 @@ describe(
       const newStarId = await constellation.createNewFolder(path, owners);
       await mockWaku.deliverAll();
 
-      expect(eventHandler.onPathsUpdatedArgs.length).toEqual(1);
+      expect(eventHandler.onPathsUpdatedArgs.length).toEqual(2);
       expect(eventHandler.onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
+      expect(eventHandler.onPathsUpdatedArgs[1]).toEqual(newStarId);
 
       const root = constellation.root;
       expect(root.path).toEqual("");
@@ -832,8 +833,9 @@ describe(
       );
       await mockWaku.deliverAll();
 
-      expect(eventHandler.onPathsUpdatedArgs.length).toEqual(1);
+      expect(eventHandler.onPathsUpdatedArgs.length).toEqual(2);
       expect(eventHandler.onPathsUpdatedArgs[0]).toEqual(rootStar.starId);
+      expect(eventHandler.onPathsUpdatedArgs[1]).toEqual(newFolderStarId);
 
       const leafPath = ["folder", "leaf"];
       const leafType = "test_leaf_type";
