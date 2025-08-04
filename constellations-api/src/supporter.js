@@ -20,7 +20,7 @@ export class Supporter {
   }
 
   addSupport = async (id) => {
-    const ids = this._app.getConstellationIds();
+    const ids = this._app.getConstellationIds().map(v => parseInt(v));
     if (!ids.includes(id)) {
       this._logger.warn(`Attempt to enable support for '${id}', but id is not in use.`);
       return;
