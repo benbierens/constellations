@@ -1,5 +1,6 @@
 import { ConstellationFactory } from "lib-constellations";
 import { LogsCache } from "./logsCache.js";
+import { Supporter } from "./supporter.js";
 
 var newId = 1;
 
@@ -15,17 +16,19 @@ export class App {
       this._config.privateKey,
       this._config.codexAddress,
     );
+
+    this._supporter = new Supporter(this._factory._logger, this, this._config);
   }
 
   init = async () => {
     if (this._config.useMocks) {
       await this._factory.initializeWithMocks();
-      return;
+    }
+    else {
+      await this._factory.initializeWithBootstrapRecords(this._config.wakuBootstrapNodes);
     }
 
-    await this._factory.initializeWithBootstrapRecords(
-      this._config.wakuBootstrapNodes,
-    );
+    await this._supporter.initialize();
   };
 
   getLogs = () => {
@@ -42,7 +45,7 @@ export class App {
 
   createNew = async (owners) => {
     newId++;
-    const handler = new ConstellationHandler(this._websocket, newId);
+    const handler = new ConstellationHandler(this._websocket, this._supporter, newId);
     const constellation = await this._factory.createNewConstellation(
       owners,
       handler,
@@ -65,7 +68,7 @@ export class App {
     }
 
     newId++;
-    const handler = new ConstellationHandler(this._websocket, newId);
+    const handler = new ConstellationHandler(this._websocket, this._supporter, newId);
     const constellation =
       await this._factory.connectToConstellation(constellationId);
     this._constellations[newId] = {
@@ -154,16 +157,30 @@ export class App {
     if (!entry) return;
     await entry.constellation.delete(path, updateStarStatus);
   };
+
+  beginSupport = async (id) => {
+    await this._supporter.addSupport(id);
+  }
+
+  isSupporting = (id) => {
+    return this._supporter.isSupporting(id);
+  }
+
+  endSupport = async (id) => {
+    await this._supporter.removeSupport(id);
+  }
 }
 
 class ConstellationHandler {
-  constructor(websocket, id) {
+  constructor(websocket, supporter, id) {
     this._websocket = websocket;
+    this._supporter = supporter;
     this._id = id;
   }
 
   onPathsUpdated = async (starId) => {
     this._websocket.sendPathsChanged(this._id, starId);
+    await this._supporter.onPathsUpdated();
   };
 
   onPropertiesChanged = async (starId) => {

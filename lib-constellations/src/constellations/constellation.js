@@ -10,6 +10,8 @@ const exampleHandler = {
   onDataChanged: async (starId) => {},
 };
 
+const maxCallbackDurationMs = 300;
+
 export class Constellation {
   constructor(core, handler = exampleHandler) {
     this._core = core;
@@ -78,7 +80,10 @@ export class Constellation {
 
   activate = async (path) => {
     var entry = this._findEntryByFullPath(path);
-    if (!entry) return;
+    if (!entry) {
+      this._logger.warn(`activate: path '${path}' not found.`);
+      return;
+    }
 
     if (entry.star) {
       this._logger.warn(`activate: star '${entry.starId}' already active`);
@@ -92,7 +97,10 @@ export class Constellation {
 
   deactivate = async (path) => {
     var entry = this._findEntryByFullPath(path);
-    if (!entry) return;
+    if (!entry) {
+      this._logger.warn(`deactivate: path '${path}' not found.`);
+      return;
+    }
 
     await this._deactivateEntry(entry);
   };
@@ -130,7 +138,10 @@ export class Constellation {
 
   updateProperties = async (path, properties) => {
     const star = this._findActiveStarByFullPath(path);
-    if (!star) return;
+    if (!star) {
+      this._logger.error(`updateProperties: no active star found at path '${path}'.`);
+      return;
+    }
 
     const i = properties;
     if (!i) return;
@@ -161,13 +172,19 @@ export class Constellation {
 
   getData = async (path) => {
     const star = this._findActiveStarByFullPath(path);
-    if (!star) return;
+    if (!star) {
+      this._logger.error(`getData: no active star found at path '${path}'.`);
+      return;
+    }
     return await star.getData();
   };
 
   setData = async (path, newData) => {
     const star = this._findActiveStarByFullPath(path);
-    if (!star) return;
+    if (!star) {
+      this._logger.error(`setData: no active star found at path '${path}'.`);
+      return;
+    }
 
     if (this._isConstellation(star)) {
       this._logger.warn(
@@ -180,13 +197,19 @@ export class Constellation {
 
   fetch = async (path) => {
     const star = this._findActiveStarByFullPath(path);
-    if (!star) return;
+    if (!star) {
+      this._logger.error(`fetch: no active star found at path '${path}'.`);
+      return;
+    }
     await star.fetchData();
   };
 
   setAutoFetch = async (path, autoFetch) => {
     const star = this._findActiveStarByFullPath(path);
-    if (!star) return;
+    if (!star) {
+      this._logger.error(`setAutoFetch: no active star found at path '${path}'.`);
+      return;
+    }
     await star.setAutoFetch(autoFetch);
   };
 
@@ -202,7 +225,7 @@ export class Constellation {
     const starId = await this._createNewStar(path, getConstellationStarType(), owners);
 
     const newStar = this._findActiveStarByFullPath(path);
-    if (!newStar) this._logger.assert("createNewFolder: Couldn't find new star after it was created.");
+    if (!newStar) this._logger.assert(`createNewFolder: Couldn't find new star after it was created at path '${path}'.`);
     await newStar.setData(JSON.stringify([]));
     
     return starId;
@@ -215,13 +238,20 @@ export class Constellation {
       );
 
     const entry = this._findEntryByFullPath(path);
-    if (!entry) return;
-    if (!entry.star)
+    if (!entry) {
+      this._logger.warn(`delete: path '${path}' not found.`);
+      return;
+    }
+    if (!entry.star) {
       this._logger.errorAndThrow(`delete: '${path}' is not active.`);
+    }
 
     const parentPath = [...path];
     const pathHead = parentPath.pop();
     const parentStar = this._findActiveStarByFullPath(parentPath);
+    if (!parentStar) {
+      this._logger.errorAndThrow(`delete: failed to find active star at parentpath '${parentPath}'`);
+    }
 
     this._print("before star delete");
 
@@ -240,6 +270,7 @@ export class Constellation {
 
     this._logger.trace("delete: Updating local structure...");
     const parentEntry = this._findEntryByFullPath(parentPath);
+    if (!parentEntry) this._logger.errorAndThrow(`delete: parentPath '${parentPath}' not found.`);
 
     var newEntries = [];
     for (const e of parentEntry.entries) {
@@ -298,6 +329,7 @@ export class Constellation {
 
     this._logger.trace("_createNewStar: Updating local structure...");
     const parentEntry = this._findEntryByFullPath(parentPath);
+    if (!parentEntry) this._logger.errorAndThrow(`_createNewStar: parentPath '${parentPath}' not found.`);
     parentEntry.entries.push({
       path: pathHead,
       starId: newStar.starId,
@@ -322,7 +354,9 @@ export class Constellation {
         `onDataChanged: star '${star.starId}' is not a constellation type`,
       );
       this._logger.trace(`raising DataChanged for star ${star.starId}`);
-      await this._handler.onDataChanged(star.starId);
+      await this._core.timerService.monitorDuration("onDataChanged", maxCallbackDurationMs, async () => {
+        await this._handler.onDataChanged(star.starId);
+      });
       return;
     }
 
@@ -344,7 +378,9 @@ export class Constellation {
 
   onPropertiesChanged = async (star) => {
     this._logger.trace(`raising PropertiesChanged for star ${star.starId}`);
-    await this._handler.onPropertiesChanged(star.starId);
+    await this._core.timerService.monitorDuration("onPropertiesChanged", maxCallbackDurationMs, async () => {
+      await this._handler.onPropertiesChanged(star.starId);
+    });
   };
 
   _deactivateEntry = async (entry) => {
@@ -450,8 +486,8 @@ export class Constellation {
     for (const part of fullPath) {
       entry = this._findEntryByPath(entry, part);
       if (!entry) {
-        this._logger.warn(
-          `_findEntryByFullPath: full path '${fullPath}' does not exist.`,
+        this._logger.trace(
+          `_findEntryByFullPath: Entry at path '${fullPath}' is not active`,
         );
         return null;
       }
@@ -461,12 +497,12 @@ export class Constellation {
 
   _findActiveStarByFullPath = (fullPath) => {
     const entry = this._findEntryByFullPath(fullPath);
-    if (!entry) return;
+    if (!entry) return null;
     if (!entry.star) {
       this._logger.trace(
         `_findActiveStarByFullPath: Star at path '${fullPath}' is not active`,
       );
-      return;
+      return null;
     }
     return entry.star;
   };
@@ -475,7 +511,7 @@ export class Constellation {
     for (const entry of here.entries) {
       if (entry.path == path) return entry;
     }
-    this._logger.trace(`_findEntryByPath: Unable to find path '${path}'`);
+    this._logger.trace(`_findEntryByPath: Unable to find path entry '${path}' in '${here.path}'`);
     return null;
   };
 
@@ -493,7 +529,9 @@ export class Constellation {
 
   _raisePathsChangedEvent = async (starId) => {
     this._logger.trace(`raising PathsChanged for star ${starId}`);
-    await this._handler.onPathsUpdated(starId);
+    await this._core.timerService.monitorDuration("onPathsUpdated", maxCallbackDurationMs, async () => {
+      await this._handler.onPathsUpdated(starId);
+    });
   };
 
   _map = (entry) => {

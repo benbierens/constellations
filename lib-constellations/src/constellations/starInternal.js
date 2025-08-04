@@ -2,7 +2,6 @@ import { Lock } from "../services/lock.js";
 import { Column, ColumnUpdateCheckResponse } from "./column.js";
 import { DoNothingHealthMonitor, HealthMonitor } from "./healthMonitor.js";
 import { isValidUserStringValue, packetHeaders } from "./protocol.js";
-import { isDefaultConfiguration } from "./starConfiguration.js";
 import { StarStatus } from "./starProperties.js";
 
 export class StarInternal {
@@ -89,6 +88,7 @@ export class StarInternal {
     this._starId = null;
     this._logger = null;
     this._handler = null;
+    this._cidTracker = null;
     this._channel = null;
     this._starInfo = null;
     this._starProperties = null;
