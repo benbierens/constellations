@@ -231,6 +231,18 @@ export async function main() {
     });
   });
 
+  web.get("/:id/support", async (req, res) => {
+    await safeAsync(res, async () => {
+      const id = getId(req);
+      const isSupporting = app.isSupporting(id);
+      if (isSupporting) {
+        res.json({support: true});
+      } else {
+        res.json({support: false});
+      }
+    });
+  });
+
   web.post("/:id/support/false", async (req, res) => {
     await safeAsync(res, async () => {
       const id = getId(req);

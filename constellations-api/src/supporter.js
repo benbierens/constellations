@@ -31,6 +31,10 @@ export class Supporter {
     this._logger.trace(`Support started for '${id}'`);
   }
 
+  isSupporting = (id) => {
+    return this._localIds.includes(id);
+  }
+
   removeSupport = async (id) => {
     if (!this._localIds.includes(id)) return;
 

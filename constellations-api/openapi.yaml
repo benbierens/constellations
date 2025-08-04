@@ -516,7 +516,27 @@ paths:
       responses:
         '200':
           description: Support enabled
-          
+
+  /{id}/support:
+    get:
+      summary: Gets whether this constellation is being supported
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Support response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  support:
+                    type: boolean
+  
   /{id}/support/false:
     post:
       summary: Disable support for constellation
