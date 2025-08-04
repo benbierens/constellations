@@ -30,7 +30,7 @@ export class DemoContent {
           mar: "march"
         }
       },
-      // random: this._generateRandom(0)
+      random: this._generateRandom(0)
     }
   }
 
@@ -101,7 +101,7 @@ export class DemoContent {
   }
 
   _generateRandom = (depth: number) => {
-    if (depth > 3) return this._randomStr();
+    if (depth > 2) return this._randomStr();
     var n = 1 + this._random(6 - depth);
     var newObj: any = {};
     for (var i = 0; i < n; i++) {

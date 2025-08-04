@@ -78,7 +78,7 @@ export async function main() {
 
   web.post("/connect/:constellationId", async (req, res) => {
     await safeAsync(res, async () => {
-      const constellationId = parseInt(req.params.constellationId, 10);
+      const constellationId = req.params.constellationId;
       const newId = await app.connectNew(constellationId);
 
       websocket.sendConstellationsChanged();

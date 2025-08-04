@@ -106,7 +106,7 @@ function HomePageBase({ wsMessage }: { wsMessage: any }) {
         <form onSubmit={handleConnect}>
           <input
             className="win95-input"
-            type="number"
+            type="text"
             placeholder="Constellation ID"
             value={connectId}
             onChange={e => setConnectId(e.target.value)}
