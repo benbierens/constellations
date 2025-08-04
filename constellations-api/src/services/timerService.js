@@ -55,4 +55,20 @@ export class TimerService {
     timer.start();
     return timer;
   };
+
+  monitorDuration = async(name, maxDurationMs, callback) => {
+    var isResolved = false;
+
+    const promise = callback().then(function() {
+      isResolved = true;
+    });
+    const timeout = this._core.sleep(maxDurationMs);
+
+    await Promise.race([promise, timeout]);
+    
+    console.log("resolved? " + isResolved);
+    
+    if (isResolved) return;
+    throw new Error("Timeout exceeded for " + name);
+  }
 }

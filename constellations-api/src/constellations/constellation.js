@@ -10,6 +10,8 @@ const exampleHandler = {
   onDataChanged: async (starId) => {},
 };
 
+const maxCallbackDurationMs = 300;
+
 export class Constellation {
   constructor(core, handler = exampleHandler) {
     this._core = core;
@@ -105,10 +107,7 @@ export class Constellation {
 
   info = (path) => {
     const star = this._findActiveStarByFullPath(path);
-    if (!star) {
-      this._logger.error(`info: no active star found at path '${path}'.`);
-      return;
-    }
+    if (!star) return;
 
     const props = star.properties;
     return {
@@ -355,7 +354,9 @@ export class Constellation {
         `onDataChanged: star '${star.starId}' is not a constellation type`,
       );
       this._logger.trace(`raising DataChanged for star ${star.starId}`);
-      await this._handler.onDataChanged(star.starId);
+      await this._core.timerService.monitorDuration("onDataChanged", maxCallbackDurationMs, async () => {
+        await this._handler.onDataChanged(star.starId);
+      });
       return;
     }
 
@@ -377,7 +378,9 @@ export class Constellation {
 
   onPropertiesChanged = async (star) => {
     this._logger.trace(`raising PropertiesChanged for star ${star.starId}`);
-    await this._handler.onPropertiesChanged(star.starId);
+    await this._core.timerService.monitorDuration("onPropertiesChanged", maxCallbackDurationMs, async () => {
+      await this._handler.onPropertiesChanged(star.starId);
+    });
   };
 
   _deactivateEntry = async (entry) => {
@@ -526,7 +529,9 @@ export class Constellation {
 
   _raisePathsChangedEvent = async (starId) => {
     this._logger.trace(`raising PathsChanged for star ${starId}`);
-    await this._handler.onPathsUpdated(starId);
+    await this._core.timerService.monitorDuration("onPathsUpdated", maxCallbackDurationMs, async () => {
+      await this._handler.onPathsUpdated(starId);
+    });
   };
 
   _map = (entry) => {
