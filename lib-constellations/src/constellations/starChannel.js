@@ -2,6 +2,9 @@ import {
   constellationsProtocolVersion,
   starIdToContentTopic,
 } from "./protocol.js";
+import { Lock } from "../services/lock.js";
+
+const onPacketLock = new Lock("PacketLock");
 
 export class StarChannel {
   constructor(core, starId) {
@@ -59,7 +62,9 @@ export class StarChannel {
     );
     try {
       const time1 = new Date();
-      await this._handler.onPacket(signer, packet);
+      await onPacketLock.lock(async () => {
+        await this._handler.onPacket(signer, packet);
+      });
       const time2 = new Date();
       this._monitorHandlerDuration(time2.getTime() - time1.getTime());
     } catch (error) {
