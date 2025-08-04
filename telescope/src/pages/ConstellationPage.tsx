@@ -10,6 +10,7 @@ function ConstellationPageBase({ wsMessage }: { wsMessage: any }) {
   const { id } = useParams<{ id: string }>();
   const [info, setInfo] = useState<any>(null);
   const [error, setError] = useState('');
+  const [support, setSupport] = useState(false);
 
   const fetchStructure = useCallback(() => {
     fetch(`${api}/${id}`)
@@ -17,6 +18,28 @@ function ConstellationPageBase({ wsMessage }: { wsMessage: any }) {
       .then(setInfo)
       .catch(() => setError('Failed to load structure'));
   }, [id]);
+
+  // Fetch support state
+  useEffect(() => {
+    if (!id) return;
+    fetch(`${api}/${id}/support`)
+      .then(res => res.json())
+      .then(data => setSupport(data.support))
+      .catch(() => setSupport(false));
+  }, [id]);
+
+  const handleSupportChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!id) return;
+    const checked = e.target.checked;
+    setSupport(checked);
+    try {
+      await fetch(`${api}/${id}/support/${checked ? 'true' : 'false'}`, {
+        method: 'POST'
+      });
+    } catch {
+      // Optionally handle error
+    }
+  };
 
   useEffect(() => {
     fetchStructure();
@@ -56,7 +79,7 @@ function ConstellationPageBase({ wsMessage }: { wsMessage: any }) {
         <h2 style={{ display: 'inline', margin: 0 }}>Constellation #{id}</h2>
       </div>
       {info && (
-        <div style={{ fontSize: 13, color: '#555', marginBottom: 8 }}>
+        <div style={{ fontSize: 13, color: '#555', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 16 }}>
           <span style={{
             background: '#f0f0f0',
             borderRadius: 4,
@@ -65,6 +88,15 @@ function ConstellationPageBase({ wsMessage }: { wsMessage: any }) {
           }}>
             id: {info.starId}
           </span>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <input
+              type="checkbox"
+              style={{ verticalAlign: 'middle' }}
+              checked={support}
+              onChange={handleSupportChange}
+            />
+            Support
+          </label>
         </div>
       )}
       {error && <div style={{ color: 'red' }}>{error}</div>}
