@@ -38,6 +38,14 @@ function HomePageBase({ wsMessage }: { wsMessage: any }) {
     }
   }, [wsMessage, fetchConstellations]);
 
+  // Initialize owners with node address on mount
+  useEffect(() => {
+    fetch(`${api}/address`)
+      .then(res => res.json())
+      .then(data => setOwners(typeof data === 'string' ? data : (data.address || '')))
+      .catch(() => setOwners(''));
+  }, []);
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -81,7 +89,7 @@ function HomePageBase({ wsMessage }: { wsMessage: any }) {
         <img
           src={constellationIcon}
           alt="Constellation"
-          style={{ height: 108, verticalAlign: 'center', marginBottom: 16 }}
+          style={{ height: 108, verticalAlign: 'middle', marginBottom: 16 }}
         />
       </div>
       <div className="win95-window" style={{ maxWidth: 400, margin: '2rem auto' }}>
