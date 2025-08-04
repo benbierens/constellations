@@ -105,10 +105,7 @@ export class Constellation {
 
   info = (path) => {
     const star = this._findActiveStarByFullPath(path);
-    if (!star) {
-      this._logger.error(`info: no active star found at path '${path}'.`);
-      return;
-    }
+    if (!star) return;
 
     const props = star.properties;
     return {
