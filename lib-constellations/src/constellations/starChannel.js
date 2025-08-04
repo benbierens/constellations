@@ -58,7 +58,10 @@ export class StarChannel {
       `onMessage: Packet received from '${signer}': '${JSON.stringify(packet)}'`,
     );
     try {
+      const time1 = new Date();
       await this._handler.onPacket(signer, packet);
+      const time2 = new Date();
+      this._monitorHandlerDuration(time2.getTime() - time1.getTime());
     } catch (error) {
       this._logger.errorAndThrow(
         "onMessage: Error when handling message: " + error,
@@ -73,4 +76,12 @@ export class StarChannel {
     } catch {}
     this._logger.warn(`_parsePacket: Unparsable message received: '${msg}'`);
   };
+
+  _monitorHandlerDuration = (durationMs) => {
+    if (durationMs > 200) {
+      this._logger.warn(`Long packet handling time: ${durationMs} ms`);
+    } else if (durationMs > 2000) {
+      this._logger.errorAndThrow(`Unacceptably long packet handling time: ${durationMs} ms`);
+    }
+  }
 }
