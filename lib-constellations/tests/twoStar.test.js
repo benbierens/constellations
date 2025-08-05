@@ -47,6 +47,7 @@ describe(
     var id1 = "";
     var core2 = {};
     var id2 = "";
+    var stars = [];
 
     beforeEach(() => {
       mockWaku = new MockWaku();
@@ -58,16 +59,24 @@ describe(
     });
 
     afterEach(async () => {
+      for (const star of stars) {
+        await star.disconnect();
+      }
+      stars = [];
       await mockWaku.stopAll();
     });
 
     async function createStar(core, type, handler) {
       const owners = [core.constellationNode.address];
-      return await core.starFactory.createNewStar(type, owners, handler);
+      const star = await core.starFactory.createNewStar(type, owners, handler);
+      stars.push(star);
+      return star;
     }
 
     async function connectStar(core, starId, handler) {
-      return await core.starFactory.connectToStar(starId, handler);
+      const star = await core.starFactory.connectToStar(starId, handler);
+      stars.push(star);
+      return star;
     }
 
     it("transmits starInfo", async () => {
