@@ -67,15 +67,28 @@ export class Star {
     }
 
     const cid = await this._core.codexService.upload(data);
-
     await this._internal.sendCdxCid(cid);
-
     await this._cidTracker.afterUpload(cid);
   };
+
+  setDataCid = async (cid) => {
+    if (!cid) this._logger.errorAndThrow("setDataCid: Invalid input");
+    if (!this.canModifyData()) {
+      this._logger.trace("setDataCid: cannot modify this star.");
+      return;
+    }
+
+    await this._core.codexService.fetchData(cid); // test this
+    await this._internal.sendCdxCid(cid);
+  }
 
   getData = async () => {
     return await this._cidTracker.doDownload();
   };
+
+  getDataCid = () => {
+    return this._cidTracker.cid;
+  }
 
   fetchData = async () => {
     await this._cidTracker.doFetch();

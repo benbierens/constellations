@@ -49,7 +49,7 @@ export class Constellation {
     const logger = this._logger;
     logger.trace("disconnect: Disconnecting...");
 
-    await this._disconnectAll(this._root);
+    await this._deactivateEntry(this._root);
 
     this._core = null;
     this._handler = null;
@@ -57,16 +57,6 @@ export class Constellation {
     this._root = null;
 
     logger.trace("disconnect: Disconnected");
-  };
-
-  _disconnectAll = async (entry) => {
-    for (const e of entry.entries) {
-      await this._disconnectAll(e);
-    }
-    if (entry.star) {
-      await entry.star.disconnect();
-      entry.star = null;
-    }
   };
 
   get id() {
@@ -179,6 +169,15 @@ export class Constellation {
     return await star.getData();
   };
 
+  getDataCid = (path) => {
+    const star = this._findActiveStarByFullPath(path);
+    if (!star) {
+      this._logger.error(`getDataCid: no active star found at path '${path}'.`);
+      return;
+    }
+    return star.getDataCid();
+  };
+
   setData = async (path, newData) => {
     const star = this._findActiveStarByFullPath(path);
     if (!star) {
@@ -193,6 +192,22 @@ export class Constellation {
       return;
     }
     await star.setData(newData);
+  };
+
+  setDataCid = async (path, newCid) => {
+    const star = this._findActiveStarByFullPath(path);
+    if (!star) {
+      this._logger.error(`setDataCid: no active star found at path '${path}'.`);
+      return;
+    }
+
+    if (this._isConstellation(star)) {
+      this._logger.warn(
+        `setDataCid: Attempt to modify constellation-type star data cid directly at path '${path}'. Use constellation methods instead.`,
+      );
+      return;
+    }
+    await star.setDataCid(newCid);
   };
 
   fetch = async (path) => {
