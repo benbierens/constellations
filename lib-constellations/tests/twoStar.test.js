@@ -39,6 +39,7 @@ describe(
         codexService,
         cryptoService,
       );
+      core.starInitTimeoutMs = 50;
 
       return core;
     }
