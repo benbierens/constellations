@@ -122,10 +122,22 @@ export class App {
     return await entry.constellation.getData(path);
   };
 
+  getDataCid = (id, path) => {
+    const entry = this._constellations[id];
+    if (!entry) return;
+    return entry.constellation.getDataCid(path);
+  };
+
   setData = async (id, path, newData) => {
     const entry = this._constellations[id];
     if (!entry) return;
     await entry.constellation.setData(path, newData);
+  };
+
+  setDataCid = async (id, path, newCid) => {
+    const entry = this._constellations[id];
+    if (!entry) return;
+    await entry.constellation.setDataCid(path, newCid);
   };
 
   fetch = async (id, path) => {

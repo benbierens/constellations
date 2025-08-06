@@ -319,6 +319,34 @@ paths:
               schema:
                 type: string
 
+  /{id}/getdatacid:
+    post:
+      summary: Get the CID of the data for a path
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: CID of the data for the path
+          content:
+            text/plain:
+              schema:
+                type: string
+
   /{id}/setdata:
     post:
       summary: Set data for a path
@@ -344,6 +372,32 @@ paths:
       responses:
         '200':
           description: Data set
+
+  /{id}/setdatacid:
+    post:
+      summary: Set the Codex data CID for a path
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: array
+                  items:
+                    type: string
+                cid:
+                  type: string
+      responses:
+        '200':
+          description: Data CID set
 
   /{id}/fetch:
     post:

@@ -155,12 +155,31 @@ export async function main() {
     });
   });
 
+  web.post("/:id/getdatacid", (req, res) => {
+    safe(res, () => {
+      const { id, body } = getIdBody(req, res);
+      if (!body) return;
+
+      res.send(app.getDataCid(id, body.path));
+    });
+  });
+
   web.post("/:id/setdata", async (req, res) => {
     await safeAsync(res, async () => {
       const { id, body } = getIdBody(req, res);
       if (!body) return;
 
       await app.setData(id, body.path, body.data);
+      res.sendStatus(200);
+    });
+  });
+
+  web.post("/:id/setdatacid", async (req, res) => {
+    await safeAsync(res, async () => {
+      const { id, body } = getIdBody(req, res);
+      if (!body) return;
+
+      await app.setDataCid(id, body.path, body.cid);
       res.sendStatus(200);
     });
   });
