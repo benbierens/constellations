@@ -55,6 +55,7 @@ describe(
         codexService,
         cryptoService,
       );
+      core.starInitTimeoutMs = 50;
 
       return core;
     }
@@ -763,7 +764,8 @@ describe(
       await constellation.setDataCid(["leaf"], acceptedLeafCid);
       await mockWaku.deliverAll();
 
-      expect(eventHandler.onDataChangedArgs.length).toEqual(1);
+      expect(eventHandler.onDataChangedArgs.length).toEqual(2);
+      expect(eventHandler.onDataChangedArgs[0]).toEqual(leafStar.starId);
       expect(eventHandler.onDataChangedArgs[0]).toEqual(leafStar.starId);
 
       const rootCid = constellation.getDataCid([]);
