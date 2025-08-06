@@ -111,18 +111,28 @@ describe(
       return [starter, ...stars];
     }
 
-    async function expectEventually(getValue, expected) {
+    async function expectEventually(getMetric, expectedCount, expectedUtc) {
       const start = new Date().getTime();
       const maxTimeout = testHealthUpdateInterval * 10;
-      var value = getValue();
-      while (value != expected) {
+
+      var metric = getMetric();
+      function isOK() {
+        if (metric.count != expectedCount) return false;
+        if (metric.lastUpdate.getTime() < expectedUtc.getTime()) return false;
+        return true;
+      }
+
+      while (!isOK()) {
         await _sleep(3);
         const delta = new Date().getTime() - start;
         if (delta > maxTimeout) {
-          expect(value).toEqual(expected);
+          expect(metric.count).toEqual(expectedCount);
+          expect(metric.lastUpdate.getTime()).toBeGreaterThanOrEqual(expectedUtc.getTime());
         }
-        value = getValue();
+        metric = getMetric();
       }
+
+      // expect(health.channel.lastUpdate.getTime()).toBeGreaterThan(testStart.getTime());
     }
 
     const starCounts = [2, 3, 10];
@@ -134,10 +144,7 @@ describe(
 
       for (const star of stars) {
         expect(star.isInitialized()).toBeTruthy();
-
-        const health = star.health;
-        await expectEventually(() => health.channel.count, numStars);
-        expect(health.channel.lastUpdate.getTime()).toBeGreaterThan(testStart.getTime());
+        await expectEventually(() => star.health.channel, numStars, testStart);
       }
     });
 
@@ -150,16 +157,15 @@ describe(
         await star.setAutoFetch(true);
       }
 
+      const dataStart = new Date();
       await stars[0].setData("ThisIsTheData");
       await mockWaku.deliverAll();
       await waitForHealthUpdate();
       await mockWaku.deliverAll();
 
-      const recent = new Date() - 2 * testHealthUpdateInterval;
       for (const star of stars) {
-        const health = star.health;
-        await expectEventually(() => health.cid.count, numStars);
-        expect(health.cid.lastUpdate.getTime()).toBeGreaterThan(recent);
+        expect(star.isInitialized()).toBeTruthy();
+        await expectEventually(() => star.health.cid, numStars, dataStart);
       };
     });
 
@@ -171,12 +177,10 @@ describe(
       async function assertDataHealth(expected) {
         await waitForHealthUpdate();
         await mockWaku.deliverAll();
+        const checkStart = new Date();
 
-        const recent = new Date().getTime() - 2 * testHealthUpdateInterval;
         for (const star of stars) {
-          const health = star.health;
-          await expectEventually(() => health.cid.count, expected);
-          expect(health.cid.lastUpdate.getTime()).toBeGreaterThan(recent);
+          await expectEventually(() => star.health.cid, expected, checkStart);
         }
       }
 
