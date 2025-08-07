@@ -16,6 +16,7 @@ export class StarInternal {
 
     this._healthMonitor = new DoNothingHealthMonitor();
     this._healtMonitorLock = new Lock("healthMonitorLock");
+    this._running = false;
 
     this._starInfo = new Column(
       core,
@@ -56,6 +57,7 @@ export class StarInternal {
     if (this._handler) this._logger.errorAndThrow("init: Already initialized.");
     this._handler = handler;
     this._cidTracker.start();
+    this._running = true;
   };
 
   get starId() {
@@ -72,6 +74,7 @@ export class StarInternal {
 
   disconnect = async () => {
     this._logger.trace("disconnect: Disconnecting...");
+    this._running = false;
     await this._healtMonitorLock.lock(async () => {
       await this._healthMonitor.stop();
       this._healthMonitor = null;
@@ -140,6 +143,10 @@ export class StarInternal {
   };
 
   onPacket = async (sender, packet) => {
+    if (!this._running) {
+      this._logger.trace("onPacket: discarded, not running.");
+      return;
+    }
     if (await this._healthMonitor.onPacket(sender, packet)) return;
     if (await this._starInfo.processPacket(packet)) return;
     if (await this._starProperties.processPacket(packet)) return;
