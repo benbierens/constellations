@@ -12,8 +12,24 @@ function FileDialog({ constellationId, path, buttonLabel = "File" }: FileDialogP
   const [open, setOpen] = useState(false);
   const [size, setSize] = useState<number | null>(null);
   const [lastChange, setLastChange] = useState<string | null>(null);
+  const [cid, setCid] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const loadCid = async () => {
+    const res = await fetch(`${api}/${constellationId}/getdatacid`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path }),
+    });
+    if (!res.ok) throw new Error();
+    const cidResponse = await res.json();
+    setCid(
+      cidResponse && typeof cidResponse.cid === 'string'
+        ? cidResponse.cid
+        : null
+    );
+  }
 
   const handleOpen = async () => {
     setOpen(true);
@@ -21,6 +37,7 @@ function FileDialog({ constellationId, path, buttonLabel = "File" }: FileDialogP
     setError('');
     setSize(null);
     setLastChange(null);
+    setCid(null);
     try {
       const res = await fetch(`${api}/${constellationId}/info`, {
         method: 'POST',
@@ -43,6 +60,7 @@ function FileDialog({ constellationId, path, buttonLabel = "File" }: FileDialogP
           ? info.starInfo.lastChangeUtc
           : null
       );
+      await loadCid();
     } catch {
       setError('Failed to fetch file info');
     } finally {
@@ -149,7 +167,7 @@ function FileDialog({ constellationId, path, buttonLabel = "File" }: FileDialogP
               padding: 24,
               borderRadius: 8,
               minWidth: 320,
-              maxWidth: 600,
+              maxWidth: 900,
               boxShadow: '0 2px 16px rgba(0,0,0,0.2)',
               position: 'relative',
               height: 'auto',
@@ -169,6 +187,8 @@ function FileDialog({ constellationId, path, buttonLabel = "File" }: FileDialogP
                 <div>
                   <strong>Size:</strong>{' '}
                   {size !== null ? `${size} bytes` : <span style={{ color: '#888' }}>Unknown</span>}
+                  <strong>CID:</strong>{' '}
+                  {cid !== null ? cid : <span style={{ color: '#888' }}>Unknown</span>}
                 </div>
                 <div style={{ marginTop: 8 }}>
                   <strong>Last change:</strong>{' '}
@@ -200,6 +220,28 @@ function FileDialog({ constellationId, path, buttonLabel = "File" }: FileDialogP
                     Upload
                   </button>
                 </label>
+                <button
+                  style={{ marginTop: 16 }}
+                  type="button"
+                  onClick={async () => {
+                    const cidInput = window.prompt('Enter CID to set for this file:');
+                    if (!cidInput) return;
+                    try {
+                      const res = await fetch(`${api}/${constellationId}/setdatacid`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ path, cid: cidInput }),
+                      });
+                      if (!res.ok) throw new Error();
+                      setCid(cidInput);
+                      setError('');
+                    } catch {
+                      setError('Failed to set CID');
+                    }
+                  }}
+                >
+                  Set CID
+                </button>
               </div>
             )}
             <button onClick={handleClose} style={{ marginTop: 16 }}>Close</button>
