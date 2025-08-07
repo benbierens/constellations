@@ -1,0 +1,29 @@
+{
+  "name": "liftoff",
+  "version": "0.0.1",
+  "description": "Prototype",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "liftoff": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "constellations",
+    "storage",
+    "mapping",
+    "syncing",
+    "liftoff"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "author": "Logos contributors",
+  "license": "MIT",
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}
