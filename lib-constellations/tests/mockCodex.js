@@ -53,7 +53,7 @@ export class MockCodexService {
       if (d.cid == cid) return d.fileData;
       await __sleep(3);
     }
-    throw new Error("mockCodex data not found.");
+    throw new Error("mockCodex downloadData: data not found.");
   };
 
   _newCid = () => {
@@ -71,6 +71,6 @@ export class MockCodexService {
         };
       await __sleep(3);
     }
-    throw new Error("mockCodex data not found.");
+    throw new Error("mockCodex _returnManifest: data not found.");
   };
 }

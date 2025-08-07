@@ -232,6 +232,8 @@ paths:
                             type: string
                     size:
                       type: number
+                    cid:
+                      type: string
                     lastChangeUtc:
                       type: string
                     properties:

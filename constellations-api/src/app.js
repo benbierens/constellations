@@ -122,12 +122,6 @@ export class App {
     return await entry.constellation.getData(path);
   };
 
-  getDataCid = (id, path) => {
-    const entry = this._constellations[id];
-    if (!entry) return;
-    return entry.constellation.getDataCid(path);
-  };
-
   setData = async (id, path, newData) => {
     const entry = this._constellations[id];
     if (!entry) return;

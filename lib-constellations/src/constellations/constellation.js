@@ -106,6 +106,7 @@ export class Constellation {
       starInfo: star.starInfo,
       health: star.health,
       size: star.size,
+      cid: star.getDataCid(),
       lastChangeUtc: star.lastChangeUtc,
       autoFetch: star.autoFetch,
       properties: {
@@ -167,15 +168,6 @@ export class Constellation {
       return;
     }
     return await star.getData();
-  };
-
-  getDataCid = (path) => {
-    const star = this._findActiveStarByFullPath(path);
-    if (!star) {
-      this._logger.error(`getDataCid: no active star found at path '${path}'.`);
-      return;
-    }
-    return star.getDataCid();
   };
 
   setData = async (path, newData) => {
