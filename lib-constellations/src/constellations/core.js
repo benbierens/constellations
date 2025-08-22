@@ -18,6 +18,8 @@ export class Core {
     this.starChannelFactory = new StarChannelFactory(this);
     this.starFactory = new StarFactory(this);
     this.timerService = new TimerService(this);
+
+    this.starInitTimeoutMs = 1000;
   }
 
   sleep = async (ms) => {

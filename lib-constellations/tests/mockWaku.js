@@ -15,6 +15,7 @@ export class MockWaku {
   deliverAll = async () => {
     var allEmpty = false;
     while (!allEmpty) {
+      await __sleep(1);
       for (const at of this._allChannels) {
         while (at._queue.length > 0) {
           await __sleep(1);
@@ -71,7 +72,7 @@ export class MockWaku {
 
   _allQueuesEmpty = () => {
     for (const at of this._allChannels) {
-      if (at._queue.length > 0) return false;
+      if (at.busy || at._queue.length > 0) return false;
     }
     return true;
   };
@@ -104,6 +105,8 @@ export class MockWakuChannel {
     this._running = false;
 
     this._mockWaku.newChannel(this);
+
+    this.busy = false;
   }
 
   start = async () => {
@@ -134,11 +137,13 @@ export class MockWakuChannel {
     while (this._running) {
       await __sleep(1);
       if (this._running && this._queue.length > 0) {
+        this.busy = true;
         const msgPack = this._queue.pop();
         const signer = msgPack.signer;
         const timestamp = msgPack.timestamp;
         const msg = msgPack.msg;
         await this._handler.onMessage(signer, timestamp, msg);
+        this.busy = false;
       }
     }
   };

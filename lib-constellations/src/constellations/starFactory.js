@@ -138,10 +138,11 @@ export class StarFactory {
 
   _waitFor = async (condition) => {
     var count = 0;
+    const maxCount = this._core.starInitTimeoutMs / 2;
     while (!condition()) {
-      await this._core.sleep(20);
+      await this._core.sleep(2);
       count++;
-      if (count > 200) return false;
+      if (count > maxCount) return false;
     }
     return true;
   };

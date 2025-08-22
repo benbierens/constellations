@@ -128,6 +128,12 @@ export class App {
     await entry.constellation.setData(path, newData);
   };
 
+  setDataCid = async (id, path, newCid) => {
+    const entry = this._constellations[id];
+    if (!entry) return;
+    await entry.constellation.setDataCid(path, newCid);
+  };
+
   fetch = async (id, path) => {
     const entry = this._constellations[id];
     if (!entry) return;

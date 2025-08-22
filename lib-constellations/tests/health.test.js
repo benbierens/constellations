@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, test } from "vitest";
 import { NullLogger } from "../src/services/logger";
 import { ConstellationNode } from "../src/constellations/constellationNode";
 import { Wallet } from "ethers";
@@ -8,8 +8,12 @@ import { StarStatus } from "../src/constellations/starProperties";
 import { MockCodexService } from "./mockCodex";
 import { MockWaku } from "./mockWaku";
 
-const testHealthUpdateInterval = 500;
+const testHealthUpdateInterval = 50;
 const millisecondsPerMinute = 1000 * 60;
+
+async function _sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 describe(
   "HealthTests",
@@ -52,7 +56,7 @@ describe(
         codexService,
         cryptoService,
       );
-
+      core.starInitTimeoutMs = 50;
       return core;
     }
 
@@ -91,9 +95,7 @@ describe(
     }
 
     async function waitForHealthUpdate() {
-      return new Promise((resolve) =>
-        setTimeout(resolve, testHealthUpdateInterval),
-      );
+      await _sleep(testHealthUpdateInterval);
     }
 
     async function startStars(numStars) {
@@ -102,54 +104,70 @@ describe(
       for (var i = 0; i < numStars - 1; i++) {
         const starName = `star_${i + 2}_${numStars}`;
         stars.push(await connectStar(starName, starter.starId));
+        await mockWaku.deliverAll();
       }
       await waitForHealthUpdate();
       await mockWaku.deliverAll();
       return [starter, ...stars];
     }
 
-    for (var numStars = 2; numStars < 10; numStars++) {
-      it(`measures channel health - ${numStars} stars`, async () => {
-        const stars = await startStars(numStars);
-        expect(stars.length).toEqual(numStars);
+    async function expectEventually(getMetric, expectedCount, expectedUtc) {
+      const start = new Date().getTime();
+      const maxTimeout = testHealthUpdateInterval * 10;
 
-        stars.forEach((star) => {
-          expect(star.isInitialized()).toBeTruthy();
+      var metric = getMetric();
+      function isOK() {
+        if (metric.count != expectedCount) return false;
+        if (metric.lastUpdate.getTime() < expectedUtc.getTime()) return false;
+        return true;
+      }
 
-          const health = star.health;
-          const recent = new Date() - 2 * testHealthUpdateInterval;
-          expect(health.channel.count).toEqual(numStars);
-          expect(health.channel.lastUpdate.getTime()).toBeGreaterThan(recent);
-        });
-      });
-
-      it(`measures data health - ${numStars} stars`, async () => {
-        const stars = await startStars(numStars);
-        expect(stars.length).toEqual(numStars);
-
-        for (const star of stars) {
-          expect(star.isInitialized()).toBeTruthy();
-          await star.setAutoFetch(true);
+      while (!isOK()) {
+        await _sleep(3);
+        const delta = new Date().getTime() - start;
+        if (delta > maxTimeout) {
+          expect(metric.count).toEqual(expectedCount);
+          expect(metric.lastUpdate.getTime()).toBeGreaterThanOrEqual(expectedUtc.getTime());
         }
+        metric = getMetric();
+      }
 
-        await stars[0].setData("ThisIsTheData");
-        // We need two update cycles here, because
-        // during the first one, not all stars will receive the new CID before
-        // receiving the health update messages for that cid. So
-        // they will discard it. It's not worth building a caching system
-        // for health messages for CIDs that *may at some point* become relevant.
-        // if we wait an extra cycle, the stars reach agreement.
-        await waitForHealthUpdate();
-        await waitForHealthUpdate();
-
-        stars.forEach((star) => {
-          const health = star.health;
-          const recent = new Date() - 2 * testHealthUpdateInterval;
-          expect(health.cid.count).toEqual(numStars);
-          expect(health.cid.lastUpdate.getTime()).toBeGreaterThan(recent);
-        });
-      });
+      // expect(health.channel.lastUpdate.getTime()).toBeGreaterThan(testStart.getTime());
     }
+
+    const starCounts = [2, 3, 10];
+
+    test.each(starCounts)('measures channel health - %i stars', async (numStars) => {
+      const testStart = new Date();
+      const stars = await startStars(numStars);
+      expect(stars.length).toEqual(numStars);
+
+      for (const star of stars) {
+        expect(star.isInitialized()).toBeTruthy();
+        await expectEventually(() => star.health.channel, numStars, testStart);
+      }
+    });
+
+    test.each(starCounts)('measures data health - %i stars', async (numStars) => {
+      const stars = await startStars(numStars);
+      expect(stars.length).toEqual(numStars);
+
+      for (const star of stars) {
+        expect(star.isInitialized()).toBeTruthy();
+        await star.setAutoFetch(true);
+      }
+
+      const dataStart = new Date();
+      await stars[0].setData("ThisIsTheData");
+      await mockWaku.deliverAll();
+      await waitForHealthUpdate();
+      await mockWaku.deliverAll();
+
+      for (const star of stars) {
+        expect(star.isInitialized()).toBeTruthy();
+        await expectEventually(() => star.health.cid, numStars, dataStart);
+      };
+    });
 
     it(`resets data health when CID changes`, async () => {
       const originalData = "OriginalData";
@@ -158,13 +176,12 @@ describe(
 
       async function assertDataHealth(expected) {
         await waitForHealthUpdate();
-        await waitForHealthUpdate();
-        stars.forEach((star) => {
-          const health = star.health;
-          const recent = new Date() - 2 * testHealthUpdateInterval;
-          expect(health.cid.count).toEqual(expected);
-          expect(health.cid.lastUpdate.getTime()).toBeGreaterThan(recent);
-        });
+        await mockWaku.deliverAll();
+        const checkStart = new Date();
+
+        for (const star of stars) {
+          await expectEventually(() => star.health.cid, expected, checkStart);
+        }
       }
 
       // We do not use autofetch.

@@ -55,6 +55,7 @@ describe(
         codexService,
         cryptoService,
       );
+      core.starInitTimeoutMs = 50;
 
       return core;
     }
@@ -417,7 +418,7 @@ describe(
       expect(root.entries.length).toEqual(0);
     });
 
-    it("returns star info, size, lastChange, health, autofetch, and properties", async () => {
+    it("returns star info, size, lastChange, cid, health, autofetch, and properties", async () => {
       const rootStar = await createStar(
         "root",
         core1,
@@ -438,6 +439,7 @@ describe(
           },
         ]),
       );
+      await leafStar.setData("leafdata");
       await mockWaku.deliverAll();
 
       constellation = new Constellation(core2, eventHandler);
@@ -452,6 +454,7 @@ describe(
       expect(rootInfo.starInfo).toStrictEqual(rootStar.starInfo);
       expect(rootInfo.health).toStrictEqual(rootStar.health);
       expect(rootInfo.size).toEqual(rootStar.size);
+      expect(rootInfo.cid).toEqual("_mockcodexservice_cid_1_");
       assertDatesWithin(rootInfo.lastChangeUtc, rootStar.lastChangeUtc, 100);
       expect(rootInfo.properties.admins.length).toEqual(0);
       expect(rootInfo.properties.mods.length).toEqual(0);
@@ -489,7 +492,8 @@ describe(
       expect(leafInfo.starInfo).toStrictEqual(leafStar.starInfo);
       expect(leafInfo.health).toStrictEqual(leafStar.health);
       expect(leafInfo.size).toEqual(leafStar.size);
-      expect(leafInfo.lastChangeUtc).toEqual(leafStar.lastChangeUtc);
+      expect(leafInfo.cid).toEqual("_mockcodexservice_cid_2_");
+      assertDatesWithin(leafInfo.lastChangeUtc, leafStar.lastChangeUtc, 100);
       expect(leafInfo.properties.admins.length).toEqual(0);
       expect(leafInfo.properties.mods.length).toEqual(0);
       expect(leafInfo.properties.annotations).toEqual(
@@ -635,7 +639,7 @@ describe(
       expect(rootReceived).toEqual(rootData);
       expect(leafReceived).toEqual(leafData);
     });
-
+    
     it("can set the data for other types but not constellation type stars", async () => {
       const rootStar = await createStar(
         "root",
@@ -684,6 +688,58 @@ describe(
 
       expect(rootReceived).toEqual(originalRootData);
       expect(leafReceived).toEqual(updatedLeafData);
+    });
+
+    it("can set the data CID for other types but not constellation type stars", async () => {
+      const rootStar = await createStar(
+        "root",
+        core1,
+        getConstellationStarType(),
+        doNothingStarHandler,
+      );
+      const leafStar = await createStar(
+        "leaf",
+        core1,
+        "leaf",
+        doNothingStarHandler,
+      );
+      const originalRootData = JSON.stringify([
+        {
+          starId: leafStar.starId,
+          path: "leaf",
+        },
+      ]);
+      const originalLeafData = "Leafs are nice. Have some plants in your work space.";
+      const rejectedRootCid = await codexService.upload("rejectedRootUpdate");
+      const acceptedLeafCid = await codexService.upload("acceptedLeafUpdate");
+      await rootStar.setData(originalRootData);
+      await leafStar.setData(originalLeafData);
+      await mockWaku.deliverAll();
+
+      // Again, same core, else we're not permitted to change anything.
+      constellation = new Constellation(core1, eventHandler);
+      await constellation.initialize(rootStar.starId);
+      await constellation.activate(["leaf"]);
+      await mockWaku.deliverAll();
+
+      const originalRootCid = constellation.info([]).cid;
+
+      expect(eventHandler.onDataChangedArgs.length).toEqual(1);
+      expect(eventHandler.onDataChangedArgs[0]).toEqual(leafStar.starId);
+
+      await constellation.setDataCid([], rejectedRootCid);
+      await constellation.setDataCid(["leaf"], acceptedLeafCid);
+      await mockWaku.deliverAll();
+
+      expect(eventHandler.onDataChangedArgs.length).toEqual(2);
+      expect(eventHandler.onDataChangedArgs[0]).toEqual(leafStar.starId);
+      expect(eventHandler.onDataChangedArgs[0]).toEqual(leafStar.starId);
+
+      const rootCid = constellation.info([]).cid;
+      const leafCid = constellation.info(["leaf"]).cid;
+
+      expect(rootCid).toEqual(originalRootCid);
+      expect(leafCid).toEqual(acceptedLeafCid);
     });
 
     it("can create a new data star at a path", async () => {

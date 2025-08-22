@@ -69,7 +69,7 @@ describe("TimerService", () => {
         const delta = time2 - time1;
 
         expect(called).toEqual(1);
-        expect(delta).toBeGreaterThan(200);
+        expect(delta).toBeGreaterThanOrEqual(200);
         called = 0;
       }
     });

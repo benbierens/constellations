@@ -165,6 +165,16 @@ export async function main() {
     });
   });
 
+  web.post("/:id/setdatacid", async (req, res) => {
+    await safeAsync(res, async () => {
+      const { id, body } = getIdBody(req, res);
+      if (!body) return;
+
+      await app.setDataCid(id, body.path, body.cid);
+      res.sendStatus(200);
+    });
+  });
+
   web.post("/:id/fetch", async (req, res) => {
     await safeAsync(res, async () => {
       const { id, body } = getIdBody(req, res);

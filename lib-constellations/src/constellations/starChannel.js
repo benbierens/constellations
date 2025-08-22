@@ -4,13 +4,12 @@ import {
 } from "./protocol.js";
 import { Lock } from "../services/lock.js";
 
-const onPacketLock = new Lock("PacketLock");
-
 export class StarChannel {
   constructor(core, starId) {
     this._core = core;
     this._starId = starId;
     this._logger = this._core.logger.prefix("StarChannel");
+    this._onPacketLock = new Lock("PacketLock:" + starId);
   }
 
   open = async (handler) => {
@@ -58,11 +57,11 @@ export class StarChannel {
     }
 
     this._logger.trace(
-      `onMessage: Packet received from '${signer}': '${JSON.stringify(packet)}'`,
+      `onMessage: Begin processing packet received from '${signer}': '${JSON.stringify(packet)}'`,
     );
     try {
       const time1 = new Date();
-      await onPacketLock.lock(async () => {
+      await this._onPacketLock.lock(async () => {
         await this._handler.onPacket(signer, packet);
       });
       const time2 = new Date();
@@ -72,6 +71,9 @@ export class StarChannel {
         "onMessage: Error when handling message: " + error,
       );
     }
+    this._logger.trace(
+      `onMessage: Finished processing packet received from '${signer}': '${JSON.stringify(packet)}'`,
+    );
   };
 
   _parsePacket = (msg) => {
