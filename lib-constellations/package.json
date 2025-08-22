@@ -1,6 +1,6 @@
 {
   "name": "lib-constellations",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "Prototype",
   "main": "index.js",
   "type": "module",

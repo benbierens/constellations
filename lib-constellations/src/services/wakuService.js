@@ -30,7 +30,7 @@ export class WakuChannel {
       true, // verify sender
       false, // accept only encrypted
       this.contentTopic,
-      true, // store locally
+      false, // store locally
     );
     this.log("Channel is open.");
   }
