@@ -24,7 +24,7 @@ services:
       # IGNORE: "Timer,TimerService,Health,Column,CidTracker,StarChannel,StarInternal"
       
   waku:
-    image: wakuorg/nwaku:v0.32.0
+    image: wakuorg/nwaku:v0.36.0
     ports:
       - "8645:8645"
     command: --dns-discovery=true --dns-discovery-url=enrtree://AIRVQ5DDA4FFWLRBCHJWUWOO6X6S4ZTZ5B667LQ6AJU6PEYDLRD5O@sandbox.waku.nodes.status.im --discv5-discovery=true --nat=any --rest-address=0.0.0.0

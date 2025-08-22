@@ -185,6 +185,10 @@ function FileDialog({ constellationId, path, buttonLabel = "File" }: FileDialogP
                     ? lastChange
                     : <span style={{ color: '#888' }}>N/A</span>}
                 </div>
+                <div style={{ margin: 12, fontSize: 12 }}>
+                  To upload or download anything larger than a few MB, <br/>
+                  please call your Codex node API directly.
+                </div>
                 <button
                   style={{ marginTop: 16, marginRight: 8 }}
                   onClick={handleDownload}
@@ -192,7 +196,7 @@ function FileDialog({ constellationId, path, buttonLabel = "File" }: FileDialogP
                 >
                   Download
                 </button>
-                <label style={{ marginTop: 16 }}>
+                <label style={{ marginTop: 16, marginRight: 8 }}>
                   <input
                     type="file"
                     style={{ display: 'none' }}

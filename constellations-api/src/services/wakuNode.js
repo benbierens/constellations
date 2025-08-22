@@ -15,10 +15,11 @@ export class WakuNode {
 
   startFromBootstrapNodes = async (bootstrapNodes) => {
     this.node = await createLightNode({
-      networkConfig: networkConfig,
+      /*networkConfig: networkConfig,
       defaultBootstrap: false,
       bootstrapPeers: bootstrapNodes,
-      numPeersToUse: 3,
+      numPeersToUse: 3,*/
+      defaultBootstrap: true,
     });
     await this.node.start();
     this.logger.trace("Waiting for peers...");

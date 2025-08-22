@@ -203,20 +203,20 @@ paths:
                     type: array
                     items:
                       type: string
-                    starInfo:
-                      type: object
-                      properties:
-                        type:
+                  starInfo:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                      owners:
+                        type: array
+                        items:
                           type: string
-                        owners:
-                          type: array
-                          items:
-                            type: string
-                        creationUtc:
-                          type: string
-                    health:
-                      type: object
-                      properties:
+                      creationUtc:
+                        type: string
+                  health:
+                    type: object
+                    properties:
                       channel:
                         type: object
                         properties:
@@ -230,42 +230,42 @@ paths:
                             type: number
                           lastUpdate:
                             type: string
-                    size:
-                      type: number
-                    cid:
-                      type: string
-                    lastChangeUtc:
-                      type: string
+                  size:
+                    type: number
+                  cid:
+                    type: string
+                  lastChangeUtc:
+                    type: string
+                  properties:
+                    type: object
                     properties:
-                      type: object
-                      properties:
-                        status:
+                      status:
+                        type: string
+                      configuration:
+                        type: object
+                        properties:
+                          maxDiffSize:
+                            type: number
+                          softMinSnapshotDuration:
+                            type: number
+                          softMaxDiffDuration:
+                            type: number
+                          softMaxNumDiffs:
+                            type: number
+                          channelMonitoringMinutes:
+                            type: number
+                          cidMonitoringMinutes:
+                            type: number
+                      admins:
+                        type: array
+                        items:
                           type: string
-                        configuration:
-                          type: object
-                          properties:
-                            maxDiffSize:
-                              type: number
-                            softMinSnapshotDuration:
-                              type: number
-                            softMaxDiffDuration:
-                              type: number
-                            softMaxNumDiffs:
-                              type: number
-                            channelMonitoringMinutes:
-                              type: number
-                            cidMonitoringMinutes:
-                              type: number
-                        admins:
-                          type: array
-                          items:
-                            type: string
-                        mods:
-                          type: array
-                          items:
-                            type: string
-                        annotations:
+                      mods:
+                        type: array
+                        items:
                           type: string
+                      annotations:
+                        type: string
 
   /{id}/properties:
     post:
