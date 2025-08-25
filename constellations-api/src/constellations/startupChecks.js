@@ -21,7 +21,16 @@ export class StartupChecks {
   _checkCodex = async () => {
     await this._core.codexService.isOnline();
 
-    this._logger.trace("Codex is online");
+    const data = `CodexCheck:${Math.random() * 9999999}:${new Date().toISOString()}`;
+    const cid = await this._core.codexService.upload(data);
+    const response = await this._core.codexService.downloadData(cid);
+
+    if (data == response) {
+      this._logger.trace("Codex is online");
+      return;
+    }
+
+    this._logger.errorAndThrow("Codex check failed.");
   }
 
   _checkWaku = async () => {
@@ -36,7 +45,7 @@ export class StartupChecks {
     const channel = await this._core.wakuService.openChannel(contentTopic, handler);
     await channel.start();
 
-    const msg = `Check:${Math.random() * 9999999}:${new Date().toISOString()}`;
+    const msg = `WakuCheck:${Math.random() * 9999999}:${new Date().toISOString()}`;
     await channel.send(msg);
 
     var counter = 10;
