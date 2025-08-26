@@ -24,9 +24,10 @@
   "author": "Logos contributors",
   "license": "MIT",
   "dependencies": {
+    "@codex-storage/sdk-js": "^0.1.2",
     "async-lock": "^1.4.1",
-    "cors": "^2.8.5",
     "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
     "ethers": "^6.14.4",
     "express": "^4.19.2",
     "lib-constellations": "^0.0.16"

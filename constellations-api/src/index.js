@@ -6,6 +6,7 @@ import { WebSocketServer } from "ws";
 import { App } from "./app.js";
 import { appConfig } from "./config.js";
 import { WebsocketCallbacks } from "./websocketCallbacks.js";
+import { Codex, NodeUploadStrategy } from "@codex-storage/sdk-js";
 
 function getId(req) {
   return parseInt(req.params.id, 10);
@@ -156,9 +157,25 @@ export async function main() {
       const cid = info.cid;
       if (!cid) return;
 
-      // TODO:
-      // Use the Codex-SDK to return a stream of the data of the CID.
-      throw new Error("Not implemented.");
+      const codex = new Codex(
+        process.env.CODEX_NODE_URL || "http://localhost:8080"
+      );
+      const data = codex.data;
+      const result = await data.networkDownloadStream(cid);
+
+      if (result.error) {
+        // TODO something with the error 
+        return
+      }
+
+      const codexResponse = result.data
+
+      codexResponse.body.on('error', (err) => {
+        // TODO something with the error 
+      });
+
+      res.setHeader('Content-Type', codexResponse.headers.get('Content-Type') || 'application/octet-stream');
+      codexResponse.body.pipe(res);
     });
   });
 
@@ -171,11 +188,23 @@ export async function main() {
       // Currently the body contains
       // Path = ["some", "path", "to", "file"]
       // Data = ???
-    
-      // Use the Codex-SDK to stream the new data to.
-      // Keep the CID.
 
-      const newCid = "???";
+      const codex = new Codex(
+        process.env.CODEX_NODE_URL || "http://localhost:8080"
+      );
+      const data = codex.data;
+
+      const strategy = new NodeUploadStrategy(body);
+      const uploadResponse = data.upload(strategy);
+
+      const res = await uploadResponse.result;
+
+      if (res.error) {
+        // TODO something with the error
+        return;
+      }
+
+      const newCid = res.data;
 
       await app.setDataCid(id, body.path, newCid);
       res.sendStatus(200);
@@ -263,9 +292,9 @@ export async function main() {
       const id = getId(req);
       const isSupporting = app.isSupporting(id);
       if (isSupporting) {
-        res.json({support: true});
+        res.json({ support: true });
       } else {
-        res.json({support: false});
+        res.json({ support: false });
       }
     });
   });
@@ -278,7 +307,7 @@ export async function main() {
     });
   });
 
-  
+
   server.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
     console.log(`WebSocket server listening at ws://localhost:${port}`);
