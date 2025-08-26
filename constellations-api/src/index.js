@@ -151,7 +151,14 @@ export async function main() {
       const { id, body } = getIdBody(req, res);
       if (!body) return;
 
-      res.send(await app.getData(id, body.path));
+      const info = app.getInfo(id, body.path);
+      if (!info) return;
+      const cid = info.cid;
+      if (!cid) return;
+
+      // TODO:
+      // Use the Codex-SDK to return a stream of the data of the CID.
+      throw new Error("Not implemented.");
     });
   });
 
@@ -160,7 +167,17 @@ export async function main() {
       const { id, body } = getIdBody(req, res);
       if (!body) return;
 
-      await app.setData(id, body.path, body.data);
+      // TODO:
+      // Currently the body contains
+      // Path = ["some", "path", "to", "file"]
+      // Data = ???
+    
+      // Use the Codex-SDK to stream the new data to.
+      // Keep the CID.
+
+      const newCid = "???";
+
+      await app.setDataCid(id, body.path, newCid);
       res.sendStatus(200);
     });
   });
