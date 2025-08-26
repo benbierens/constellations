@@ -89,6 +89,10 @@ describe(
       return star;
     }
 
+    async function connectStar(core, starId, handler) {
+      return await core.starFactory.connectToStar(starId, handler);
+    }
+
     function assertDatesWithin(date1, date2, tolerance) {
       date1 = new Date(date1);
       date2 = new Date(date2);
@@ -603,93 +607,7 @@ describe(
         newProps.configuration.cidMonitoringMinutes,
       );
     });
-
-    it("can get the data for both constellation type stars and other types", async () => {
-      const rootStar = await createStar(
-        "root",
-        core1,
-        getConstellationStarType(),
-        doNothingStarHandler,
-      );
-      const leafStar = await createStar(
-        "leaf",
-        core1,
-        "leaf",
-        doNothingStarHandler,
-      );
-      const rootData = JSON.stringify([
-        {
-          starId: leafStar.starId,
-          path: "leaf",
-        },
-      ]);
-      const leafData = "Leafs are nice. Have some plants in your work space.";
-      await rootStar.setData(rootData);
-      await leafStar.setData(leafData);
-      await mockWaku.deliverAll();
-
-      constellation = new Constellation(core2, eventHandler);
-      await constellation.initialize(rootStar.starId);
-      await constellation.activate(["leaf"]);
-      await mockWaku.deliverAll();
-
-      const rootReceived = await constellation.getData([]);
-      const leafReceived = await constellation.getData(["leaf"]);
-
-      expect(rootReceived).toEqual(rootData);
-      expect(leafReceived).toEqual(leafData);
-    });
     
-    it("can set the data for other types but not constellation type stars", async () => {
-      const rootStar = await createStar(
-        "root",
-        core1,
-        getConstellationStarType(),
-        doNothingStarHandler,
-      );
-      const leafStar = await createStar(
-        "leaf",
-        core1,
-        "leaf",
-        doNothingStarHandler,
-      );
-      const originalRootData = JSON.stringify([
-        {
-          starId: leafStar.starId,
-          path: "leaf",
-        },
-      ]);
-      const updatedRootData = "This update should be rejected.";
-      const originalLeafData =
-        "Leafs are nice. Have some plants in your work space.";
-      const updatedLeafData = "Have some plants in your home too.";
-      await rootStar.setData(originalRootData);
-      await leafStar.setData(originalLeafData);
-      await mockWaku.deliverAll();
-
-      // Again, same core, else we're not permitted to change anything.
-      constellation = new Constellation(core1, eventHandler);
-      await constellation.initialize(rootStar.starId);
-      await constellation.activate(["leaf"]);
-      await mockWaku.deliverAll();
-
-      expect(eventHandler.onDataChangedArgs.length).toEqual(1);
-      expect(eventHandler.onDataChangedArgs[0]).toEqual(leafStar.starId);
-
-      await constellation.setData([], updatedRootData);
-      await constellation.setData(["leaf"], updatedLeafData);
-      await mockWaku.deliverAll();
-
-      expect(eventHandler.onDataChangedArgs.length).toEqual(2);
-      expect(eventHandler.onDataChangedArgs[1]).toEqual(leafStar.starId);
-
-      const rootReceived = await constellation.getData([]);
-      const leafReceived = await constellation.getData(["leaf"]);
-
-      expect(rootReceived).toEqual(originalRootData);
-      expect(leafReceived).toEqual(updatedLeafData);
-    });
-
     it("can set the data CID for other types but not constellation type stars", async () => {
       const rootStar = await createStar(
         "root",
@@ -859,7 +777,13 @@ describe(
       const newStarId = await constellation.createNewFolder(path, owners);
       await mockWaku.deliverAll();
 
-      const emptyConstellationStarData = await constellation.getData(path);
+      // We can no longer ask the constellation for the data.
+      // Instead, we have to link up a star manually and get the data this way.
+      // This is not the normal way in which users should interact with constellation data.
+      // It's just used here for testing.
+
+      const folderStar = await connectStar(core1, newStarId, doNothingStarHandler);
+      const emptyConstellationStarData = await folderStar.getData();
       expect(emptyConstellationStarData).toEqual(JSON.stringify([]));
     });
 
