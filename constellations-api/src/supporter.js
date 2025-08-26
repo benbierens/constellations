@@ -11,12 +11,14 @@ export class Supporter {
     this._worker = null;
   }
 
-  initialize = async () => {
+  initialize = async (timerService) => {
     this._logger.trace(`Initializing for ${this._config.supportConstellations.length} configured constellations...`);
     for (const constellationId of this._config.supportConstellations) {
       await this._addByConstellationId(constellationId);
     }
     await this._startWorker();
+    const interval = 1000 * 60 * 5;
+    timerService.createAndStart("SupportTimer", this._startWorker, interval);
   }
 
   addSupport = async (id) => {

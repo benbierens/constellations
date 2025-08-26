@@ -41,8 +41,11 @@ export class WakuChannel {
   };
 
   send = async (msg) => {
+    // TODO:
+    // For debugging purposes we use emitTo. It returns a more useful result that we can log.
+    // Eventually we can use just emit, which returns a bool.
     const res = await this.dispatcher.emitTo(
-      this.dispatcher.encoder,
+      this.dispatcher.encoderEphemeral ,
       messageType,
       msg,
       this.wallet,
