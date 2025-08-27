@@ -24,13 +24,13 @@
   "author": "Logos contributors",
   "license": "MIT",
   "dependencies": {
-    "@codex-storage/sdk-js": "^0.1.2",
+    "@codex-storage/sdk-js": "^0.1.3",
     "async-lock": "^1.4.1",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "ethers": "^6.14.4",
     "express": "^4.19.2",
-    "lib-constellations": "^0.0.16"
+    "lib-constellations": "^0.0.17"
   },
   "devDependencies": {
     "fake-indexeddb": "^6.0.1",

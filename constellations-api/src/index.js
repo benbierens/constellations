@@ -6,7 +6,8 @@ import { WebSocketServer } from "ws";
 import { App } from "./app.js";
 import { appConfig } from "./config.js";
 import { WebsocketCallbacks } from "./websocketCallbacks.js";
-import { Codex, NodeUploadStrategy } from "@codex-storage/sdk-js";
+import { Codex } from "@codex-storage/sdk-js";
+import { NodeUploadStrategy } from "@codex-storage/sdk-js/node";
 
 function getId(req) {
   return parseInt(req.params.id, 10);
