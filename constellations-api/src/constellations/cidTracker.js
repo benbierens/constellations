@@ -146,7 +146,7 @@ export class CidTracker {
     this._have = true;
     await this._updateSize();
 
-    // We let the monitor know that we now are now storing the CID.
+    // We let the monitor know that we are now storing the CID.
     if (!this._monitor) {
       this._logger.warn("_nowHave: No monitor is set");
     } else {

@@ -23,13 +23,13 @@ class HealthMetric {
     this._refreshTimer = null;
     this._resendTimer = null;
     this._idsReceived = [];
-    this._count = 0;
+    this._previous = 0;
     this._lastCycleUtc = new Date(0);
   }
 
   start = async (interval) => {
     this._idsReceived = [];
-    this._count = 0;
+    this._previous = 0;
     this._lastCycleUtc = new Date(0);
 
     if (this._refreshTimer)
@@ -62,8 +62,12 @@ class HealthMetric {
     this._resendTimer = null;
   };
 
-  get count() {
-    return this._count;
+  get previous() {
+    return this._previous;
+  }
+
+  get current() {
+    return this._idsReceived.length;
   }
 
   get lastUpdate() {
@@ -130,7 +134,7 @@ class HealthMetric {
 
   _onRefreshTimer = async () => {
     this._lastCycleUtc = new Date();
-    this._count = this._idsReceived.length;
+    this._previous = this._idsReceived.length;
     this._idsReceived = [];
     this._logger.trace(
       `_onRefreshTimer: Health value updated to ${this._count}`,
@@ -219,11 +223,13 @@ export class HealthMonitor {
   get health() {
     return {
       channel: {
-        count: this._channelMetric.count,
+        previous: this._channelMetric.previous,
+        current: this._channelMetric.current,
         lastUpdate: this._channelMetric.lastUpdate,
       },
       cid: {
-        count: this._cidMetric.count,
+        previous: this._cidMetric.previous,
+        current: this._cidMetric.current,
         lastUpdate: this._cidMetric.lastUpdate,
       },
     };
