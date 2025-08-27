@@ -25,7 +25,7 @@ export class App {
       await this._factory.initializeWithMocks();
     }
     else {
-      await this._factory.initializeWithBootstrapRecords(this._config.wakuBootstrapNodes);
+      await this._factory.initializeWithBootstrapRecords();
     }
 
     const timerService = this._factory._core.timerService;

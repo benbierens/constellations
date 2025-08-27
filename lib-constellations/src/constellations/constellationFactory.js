@@ -44,11 +44,11 @@ export class ConstellationFactory {
     await this._startupChecks();
   };
 
-  initializeWithBootstrapRecords = async (wakuBootstrapNodes) => {
+  initializeWithBootstrapRecords = async () => {
     this._codexService = new CodexService(this._logger, this._codexAddress);
 
     const wakuNode = new WakuNode(this._logger);
-    await wakuNode.startFromBootstrapNodes(wakuBootstrapNodes);
+    await wakuNode.startFromBootstrapNodes();
 
     const wakuService = new WakuService(this._logger, this._wallet, wakuNode);
     this._core = new Core(

@@ -20,8 +20,11 @@ It's a tool you can use to look at Constellations.
 This quick-and-dirty UI project is intended to showcase the capabilities of Constellations would bring to any project using its API.
 
 ### Try it yourself
-You can run the mocked version of a Constellations node + Telescope yourself pretty easily using docker.
+You can run a Constellations node + Telescope yourself pretty easily using docker.
 - Clone this repository.
+- Edit `./telescope/docker/docker-compose.yaml`:
+  - Modify `CODEX_ADDRESS` to point to your own, correctly configured, testnet-bootstrapped Codex node.
+  - Create your own `PRIVATE_KEY` (unless you want others to be able to modify/delete anything you make)
 - Open a terminal.
 - Go into: `./telescope/docker`
 - Run: `docker-compose build`
@@ -31,7 +34,7 @@ You can run the mocked version of a Constellations node + Telescope yourself pre
 **Important:**
 When you create a new constellation, the address of *your* constellation node must be one of the owners. You can include other owners (it's a comma-separated text field) but if your node is not an owner, then it will not be able to create and sign valid update messages for the constellation and creation will fail. So: When creating a constellation, always copy-paste your nodeAddress into the owners textbox.
 
-Because this demo uses mocked instances of Waku and Codex, it isn't actually able to interact with Constellations not present on your local node. Making this possible and easy is work-in-progress.
+Because this demo uses real instances of Waku and Codex, it is actually able to interact with Constellations not present on your local node. You can share your constellation ID to give someone else access. You can connect to constellations created and maintained by others.
 
 ## Support This!
 Constellations as a project and protocol is looking for support!

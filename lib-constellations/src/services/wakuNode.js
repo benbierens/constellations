@@ -13,7 +13,7 @@ export class WakuNode {
     this.logger.trace("Started from waku node.");
   };
 
-  startFromBootstrapNodes = async (bootstrapNodes) => {
+  startFromBootstrapNodes = async () => {
     this.node = await createLightNode({
       /*networkConfig: networkConfig,
       defaultBootstrap: false,
