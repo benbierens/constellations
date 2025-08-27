@@ -1,6 +1,6 @@
 import { Codex } from "@codex-storage/sdk-js";
-import { NodeUploadStategy } from "@codex-storage/sdk-js/node";
-import { BrowserUploadStategy } from "@codex-storage/sdk-js/browser";
+import { NodeUploadStrategy } from "@codex-storage/sdk-js/node";
+import { BrowserUploadStrategy } from "@codex-storage/sdk-js/browser";
 
 export class CodexService {
   constructor(logger, codexAddress) {
@@ -38,7 +38,7 @@ export class CodexService {
   uploadNode = async (fileData, filename, mimetype) => {
     const data = this.getData();
     const metadata = { filename: filename, mimetype: mimetype };
-    const strategy = new NodeUploadStategy(fileData, metadata);
+    const strategy = new NodeUploadStrategy(fileData, metadata);
     this.logger.trace(`(Node) Uploading '${filename}'`);
     const uploadResponse = data.upload(strategy);
     const res = await uploadResponse.result;
@@ -52,7 +52,7 @@ export class CodexService {
   uploadBrowser = async (fileData, filename, mimetype) => {
     const data = this.getData();
     const metadata = { filename: filename, mimetype: mimetype };
-    const strategy = new BrowserUploadStategy(fileData, null, metadata);
+    const strategy = new BrowserUploadStrategy(fileData, null, metadata);
     this.logger.trace(`(Browser) Uploading '${filename}'`);
     const uploadResponse = data.upload(strategy);
     const res = await uploadResponse.result;
