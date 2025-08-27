@@ -137,7 +137,7 @@ class HealthMetric {
     this._previous = this._idsReceived.length;
     this._idsReceived = [];
     this._logger.trace(
-      `_onRefreshTimer: Health value updated to ${this._count}`,
+      `_onRefreshTimer: Health value updated to ${this._previous}`,
     );
   };
 
