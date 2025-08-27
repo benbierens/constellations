@@ -220,13 +220,17 @@ paths:
                       channel:
                         type: object
                         properties:
-                          count:
+                          previous:
+                            type: number
+                          current:
                             type: number
                           lastUpdate:
                             type: string
                       cid:
                         properties:
-                          count:
+                          previous:
+                            type: number
+                          current:
                             type: number
                           lastUpdate:
                             type: string
