@@ -185,14 +185,16 @@ function FileDialog({ constellationId, path, buttonLabel = "File" }: FileDialogP
                     ? lastChange
                     : <span style={{ color: '#888' }}>N/A</span>}
                 </div>
-                <div style={{ margin: 12, fontSize: 12 }}>
-                  To upload or download anything larger than a few MB, <br/>
-                  please call your Codex node API directly.
+                <div style={{ margin: 12, fontSize: 18 }}>
+                  Upload and download from this app are (temporarily?) <br/>
+                  unavailable. Please talk to your Codex node directly, <br/>
+                  using the CID provided above to download the data or<br/>
+                  using the Set CID button below to push new data.
                 </div>
                 <button
                   style={{ marginTop: 16, marginRight: 8 }}
                   onClick={handleDownload}
-                  disabled={!size || size <= 0}
+                  disabled={true}
                 >
                   Download
                 </button>
@@ -201,10 +203,12 @@ function FileDialog({ constellationId, path, buttonLabel = "File" }: FileDialogP
                     type="file"
                     style={{ display: 'none' }}
                     onChange={handleUpload}
+                    disabled={true}
                   />
                   <button
                     type="button"
                     style={{ marginLeft: 0 }}
+                    disabled={true}
                     onClick={e => {
                       // @ts-ignore
                       e.target.previousSibling.click();
