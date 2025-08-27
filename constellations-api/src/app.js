@@ -28,7 +28,8 @@ export class App {
       await this._factory.initializeWithBootstrapRecords(this._config.wakuBootstrapNodes);
     }
 
-    await this._supporter.initialize();
+    const timerService = this._factory._core.timerService;
+    await this._supporter.initialize(timerService);
   };
 
   getLogs = () => {
