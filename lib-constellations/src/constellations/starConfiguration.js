@@ -17,11 +17,11 @@ export function createDefaultNewStarConfiguration() {
     softMaxNumDiffs: 0,
 
     // Every this, send a message to let others know you're monitoring this channel.
-    channelMonitoringMinutes: 15,
+    channelMonitoringMinutes: 3,
 
     // Every this, send a message to let others know you're fetching and holding this cid.
     // Send a new one when the cid changes.
-    cidMonitoringMinutes: 60,
+    cidMonitoringMinutes: 5,
   };
 }
 

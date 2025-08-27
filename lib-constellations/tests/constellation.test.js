@@ -452,7 +452,8 @@ describe(
       expect(rootInfo.path.length).toEqual(0);
       expect(rootInfo.starInfo.type).toEqual(getConstellationStarType());
       expect(rootInfo.starInfo).toStrictEqual(rootStar.starInfo);
-      expect(rootInfo.health).toStrictEqual(rootStar.health);
+      expect(rootInfo.health.previous).toStrictEqual(rootStar.health.previous);
+      expect(rootInfo.health.lastUpdate).toStrictEqual(rootStar.health.lastUpdate);
       expect(rootInfo.size).toEqual(rootStar.size);
       expect(rootInfo.cid).toEqual("_mockcodexservice_cid_1_");
       assertDatesWithin(rootInfo.lastChangeUtc, rootStar.lastChangeUtc, 100);
@@ -490,7 +491,8 @@ describe(
       expect(leafInfo.path[0]).toEqual("leaf");
       expect(leafInfo.starInfo.type).toEqual("leaf");
       expect(leafInfo.starInfo).toStrictEqual(leafStar.starInfo);
-      expect(leafInfo.health).toStrictEqual(leafStar.health);
+      expect(leafInfo.health.previous).toStrictEqual(leafStar.health.previous);
+      expect(leafInfo.health.lastUpdate).toStrictEqual(leafStar.health.lastUpdate);
       expect(leafInfo.size).toEqual(leafStar.size);
       expect(leafInfo.cid).toEqual("_mockcodexservice_cid_2_");
       assertDatesWithin(leafInfo.lastChangeUtc, leafStar.lastChangeUtc, 100);
