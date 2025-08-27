@@ -2,16 +2,18 @@
 FROM node:22
 
 # Set working directory
-WORKDIR /app
+WORKDIR /app/constellations-api
 
 # Copy package.json and package-lock.json (if present)
-COPY ../package*.json ./
+COPY /constellations-api/package*.json ./
+COPY ../lib-constellations ../lib-constellations
 
 # Install dependencies
+RUN cd ../lib-constellations && npm install 
 RUN npm install
 
 # Copy the rest of the application code
-COPY ../src ./src
+COPY /constellations-api/src ./src
 
 # Expose the port the app runs on
 EXPOSE 3000
