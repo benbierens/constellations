@@ -161,31 +161,6 @@ export class Constellation {
     await p.commitChanges();
   };
 
-  getData = async (path) => {
-    const star = this._findActiveStarByFullPath(path);
-    if (!star) {
-      this._logger.error(`getData: no active star found at path '${path}'.`);
-      return;
-    }
-    return await star.getData();
-  };
-
-  setData = async (path, newData) => {
-    const star = this._findActiveStarByFullPath(path);
-    if (!star) {
-      this._logger.error(`setData: no active star found at path '${path}'.`);
-      return;
-    }
-
-    if (this._isConstellation(star)) {
-      this._logger.warn(
-        `setData: Attempt to modify constellation-type star data directly at path '${path}'. Use constellation methods instead.`,
-      );
-      return;
-    }
-    await star.setData(newData);
-  };
-
   setDataCid = async (path, newCid) => {
     const star = this._findActiveStarByFullPath(path);
     if (!star) {
