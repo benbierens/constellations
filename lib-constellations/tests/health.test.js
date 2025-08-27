@@ -111,13 +111,13 @@ describe(
       return [starter, ...stars];
     }
 
-    async function expectEventually(getMetric, expectedCount, expectedUtc) {
+    async function expectEventually(getMetric, expectedPrevious, expectedUtc) {
       const start = new Date().getTime();
       const maxTimeout = testHealthUpdateInterval * 10;
 
       var metric = getMetric();
       function isOK() {
-        if (metric.count != expectedCount) return false;
+        if (metric.previous != expectedPrevious) return false;
         if (metric.lastUpdate.getTime() < expectedUtc.getTime()) return false;
         return true;
       }
@@ -126,7 +126,7 @@ describe(
         await _sleep(3);
         const delta = new Date().getTime() - start;
         if (delta > maxTimeout) {
-          expect(metric.count).toEqual(expectedCount);
+          expect(metric.previous).toEqual(expectedPrevious);
           expect(metric.lastUpdate.getTime()).toBeGreaterThanOrEqual(expectedUtc.getTime());
         }
         metric = getMetric();

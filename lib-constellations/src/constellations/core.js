@@ -19,7 +19,7 @@ export class Core {
     this.starFactory = new StarFactory(this);
     this.timerService = new TimerService(this);
 
-    this.starInitTimeoutMs = 1000;
+    this.starInitTimeoutMs = 5000;
   }
 
   sleep = async (ms) => {
