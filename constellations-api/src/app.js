@@ -117,18 +117,6 @@ export class App {
     delete this._constellations[id];
   };
 
-  getData = async (id, path) => {
-    const entry = this._constellations[id];
-    if (!entry) return;
-    return await entry.constellation.getData(path);
-  };
-
-  setData = async (id, path, newData) => {
-    const entry = this._constellations[id];
-    if (!entry) return;
-    await entry.constellation.setData(path, newData);
-  };
-
   setDataCid = async (id, path, newCid) => {
     const entry = this._constellations[id];
     if (!entry) return;
