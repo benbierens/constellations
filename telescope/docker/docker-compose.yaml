@@ -9,12 +9,14 @@ services:
 
   constellations-api:
     build:
-      context: ../../constellations-api
-      dockerfile: docker/Dockerfile
+      context: ../../
+      dockerfile: constellations-api/docker/Dockerfile
+    restart: always 
     ports:
       - "3000:3000"
     environment:
-      USE_MOCKS: 0
+      USE_MOCKS: 1
+      DISPATCHER_LOG_LEVEL: 1
 
       CODEX_ADDRESS: "http://192.168.178.171:8081"
       PRIVATE_KEY: "0x821f73df2d38ac506e9735306766be701afcec7def45f7bfa184b6fd4e96185d"
