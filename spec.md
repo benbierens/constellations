@@ -14,7 +14,7 @@ When changes to files and folders occur, nodes supporting those entries will aut
 For each file and folder, a node is able to provide a metric for its health, measured in the total number of nodes committed to the maintenance of that file or folder.
 
 ### Semi-mutable permission
-Each file and folder has individual permission settings indicating which nodes are allowed to broadcast modifications. The permission settings themselves are also (to an extent) mutable this way. So stewardship of data can be migrated between one or multiple nodes. Read permissions are not considered in this version of the protocol. It is assumed the data stored is either encrypted by the user application, or permits of public access.
+Each file and folder has individual permission settings indicating which nodes are allowed to broadcast modifications. The permission settings themselves are also (to an extent) mutable this way. Stewardship of data can be migrated between one or multiple nodes. Read permissions are not considered in this version of the protocol. It is assumed the data stored is either encrypted by the user application, or permits of public access.
 
 
 ## Requirements
@@ -27,7 +27,7 @@ Constellations is designed to operate on top of existing p2p protocols.
 
 ## Assumptions
 Constellations assumes that:
-- Network participants will volunteer resources of the maintenance of data they are interested in
+- Network participants will volunteer resources for the maintenance of data they are interested in
 - The majority of network participants are honest
 - The data exchange protocol is reliable
 - Messages sent with the messaging protocol will be delivered more likely than not
@@ -48,14 +48,14 @@ When a star is created, the following information must be provided:
 - One or more public-keys of the owners of the star
 - A string representing the type of the star
 
-These values together are frequently represented as the "StarInfo" object. They are cannot be changed after creation. The hashing of the StarInfo object yields the star's unique idenfitier.
+These values together are frequently represented as the "StarInfo" object. They are cannot be changed after creation. The hashing of the StarInfo object yields the star's unique identifier.
 
 ### Mutable properties
 A star contains the following information that can be modified after creation.
 
 #### Data
 After creation, a star has no CID by default. Any of the star's owners or admins (described below) may sign and broadcast an update package (also described below) to announce a new CID.
-Receivers of such a packet are able to verify that it is signed by an owner or admin, and so they will only accept updates from nodes permitted to sign them.
+Receivers of such a packet are able to verify that it is signed by an owner or admin, and so they will only accept updates signed by nodes permitted to modify the data.
 
 #### Properties
 A star has the following properties which may be updated by owners or admins.
@@ -158,7 +158,7 @@ Upon receiving the request packet, if it has the information, the StarProperties
 ```js
 responsePacket = {
   header: "responseCdxCid",
-  signature: "<Signature over the signed data of originator of the StarProperties>",
+  signature: "<Signature over the signed data of originator of the CID packet>",
   signedData: {
     utc: "<Timestamp when original packet was created>",
     payload: "<CID>"
@@ -173,6 +173,7 @@ The column objects have one additional important property: They can be used to c
 1. The CID message cannot be confirmed at this time. It is cached.
 1. Some time later, StarInfo and StarProperties have been received.
 1. The cached CID message is replayed and applied or discarded.
+
 Even when the messaging channel protocol guarantees that messages will be received in the correct order, it remains possible that crucial messages are missing simply because they were broadcast too long ago.
 
 ### Health packet definitions
