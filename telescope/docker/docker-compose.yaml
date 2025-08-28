@@ -9,12 +9,14 @@ services:
 
   constellations-api:
     build:
-      context: ../../constellations-api
-      dockerfile: docker/Dockerfile
+      context: ../../
+      dockerfile: constellations-api/docker/Dockerfile
+    restart: always 
     ports:
       - "3000:3000"
     environment:
       USE_MOCKS: 1
+      DISPATCHER_LOG_LEVEL: 1
 
       WAKU_BOOTSTRAP_NODES: "/dns4/waku.bloxy.one/tcp/8000/wss/p2p/16Uiu2HAmMJy3oXGzRjt2iKmYoCnaEkj55rE55YperMpemtGs9Da2,/dns4/waku-test.bloxy.one/tcp/8095/wss/p2p/16Uiu2HAmSZbDB7CusdRhgkD81VssRjQV5ZH13FbzCGcdnbbh6VwZ,/dns4/node-01.do-ams3.waku.sandbox.status.im/tcp/8000/wss/p2p/16Uiu2HAmNaeL4p3WEYzC9mgXBmBWSgWjPHRvatZTXnp8Jgv3iKsb"
       # CODEX_ADDRESS: "http://192.168.178.171:8080"
