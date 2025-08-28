@@ -15,7 +15,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      USE_MOCKS: 1
+      USE_MOCKS: 0
       DISPATCHER_LOG_LEVEL: 1
 
       CODEX_ADDRESS: "http://192.168.178.171:8081"
