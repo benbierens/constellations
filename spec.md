@@ -201,4 +201,34 @@ healthPacket = {
 Receiving nodes will verify that the CID is (as far as they know) the current CID for this star, and then track the number of unique senders. Again, these packets cannot be transmitted on behalf of anyone else.
 
 ## Constellation
+Now that we have a star (a unit of mutable data with health information and permission settings, that has a unique ID and can synchronize itself across multiple nodes), it's fairly straightforward how to build a graph structure on top.
 
+A constellation is then simply a star with its immutable type value set to a protocol-defined constant, and its data following a protocol-defined structure.
+
+Constellation star type: `"_constellation"`.
+
+Constellation star data structure:
+```js
+const structure = [
+  {
+    "starId": "<Star ID>",
+    "path": "<Single path element>"
+  },
+  ...
+]
+```
+
+A graph can be built when the star ID references another star object that is also a constellation type.
+
+Paths in Constellations are represented as string-arrays. Yet the data structure allows for only single strings. This means that in order to travers a lengthy path, one will be encountering a chain of stars before arriving at the desired data.
+
+Additionally, it's good to keep in mind that any constellation type star can be mounted as if it is a root. This allows user applications to easily select a desired scope for its interaction with the graph.
+
+### Resources, limitations, and ideas for the future
+#### Sharing of messaging channels
+If we imagine a constellation which contains over 100 files and folders, it's easy to see how a dedicated messaging channel is perhaps unnecessarily wasteful. It admits of the greatest possible flexability in health information, access control, and interaction. But in many usecases, this flexibility will be an acceptable trade-off. For example, imagine a constellation which contains archival files which never change. If all their health and permission information were somehow routed through the messaging channel of the folder that contains them, this could save a lot of overhead.
+
+Allowing users to specify (and update?) the expected size range and change frequency of stars would allow future versions of the protocol to automatically choose when and how to use its messaging channels.
+
+#### Diffs
+Additionally, while diffs are partially specced above, they were never implemented in the prototype. Without a doubt valuable practical lessons remain to be encountered down this development route. In their original conception, diffs would be kept in-memory or some node-restart-resistent cache. When data is accessed through the Constellations implementation, it would consider the known diffs and apply them on-the-fly as the raw bytes are streamed to the user application. The reverse, (comparing updated against original data in order to generate diffs and/or deciding whether to simply use a new CID) is without a doubt a far larger design space that's yet to be explored here.
