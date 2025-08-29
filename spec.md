@@ -50,6 +50,16 @@ When a star is created, the following information must be provided:
 
 These values together are frequently represented as the "StarInfo" object. They are cannot be changed after creation. The hashing of the StarInfo object yields the star's unique identifier.
 
+### Messaging channel
+A star has its own messaging channel. The information needed to connect to this channel must be derivable from the starId, which itself results from hashing the StarInfo object.
+
+In the case of Waku, messaging channels are identified by content-topics. In the prototype implementation, the content-topic is derived from the starId by the following function:
+```js
+function starIdToContentTopic(starId) {
+  return `/constellations/${constellationsProtocolVersion}/${starId}/json`;
+}
+```
+
 ### Mutable properties
 A star contains the following information that can be modified after creation.
 
@@ -113,6 +123,8 @@ responsePacket = {
 }
 ```
 
+When a node receives the StarInfo packet, it will hash and verify it against the starId which was used to open the messaging channel. It will also verify that the signature matches one of the owner keys. Once a StarInfo packet is accepted, because it is immutable, any future such packets are always ignored.
+
 #### StarProperties
 When a star joins a channel and wants to know the StarProperties (because it wasn't received as part of the channel's cached messages), it sends this request:
 ```js
@@ -146,6 +158,8 @@ responsePacket = {
 }
 ```
 
+When a node receives the StarProperties packet, it verify that the signature matches one of the owner keys or admin keys.
+
 #### CID
 When a star joins a channel and wants to know the current CID (because it wasn't received as part of the channel's cached messages), it sends this request:
 ```js
@@ -154,7 +168,7 @@ requestPacket = {
 }
 ```
 
-Upon receiving the request packet, if it has the information, the StarProperties column responds with:
+Upon receiving the request packet, if it has the information, the CID column responds with:
 ```js
 responsePacket = {
   header: "responseCdxCid",
@@ -165,6 +179,8 @@ responsePacket = {
   }
 }
 ```
+
+When a node receives the CID packet, it verify that the signature matches one of the owner keys, admin keys, or mod keys.
 
 #### Delayed initialization
 The column objects have one additional important property: They can be used to cache packets and replay them later. This is needed when initialization packets are received out of order. For example:
@@ -188,7 +204,7 @@ healthPacket = {
   header: "hChn"
 }
 ```
-Receiving nodes will use the message sender to track uniqueness of these messages. Unlike the column packets, these cannot be retransmitted.
+Receiving nodes will use the message sender to track uniqueness of these messages. Unlike the column packets, the sender as provided by the messaging protocol is used, and so these packets cannot be retransmitted.
 
 #### CID health
 During the CID health cycle, a node will send:
@@ -220,15 +236,36 @@ const structure = [
 
 A graph can be built when the star ID references another star object that is also a constellation type.
 
-Paths in Constellations are represented as string-arrays. Yet the data structure allows for only single strings. This means that in order to travers a lengthy path, one will be encountering a chain of stars before arriving at the desired data.
+Paths in Constellations are represented as string-arrays. Yet the data structure allows for only single strings. This means that in order to travers a lengthy path, one will be encountering a chain of constellation-type stars before arriving at the desired data.
 
 Additionally, it's good to keep in mind that any constellation type star can be mounted as if it is a root. This allows user applications to easily select a desired scope for its interaction with the graph.
 
 ### Resources, limitations, and ideas for the future
 #### Sharing of messaging channels
-If we imagine a constellation which contains over 100 files and folders, it's easy to see how a dedicated messaging channel is perhaps unnecessarily wasteful. It admits of the greatest possible flexability in health information, access control, and interaction. But in many usecases, this flexibility will be an acceptable trade-off. For example, imagine a constellation which contains archival files which never change. If all their health and permission information were somehow routed through the messaging channel of the folder that contains them, this could save a lot of overhead.
+If we imagine a constellation which contains over 100 files and folders, it's easy to see how a dedicated messaging channel for each is perhaps unnecessarily wasteful. It admits of the greatest possible flexability in health information, access control, and interaction. But in many usecases, this flexibility will be an acceptable trade-off. For example, imagine a constellation which contains archival files which never change. If all their health and permission information were somehow routed through the messaging channel of the folder that contains them, this could save a lot of overhead.
 
 Allowing users to specify (and update?) the expected size range and change frequency of stars would allow future versions of the protocol to automatically choose when and how to use its messaging channels.
 
 #### Diffs
-Additionally, while diffs are partially specced above, they were never implemented in the prototype. Without a doubt valuable practical lessons remain to be encountered down this development route. In their original conception, diffs would be kept in-memory or some node-restart-resistent cache. When data is accessed through the Constellations implementation, it would consider the known diffs and apply them on-the-fly as the raw bytes are streamed to the user application. The reverse, (comparing updated against original data in order to generate diffs and/or deciding whether to simply use a new CID) is without a doubt a far larger design space that's yet to be explored here.
+Additionally, while diffs are partially specced above, they were never implemented in the prototype. Without a doubt valuable practical lessons remain to be encountered down this development route. In their original conception, diffs would be kept in-memory or some node-restart-resistent cache. When data is accessed through the Constellations implementation, it would consider the known diffs and apply them on-the-fly as the raw bytes are streamed to the user application. The reverse, (comparing updated against original data in order to generate diffs and/or deciding whether to use a new CID) is without a doubt a far larger design space that's yet to be explored here.
+
+#### Known issues
+##### The lost admins issue
+Stars are designed such that, even when all authorized nodes (owners, admins, mods) are offline, new nodes can still join, read data, and offer support. Non-authorized nodes can re-transmit packets signed by owners/admins/mods, containing the keys and signatures needed by the joining node to verify everything. There is, however, one known scenario in which this breaks down. The result of which is new nodes can no longer join, until the star is rescued by one of its owners.
+
+To understand this scenario, keep in mind that the re-transmission of signed packets is handled by Column objects (described above) and that these objects can cache and re-transmit only the most recent verified packet.
+
+Scenario
+1. The owner creats a new star: signs and broadcasts the initial StarInfo, StarProperties, and CID packets.
+1. The resulting starId is communicated by the user application. Several other constellation nodes are configured using the starId to support the star.
+1. The owner of the star signs an update for StarProperties, promoting one node to Admin. (This update packet replaces the original one in the StarProperties column cache.)
+1. The owner goes offline.
+1. The admin signs an update for StarProperties, promoting an additional node to Admin. (Again, the previous cached packet is replaced.)
+1. A new node uses the starId to attempt to join, but will be unable to: It can never verify the current StarProperties:
+    1. The new node opens the messaging channel and received the StarInfo, StarProperties, and CID packets (after asking if necessary).
+    1. The new node can verify the StarInfo packet by hashing it and matching it to the starId: Success, we now know the StarInfo is correct and thus we know the owners.
+    1. The new node received the StarProperties packet and sees it was signed by the first admin. But not the owner. And the packet signed by the owner needed to verify the legitimacy of the first admin is no longer available. The new node must reject the packet. Therefore StarProperties cannot be retrieved. Therefore the join attempt fails.
+
+The chain of signatures leading from the owner to the current admins is broken. So the admins are "lost". The situation can be recovered by the owner, signing a new StarProperties update.
+
+Surely this is a solvable issue. A chain of signed update packets can be kept and retransmitted. And owner nodes can take the responsibility to automatically flatten this chain whenever it becomes too long. None of this is currently designed nor implemented.
