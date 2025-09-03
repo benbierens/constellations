@@ -23,6 +23,7 @@ export class WakuChannel {
         this.logger.errorAndThrow("onMessage: Error in handler: " + error);
       }
     };
+    this.dispatcher.setLogLevel(1)
 
     this.dispatcher.on(
       messageType,
