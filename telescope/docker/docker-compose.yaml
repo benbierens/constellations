@@ -18,6 +18,26 @@ services:
       USE_MOCKS: 0
       DISPATCHER_LOG_LEVEL: 1
 
-      CODEX_ADDRESS: "http://192.168.178.171:8081"
+      CODEX_ADDRESS: "http://codexnode:8080"
       PRIVATE_KEY: "0x821f73df2d38ac506e9735306766be701afcec7def45f7bfa184b6fd4e96185d"
 
+  codexnode:
+    image: "codexstorage/nim-codex:0.2.5-dist-tests"
+    environment:
+      - CODEX_DATA_DIR=/codex-data
+      - CODEX_LISTEN_ADDRS=/ip4/0.0.0.0/tcp/8070
+      # public IP address where this Codex node is reachable here
+      - CODEX_NAT=extip:192.168.178.1
+      - CODEX_DISC_PORT=8090
+      # vpavlin's Qaku Cache node
+      - CODEX_BOOTSTRAP_NODE=spr:CiUIAhIhAzCS_gDDbbohfuomYsvRChdG6z0LT-N_kkACoImmgLaVEgIDARpJCicAJQgCEiEDMJL-AMNtuiF-6iZiy9EKF0brPQtP43-SQAKgiaaAtpUQip7mxQYaCwoJBICMN4CRAh-aGgsKCQSAjDeAkQIfmipHMEUCIQD4WbtOTNAkocZSvvZJhtQnncXvZUdtH7JYjRnw_eCZywIgaZU14lI9D7Lou6IxsLNB6iVzXRYvtEd0QKWSwM0p2cs
+      - CODEX_API_BINDADDR=0.0.0.0
+      - CODEX_API_PORT=8080
+      - NAT_IP_AUTO=false
+      - NAT_PUBLIC_IP_AUTO=https://ipinfo.io/ip
+    ports:
+      - 8080:8080/tcp # REST API
+      - 8070:8070/tcp # libp2p
+      - 8090:8090/udp # DHT discovery
+    volumes:
+      - ./codex-data:/codex-data
